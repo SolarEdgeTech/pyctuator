@@ -1,0 +1,17 @@
+variables:
+  DOCKER_DRIVER: overlay2
+
+stages:
+  - build
+
+build:
+  image: python:3
+  stage: build
+  script:
+    - make bootstrap
+    - make check
+    - make coverage
+    - make package
+  artifacts:
+    paths:
+      - htmlcov

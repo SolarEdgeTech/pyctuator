@@ -1,0 +1,28 @@
+[tool.poetry]
+name = "pyctuator"
+version = "0.1.0"
+description = "A Python implementation of the Spring Actuator API for popular web frameworks"
+authors = [
+    "Michael Yakobi <michael.yakobi@solaredge.com>",
+    "Inbal Levi <inbal.levi@solaredge.com>",
+    "Yanay Reingewertz <yanay.reingewertz@solaredge.com>",
+    "Matan Rubin <matan.rubin@solaredge.com>"
+]
+
+[tool.poetry.dependencies]
+python = "^3.7"
+requests = "^2.22"
+flask = "^1.1"
+fastapi = "^0.41.0"
+uvicorn = "^0.9.0"
+
+[tool.poetry.dev-dependencies]
+pytest = "^3.0"
+mypy = "^0.730.0"
+pylint = "^2.4"
+pytest-cov = "^2.8"
+autopep8 = "^1.4"
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"
