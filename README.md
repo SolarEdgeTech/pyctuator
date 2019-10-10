@@ -1,6 +1,7 @@
 # Pyctuator
 
-Pyctuator is a Python implementation of the Spring Actuator API for popular web frameworks.
+Pyctuator is a Python implementation of the Spring Actuator API for popular web frameworks.  
+Pyctuator implements a growing subset of the actuator API (see https://docs.spring.io/spring-boot/docs/2.1.8.RELEASE/actuator-api/html/) that allows monitoring Python applications using Spring Boot Admin.
 
 ## Why?
 
