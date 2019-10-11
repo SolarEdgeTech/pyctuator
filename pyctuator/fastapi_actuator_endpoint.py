@@ -6,7 +6,7 @@ from typing import Dict
 import requests
 from fastapi import APIRouter
 
-registration_url = "http://localhost:8000/register"  # TODO get from a decorated function
+registration_url = "http://localhost:8001/register"  # TODO get from a decorated function
 actuator_base_url = "http://localhost:8000/actuator"  # TODO get from a decorated function
 
 should_exit = False
