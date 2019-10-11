@@ -1,15 +1,14 @@
 import logging
 import threading
 from datetime import datetime, timezone
-from typing import Dict
+from typing import Dict, Callable
 
 import requests
 from fastapi import APIRouter
 
 registration_url = "http://localhost:8001/register"  # TODO get from a decorated function
 actuator_base_url = "http://localhost:8000/actuator"  # TODO get from a decorated function
-
-should_exit = False
+registration_interval = 1  # TODO get interval from config
 
 router = APIRouter()
 start_time = datetime.now(timezone.utc)
@@ -100,7 +99,7 @@ def get_environment() -> Dict:
 def get_info() -> Dict:
     return {
         "app": {
-            "name": "ExampeApp",  # TODO get from decorated function
+            "name": "ExampleApp",  # TODO get from decorated function
             "description": "Blah Blah"  # TODO get from decorated function
         },
     }
@@ -126,12 +125,18 @@ def get_health() -> Dict:
     }
 
 
+def schedule_next_registration(task: Callable[[], None]) -> None:
+    timer = threading.Timer(registration_interval, task)
+    timer.setDaemon(True)
+    timer.start()
+
+
 def register_with_admin_server() -> None:
     try:
         response = requests.post(
             registration_url,
             json={
-                "name": "apchi",  # TODO get from a decorated function
+                "name": "Apchi",  # TODO get from a decorated function
                 "managementUrl": actuator_base_url,
                 "healthUrl": f"{actuator_base_url}/health",
                 "serviceUrl": "http://127.0.0.1:8000",  # TODO get from a decorated function
@@ -145,9 +150,8 @@ def register_with_admin_server() -> None:
         logging.warning("Failed registering with boot-admin, caught %s", type(e))
 
     # Schedule the next registration
-    if not should_exit:
-        threading.Timer(1, register_with_admin_server).start()  # TODO get interval from config
+    schedule_next_registration(register_with_admin_server)
 
 
-# register_with_admin_server()
-threading.Timer(1, register_with_admin_server).start()  # TODO get interval from config
+# schedule initial registration with admin server
+schedule_next_registration(register_with_admin_server)

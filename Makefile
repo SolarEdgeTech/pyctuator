@@ -22,10 +22,10 @@ coverage:
 	poetry run pytest --cov-report html --cov-report term --cov=. tests
 
 pylint:
-	poetry run pylint --exit-zero pyctuator
+	poetry run pylint --exit-zero pyctuator tests
 
 mypy:
-	poetry run mypy -p pyctuator
+	poetry run mypy -p pyctuator -p tests
 
 package:
 	poetry build
