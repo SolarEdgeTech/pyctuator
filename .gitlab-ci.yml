@@ -9,17 +9,14 @@ stages:
   - build
 
 build:
-  image: python:3.7
+  image: matanrubin/python-poetry:3.7
   stage: build
   script:
-    - poetry --version || curl -sSL https://raw.githubusercontent.com/sdispater/poetry/master/get-poetry.py | python
-    - source $HOME/.poetry/env
     - poetry config settings.virtualenvs.in-project true
-    - poetry install
-    - poetry run pylint --exit-zero pyctuator
-    - poetry run mypy -p pyctuator
-    - poetry run pytest --cov-report html --cov-report term --cov=. tests
-    - poetry build
+    - make bootstrap
+    - make check
+    - make coverage
+    - make package
   artifacts:
     paths:
       - htmlcov
