@@ -4,7 +4,7 @@ import time
 from fastapi import FastAPI
 from uvicorn.config import Config
 
-from pyctuator import fastapi_actuator_endpoint
+from pyctuator import pyctuator
 from tests.conftest import ActuatorServer, CustomServer
 
 
@@ -15,7 +15,15 @@ class FastApiActuatorServer(ActuatorServer):
             description="Demonstrate Spring Boot Admin Integration with FastAPI",
             docs_url="/api",
         )
-        self.app.include_router(fastapi_actuator_endpoint.router)
+
+        pyctuator.init(
+            self.app,
+            "FastAPI Actuator",
+            "FastAPI Actuator",
+            "http://localhost:8000",
+            "http://localhost:8000/actuator",
+            "http://localhost:8001/register"
+        )
         self.server = CustomServer(config=(Config(app=self.app, loop="asyncio")))
         self.thread = threading.Thread(target=self.server.run)
 
