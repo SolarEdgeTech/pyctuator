@@ -93,7 +93,7 @@ def init(
             )
             if success:
                 if registration_url is not None:
-                    spring_boot_admin_registration.register_with_admin_server(
+                    spring_boot_admin_registration.start_recurring_registration_with_admin_server(
                         registration_url,
                         app_name,
                         actuator_base_url,
@@ -101,3 +101,7 @@ def init(
                         app_url
                     )
                 return
+
+
+def stop() -> None:
+    spring_boot_admin_registration.stop_recurring_registration()

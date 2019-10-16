@@ -33,5 +33,7 @@ class FastApiActuatorServer(ActuatorServer):
             time.sleep(0.01)
 
     def stop(self) -> None:
+        pyctuator.stop()
+
         self.server.should_exit = True
         self.thread.join()

@@ -1,3 +1,4 @@
+import logging
 import threading
 import time
 from abc import ABC, abstractmethod
@@ -31,7 +32,7 @@ class Endpoints:
 
 
 @dataclass
-class RegistrationFixture:
+class RegistrationTrackerFixture:
     registration: Optional[RegistrationRequest]
     count: int
     start_time: Optional[str]
@@ -43,25 +44,27 @@ class CustomServer(Server):
         pass
 
 
-boot_admin_app = FastAPI(
-    title="Boot Admin Mock Server",
-    description="Demonstrate Spring Boot Admin Integration with FastAPI",
-    docs_url="/api",
-)
-
-registration_fixture = RegistrationFixture(None, 0, None, datetime.now(timezone.utc))
+@pytest.fixture
+def registration_tracker() -> RegistrationTrackerFixture:
+    return RegistrationTrackerFixture(None, 0, None, datetime.now(timezone.utc))
 
 
-@boot_admin_app.post("/register", tags=["admin-server"])
-def register(request: Request, registration: RegistrationRequest) -> None:  # pylint: disable=unused-argument
-    registration_fixture.registration = registration
-    registration_fixture.count += 1
-    if registration_fixture.start_time is None:
-        registration_fixture.start_time = registration.metadata["startup"]
+@pytest.fixture
+def boot_admin_server(registration_tracker: RegistrationTrackerFixture) -> Generator:
+    boot_admin_app = FastAPI(
+        title="Boot Admin Mock Server",
+        description="Demonstrate Spring Boot Admin Integration with FastAPI",
+        docs_url="/api",
+    )
 
+    @boot_admin_app.post("/register", tags=["admin-server"])
+    def register(request: Request, registration: RegistrationRequest) -> None:  # pylint: disable=unused-argument
+        logging.debug("Got registration post %s - %s", registration, registration_tracker)
+        registration_tracker.registration = registration
+        registration_tracker.count += 1
+        if registration_tracker.start_time is None:
+            registration_tracker.start_time = registration.metadata["startup"]
 
-@pytest.fixture(scope="module")
-def boot_admin_server() -> Generator:
     # Start the mock boot-admin server that is needed to test teh actuator's registration
     boot_admin_config = Config(app=boot_admin_app, port=8001, loop="asyncio")
     boot_admin_server = CustomServer(config=boot_admin_config)
@@ -79,14 +82,14 @@ def boot_admin_server() -> Generator:
 
 @pytest.mark.usefixtures("boot_admin_server")
 @pytest.fixture
-def endpoints() -> Endpoints:
+def endpoints(registration_tracker: RegistrationTrackerFixture) -> Endpoints:
     # Wait for the actuator to register with the boot-admin at least once
-    while registration_fixture.registration is None:
+    while registration_tracker.registration is None:
         time.sleep(0.01)
 
-    assert isinstance(registration_fixture.registration, RegistrationRequest)
+    assert isinstance(registration_tracker.registration, RegistrationRequest)
 
-    response = requests.get(registration_fixture.registration.managementUrl)
+    response = requests.get(registration_tracker.registration.managementUrl)
     assert response.status_code == 200
 
     links = response.json()["_links"]
