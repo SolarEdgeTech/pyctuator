@@ -30,6 +30,21 @@ def test_self_endpoint(endpoints: Endpoints) -> None:
 
 
 @pytest.mark.usefixtures("boot_admin_server", "actuator_server")
+def test_env_endpoint(endpoints: Endpoints) -> None:
+    response = requests.get(endpoints.env)
+    assert response.status_code == 200
+    assert response.json()["param"] == "param"
+
+    response = requests.get(endpoints.info)
+    assert response.status_code == 200
+    assert response.json()["app"] is not None
+
+    response = requests.get(endpoints.health)
+    assert response.status_code == 200
+    assert response.json()["status"] == "UP"
+
+
+@pytest.mark.usefixtures("boot_admin_server", "actuator_server")
 def test_recurring_registration(registration_tracker: RegistrationTrackerFixture) -> None:
     # Verify that at least 4 registrations occurred within 10 seconds since the test started
     start = time.time()
