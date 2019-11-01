@@ -57,8 +57,9 @@ def boot_admin_server(registration_tracker: RegistrationTrackerFixture) -> Gener
         docs_url="/api",
     )
 
+    # pylint: disable=unused-argument,unused-variable
     @boot_admin_app.post("/register", tags=["admin-server"])
-    def register(request: Request, registration: RegistrationRequest) -> None:  # pylint: disable=unused-argument
+    def register(request: Request, registration: RegistrationRequest) -> None:
         logging.debug("Got registration post %s - %s", registration, registration_tracker)
         registration_tracker.registration = registration
         registration_tracker.count += 1

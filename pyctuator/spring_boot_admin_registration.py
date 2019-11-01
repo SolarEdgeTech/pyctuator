@@ -1,12 +1,15 @@
+import http.client
+import json
 import logging
 import threading
 import time
+import urllib.parse
 from datetime import datetime
 
-# TODO use stdlib instead of requests
-import requests
-
 # TODO get interval from config
+from http.client import HTTPConnection
+from typing import Optional
+
 registration_interval = 1
 
 should_continue_registration_schedule: bool = True
@@ -51,16 +54,26 @@ def _register_with_admin_server(
 
     logging.debug("Trying to post registration data to %s: %s", registration_url, registration_data)
 
+    conn: Optional[HTTPConnection] = None
     try:
-        response = requests.post(
-            registration_url,
-            json=registration_data)
+        reg_url_split = urllib.parse.urlsplit(registration_url)
+        conn = http.client.HTTPConnection(reg_url_split.hostname, reg_url_split.port)
+        conn.request(
+            "POST",
+            reg_url_split.path,
+            body=json.dumps(registration_data),
+            headers={"Content-type": "application/json"})
+        response = conn.getresponse()
 
-        if response.status_code < 200 or response.status_code >= 300:
-            logging.warning("Failed registering with boot-admin, got %s - %s", response.status_code, response.reason)
+        if response.status < 200 or response.status >= 300:
+            logging.warning("Failed registering with boot-admin, got %s - %s", response.status, response.read())
 
     except Exception as e:  # pylint: disable=broad-except
-        logging.warning("Failed registering with boot-admin, caught %s", type(e))
+        logging.warning("Failed registering with boot-admin, %s (%s)", e, type(e))
+
+    finally:
+        if conn:
+            conn.close()
 
     # Schedule the next registration unless asked to abort
     global should_continue_registration_schedule
