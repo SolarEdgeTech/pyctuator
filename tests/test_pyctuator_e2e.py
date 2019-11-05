@@ -7,9 +7,10 @@ import requests
 
 from tests.conftest import Endpoints, ActuatorServer, RegistrationRequest, RegistrationTrackerFixture
 from tests.fast_api_test_server import FastApiActuatorServer
+from tests.flask_test_server import FlaskActuatorServer
 
 
-@pytest.fixture(params=[FastApiActuatorServer], ids=["FastAPI"])
+@pytest.fixture(params=[FastApiActuatorServer, FlaskActuatorServer], ids=["FastAPI", "Flask"])
 def actuator_server(request) -> Generator:  # type: ignore
     # Start a the web-server in which the actuator is integrated
     actuator_server: ActuatorServer = request.param()
@@ -23,6 +24,7 @@ def actuator_server(request) -> Generator:  # type: ignore
 
 
 @pytest.mark.usefixtures("boot_admin_server", "actuator_server")
+@pytest.mark.mark_self_endpoint
 def test_self_endpoint(endpoints: Endpoints) -> None:
     response = requests.get(endpoints.actuator)
     assert response.status_code == 200
@@ -30,6 +32,7 @@ def test_self_endpoint(endpoints: Endpoints) -> None:
 
 
 @pytest.mark.usefixtures("boot_admin_server", "actuator_server")
+@pytest.mark.mark_env_endpoint
 def test_env_endpoint(endpoints: Endpoints) -> None:
     response = requests.get(endpoints.env)
     assert response.status_code == 200
@@ -45,12 +48,13 @@ def test_env_endpoint(endpoints: Endpoints) -> None:
 
 
 @pytest.mark.usefixtures("boot_admin_server", "actuator_server")
+@pytest.mark.mark_recurring_registration
 def test_recurring_registration(registration_tracker: RegistrationTrackerFixture) -> None:
     # Verify that at least 4 registrations occurred within 10 seconds since the test started
     start = time.time()
     while registration_tracker.count < 4:
         time.sleep(0.5)
-        if time.time() - start > 10:
+        if time.time() - start > 15:
             pytest.fail(
                 f"Expected at least 4 recurring registrations within 10 seconds but got {registration_tracker.count}")
 

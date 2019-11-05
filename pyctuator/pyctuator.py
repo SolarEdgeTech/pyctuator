@@ -101,6 +101,8 @@ def init(
                         app_url
                     )
                 return
+        else:       # In case importlib.util.find_spec(framework_name) returns None
+            raise EnvironmentError("framework spec not found (is it properly installed and imported?)")
 
 
 def stop() -> None:

@@ -584,6 +584,9 @@ paket-files/
 __pycache__/
 *.pyc
 
+# Visual Studio Code
+.vscode/
+
 # Cake - Uncomment if you are using it
 # tools/**
 # !tools/packages.config

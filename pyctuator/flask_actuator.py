@@ -1,14 +1,17 @@
 from datetime import datetime
-from typing import Any, Optional
+from typing import Optional
+
+from flask import Flask
 
 from pyctuator.actuator_router import ActuatorRouter
+from pyctuator.flask_actuator_endpoint import get_blueprint
 
 
 class FlaskActuator(ActuatorRouter):
 
     def __init__(
             self,
-            app: Any,
+            app: Flask,
             app_name: str,
             app_description: Optional[str],
             app_url: str,
@@ -16,4 +19,4 @@ class FlaskActuator(ActuatorRouter):
             start_time: datetime
     ):
         super().__init__(app, app_name, app_description, app_url, actuator_base_url, start_time)
-        # TODO actually implement Flask Actuator
+        app.register_blueprint(get_blueprint(actuator_base_url))
