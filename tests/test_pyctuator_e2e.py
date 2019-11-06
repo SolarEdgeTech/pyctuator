@@ -1,3 +1,4 @@
+import os
 import time
 from datetime import datetime, timedelta
 from typing import Generator
@@ -34,9 +35,14 @@ def test_self_endpoint(endpoints: Endpoints) -> None:
 @pytest.mark.usefixtures("boot_admin_server", "actuator_server")
 @pytest.mark.mark_env_endpoint
 def test_env_endpoint(endpoints: Endpoints) -> None:
+    actual_key, actual_value = list(os.environ.items())[3]
     response = requests.get(endpoints.env)
     assert response.status_code == 200
-    assert response.json()["param"] == "param"
+    property_sources = response.json()["propertySources"]
+    assert property_sources
+    system_properties = [source for source in property_sources if source["name"] == "systemEnvironment"]
+    assert system_properties
+    assert system_properties[0]["properties"][actual_key]["value"] == actual_value
 
     response = requests.get(endpoints.info)
     assert response.status_code == 200

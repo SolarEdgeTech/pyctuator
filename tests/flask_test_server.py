@@ -41,7 +41,7 @@ class FlaskActuatorServer(ActuatorServer):
             try:
                 requests.get("http://localhost:5000/actuator")
                 return
-            except requests.exceptions.RequestException:    # Catches all exceptions that Requests raises!
+            except requests.exceptions.RequestException:  # Catches all exceptions that Requests raises!
                 pass
 
     def stop(self) -> None:

@@ -1,6 +1,7 @@
-from typing import Dict
+import os
+from typing import Dict, List
 
-from pyctuator.actuator_data import EndpointsData, EnvironmentData, InfoData
+from pyctuator.actuator_data import EndpointsData, EnvironmentData, InfoData, PropertyValue, PropertySource
 
 
 class Actuator:
@@ -26,16 +27,18 @@ class Actuator:
             }
         }
 
-    def get_environment(self) -> Dict:
-        environment_data = EnvironmentData("env", 3)
-        return {
-            "param": "param"
-        }
+    def get_environment(self) -> EnvironmentData:
+        properties_dict = {key: PropertyValue(value) for (key, value) in os.environ.items()}
+        property_src = [(PropertySource("systemEnvironment", properties_dict))]
+        active_profiles: List[str] = list()
+        env_data = EnvironmentData(active_profiles, property_src)
+        return env_data
 
     def get_info(self) -> Dict:
         info_data = InfoData()
         # TODO: info = InfoData(#params#)
         # TODO: return info
+
         return {
             "app": {
                 "name": "ExampleApp",  # TODO get from decorated function

@@ -1,3 +1,4 @@
+import dataclasses
 from typing import Dict
 
 from flask import Blueprint
@@ -17,7 +18,7 @@ def get_blueprint(actuator_base_url: str) -> Blueprint:
     @flask_blueprint.route("/actuator/env")
     # pylint: disable=unused-variable
     def get_environment() -> Dict:
-        return actuator.get_environment()
+        return dataclasses.asdict(actuator.get_environment())
 
     @flask_blueprint.route("/actuator/info")
     # pylint: disable=unused-variable

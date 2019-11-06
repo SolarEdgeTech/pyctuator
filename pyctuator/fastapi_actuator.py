@@ -3,6 +3,7 @@ from typing import Dict, Optional
 
 from fastapi import APIRouter, FastAPI
 
+from pyctuator.actuator_data import EnvironmentData
 from pyctuator.actuator_router import ActuatorRouter
 from pyctuator.actuator_impl import Actuator
 
@@ -42,7 +43,7 @@ class FastApiActuator(ActuatorRouter):
 
         @router.get("/actuator/env", tags=["actuator"])
         # pylint: disable=unused-variable
-        def get_environment() -> Dict:
+        def get_environment() -> EnvironmentData:
             return actuator.get_environment()
 
         @router.get("/actuator/info", tags=["actuator"])
