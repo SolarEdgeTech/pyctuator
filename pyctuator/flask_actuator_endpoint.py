@@ -13,7 +13,7 @@ def get_blueprint(actuator_base_url: str) -> Blueprint:
     @flask_blueprint.route("/actuator")
     # pylint: disable=unused-variable
     def get_endpoints() -> Dict:
-        return actuator.get_endpoints()
+        return dataclasses.asdict(actuator.get_endpoints())
 
     @flask_blueprint.route("/actuator/env")
     # pylint: disable=unused-variable
@@ -23,7 +23,7 @@ def get_blueprint(actuator_base_url: str) -> Blueprint:
     @flask_blueprint.route("/actuator/info")
     # pylint: disable=unused-variable
     def get_info() -> Dict:
-        return actuator.get_info()
+        return dataclasses.asdict(actuator.get_info())
 
     @flask_blueprint.route("/actuator/health")
     # pylint: disable=unused-variable

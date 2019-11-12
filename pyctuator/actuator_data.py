@@ -4,8 +4,22 @@ from typing import List, Dict, Optional
 
 
 @dataclass
+class LinkHref:
+    href: str
+
+
+# mypy: ignore_errors
+@dataclass
+class EndpointsLinks:
+    self: LinkHref
+    env: LinkHref
+    info: LinkHref
+    health: LinkHref
+
+
+@dataclass
 class EndpointsData:
-    pass
+    _links: EndpointsLinks
 
 
 @dataclass
@@ -27,8 +41,24 @@ class EnvironmentData:
 
 
 @dataclass
+class BuildInfo:
+    version: str
+    artifact: str
+    name: str
+    group: str
+    time: str
+
+
+@dataclass
+class AppInfo:
+    name: str
+    description: str
+
+
+@dataclass
 class InfoData:
-    pass
+    app: AppInfo
+    build: BuildInfo
 
 
 @dataclass
