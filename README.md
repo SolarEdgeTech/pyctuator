@@ -31,7 +31,7 @@ pyctuator.init(
     "Flask Actuator",
     actuator_server_url,
     f"{actuator_server_url}/actuator",
-    "http://localhost:8080/instances",  # http://localhost:8080/register
+    "http://localhost:8080/instances",
     1
 )
 
