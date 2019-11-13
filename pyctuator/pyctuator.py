@@ -63,7 +63,8 @@ def init(
         app_description: Optional[str],
         app_url: str,
         actuator_base_url: str,
-        registration_url: Optional[str]
+        registration_url: Optional[str],
+        registration_interval_sec: int = 10
 ) -> None:
     """
     This method takes a web framework application instance and automatically detects which framework
@@ -74,6 +75,7 @@ def init(
     :param app_url:
     :param actuator_base_url:
     :param registration_url:
+    :param registration_interval_sec:
     """
     framework_integrations = {
         "flask": _integrate_flask,
@@ -98,7 +100,8 @@ def init(
                         app_name,
                         actuator_base_url,
                         start_time,
-                        app_url
+                        app_url,
+                        registration_interval_sec
                     )
                 return
         else:       # In case importlib.util.find_spec(framework_name) returns None

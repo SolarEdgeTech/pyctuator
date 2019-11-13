@@ -21,7 +21,8 @@ class FlaskActuatorServer(ActuatorServer):
             "Flask Actuator",
             "http://localhost:5000",
             "http://localhost:5000/actuator",
-            "http://localhost:8001/register"
+            "http://localhost:8001/register",
+            1
         )
 
         @self.app.route("/shutdown", methods=["POST"])

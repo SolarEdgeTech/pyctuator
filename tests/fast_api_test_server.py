@@ -22,7 +22,8 @@ class FastApiActuatorServer(ActuatorServer):
             "FastAPI Actuator",
             "http://localhost:8000",
             "http://localhost:8000/actuator",
-            "http://localhost:8001/register"
+            "http://localhost:8001/register",
+            1
         )
         self.server = CustomServer(config=(Config(app=self.app, loop="asyncio")))
         self.thread = threading.Thread(target=self.server.run)

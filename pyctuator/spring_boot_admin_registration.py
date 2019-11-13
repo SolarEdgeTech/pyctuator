@@ -10,8 +10,6 @@ from datetime import datetime
 from http.client import HTTPConnection
 from typing import Optional
 
-registration_interval = 1
-
 should_continue_registration_schedule: bool = True
 
 
@@ -20,17 +18,19 @@ def _schedule_next_registration(
         application_name: str,
         actuator_base_url: str,
         start_time: datetime,
-        service_url: str
+        service_url: str,
+        registration_interval_sec: int
 ) -> None:
     timer = threading.Timer(
-        registration_interval,
+        registration_interval_sec,
         _register_with_admin_server,
         [
             registration_url,
             application_name,
             actuator_base_url,
             start_time,
-            service_url
+            service_url,
+            registration_interval_sec,
         ]
     )
     timer.setDaemon(True)
@@ -42,7 +42,8 @@ def _register_with_admin_server(
         application_name: str,
         actuator_base_url: str,
         start_time: datetime,
-        service_url: str
+        service_url: str,
+        registration_interval_sec: int
 ) -> None:
     registration_data = {
         "name": application_name,
@@ -83,7 +84,8 @@ def _register_with_admin_server(
             application_name,
             actuator_base_url,
             start_time,
-            service_url
+            service_url,
+            registration_interval_sec
         )
     else:
         # Signal that the loop is stopped and we are ready for startup again
@@ -95,7 +97,8 @@ def start_recurring_registration_with_admin_server(
         application_name: str,
         actuator_base_url: str,
         start_time: datetime,
-        service_url: str
+        service_url: str,
+        registration_interval_sec: int,
 ) -> None:
     global should_continue_registration_schedule
     should_continue_registration_schedule = True
@@ -105,7 +108,8 @@ def start_recurring_registration_with_admin_server(
         application_name,
         actuator_base_url,
         start_time,
-        service_url
+        service_url,
+        registration_interval_sec
     )
 
 
