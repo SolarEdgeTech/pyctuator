@@ -38,6 +38,42 @@ pyctuator.init(
 myFlaskApp.run(debug=True, port=5000, host="0.0.0.0")
 
 ```
+### FastAPI
+```python
+from fastapi import FastAPI
+from uvicorn.config import Config
+
+from pyctuator import pyctuator
+from tests.conftest import ActuatorServer, CustomServer
+
+app = FastAPI(
+    title="FastAPI Example Server",
+    description="Demonstrate Spring Boot Admin Integration with FastAPI",
+    docs_url="/api",
+)
+myFastAPIApp = CustomServer(config=(Config(app=app, loop="asyncio", host="0.0.0.0")))
+
+
+@app.get("/")
+def read_root():
+    return "Hello World!"
+
+
+actuator_server_url = "http://127.0.0.1:8000"  # Local Application URL
+pyctuator.init(
+    app,
+    "FastAPI Actuator",
+    "FastAPI Actuator",
+    actuator_server_url,
+    f"{actuator_server_url}/actuator",
+    "http://127.0.0.1:8080/instances",
+    1
+)
+
+myFastAPIApp.run()
+```
+
+
 ## Contributing
 To set up a development environment, make sure you have Python 3.7 or newer installed, and execute `make bootstrap`.
 
