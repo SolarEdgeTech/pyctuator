@@ -44,14 +44,14 @@ from fastapi import FastAPI
 from uvicorn.config import Config
 
 from pyctuator import pyctuator
-from tests.conftest import ActuatorServer, CustomServer
+from uvicorn.config import Config
+
 
 app = FastAPI(
     title="FastAPI Example Server",
     description="Demonstrate Spring Boot Admin Integration with FastAPI",
     docs_url="/api",
 )
-myFastAPIApp = CustomServer(config=(Config(app=app, loop="asyncio", host="0.0.0.0")))
 
 
 @app.get("/")
@@ -70,7 +70,9 @@ pyctuator.init(
     1
 )
 
+myFastAPIApp = Server(config=(Config(app=app, loop="asyncio", host="0.0.0.0")))
 myFastAPIApp.run()
+
 ```
 
 
