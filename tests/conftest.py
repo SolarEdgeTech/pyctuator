@@ -29,6 +29,7 @@ class Endpoints:
     env: str
     info: str
     health: str
+    metrics: str
 
 
 @dataclass
@@ -99,6 +100,7 @@ def endpoints(registration_tracker: RegistrationTrackerFixture) -> Endpoints:
         env=links["env"]["href"],
         info=links["info"]["href"],
         health=links["health"]["href"],
+        metrics=links["metrics"]["href"],
     )
 
 

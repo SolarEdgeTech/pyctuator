@@ -1,11 +1,13 @@
 from datetime import datetime
 import os
-import sys
 from typing import Optional
 from typing import List
 
 from pyctuator.actuator_data import EndpointsData, EnvironmentData, InfoData, PropertyValue, PropertySource, \
     LinkHref, EndpointsLinks, AppInfo, BuildInfo, HealthData
+from pyctuator.metrics.memory_metrics_impl import MemoryMetricsProvider
+from pyctuator.metrics.metrics_provider import Metric, MetricNames
+from pyctuator.metrics.thread_metrics_impl import ThreadMetricsProvider
 
 
 class Actuator:
@@ -26,13 +28,18 @@ class Actuator:
         self.app_url = app_url
         self.actuator_base_url = actuator_base_url
         self.start_time = start_time
+        self.metric_providers = [
+            MemoryMetricsProvider(),
+            ThreadMetricsProvider(),
+        ]
 
     def get_endpoints(self) -> EndpointsData:
         return EndpointsData(EndpointsLinks(
-            LinkHref(self.actuator_base_url),
-            LinkHref(self.actuator_base_url + "/env"),
-            LinkHref(self.actuator_base_url + "/info"),
-            LinkHref(self.actuator_base_url + "/health"),
+            LinkHref(self.actuator_base_url, False),
+            LinkHref(self.actuator_base_url + "/env", False),
+            LinkHref(self.actuator_base_url + "/info", False),
+            LinkHref(self.actuator_base_url + "/health", False),
+            LinkHref(self.actuator_base_url + "/metrics", False),
         ))
 
     def get_environment(self) -> EnvironmentData:
@@ -49,3 +56,16 @@ class Actuator:
     def get_health(self) -> HealthData:
         details_dict = {"status": "UP", "details": "More details"}
         return HealthData("UP", details_dict)
+
+    def get_metric_names(self) -> MetricNames:
+        metric_names = []
+        for provider in self.metric_providers:
+            for metric_name in provider.get_supported_metric_names():
+                metric_names.append(metric_name)
+        return MetricNames(metric_names)
+
+    def get_metric_measurement(self, metric_name: str) -> Metric:
+        for provider in self.metric_providers:
+            if metric_name.startswith(provider.get_prefix()):
+                return provider.get_metric(metric_name)
+        raise KeyError(f"Unknown metric {metric_name}")

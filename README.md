@@ -76,6 +76,10 @@ myFastAPIServer.run()
 ```
 
 
+## Usage notes
+### Using psutil for process/filesystem metrics
+In order for pyctuator to provide process/filesystem metrics, it is using the *optional* `psutil` library from https://github.com/giampaolo/psutil (if the library isn't available in a system using the pyctuator, pyctuator will not provide such metrics). 
+
 ## Contributing
 To set up a development environment, make sure you have Python 3.7 or newer installed, and execute `make bootstrap`.
 

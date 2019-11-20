@@ -36,4 +36,14 @@ def get_blueprint(
     def get_health() -> Dict:
         return dataclasses.asdict(actuator.get_health())
 
+    @flask_blueprint.route("/actuator/metrics")
+    # pylint: disable=unused-variable
+    def get_metric_names() -> Dict:
+        return dataclasses.asdict(actuator.get_metric_names())
+
+    @flask_blueprint.route("/actuator/metrics/<metric_name>")
+    # pylint: disable=unused-variable
+    def get_metric_measurement(metric_name: str) -> Dict:
+        return dataclasses.asdict(actuator.get_metric_measurement(metric_name))
+
     return flask_blueprint

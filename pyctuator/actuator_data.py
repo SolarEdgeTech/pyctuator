@@ -7,6 +7,7 @@ from typing import List, Dict, Optional, Any
 @dataclass
 class LinkHref:
     href: str
+    templated: bool
 
 
 # mypy: ignore_errors
@@ -16,6 +17,7 @@ class EndpointsLinks:
     env: LinkHref
     info: LinkHref
     health: LinkHref
+    metrics: LinkHref
 
 
 @dataclass

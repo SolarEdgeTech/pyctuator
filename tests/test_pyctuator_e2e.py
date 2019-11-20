@@ -44,13 +44,39 @@ def test_env_endpoint(endpoints: Endpoints) -> None:
     assert system_properties
     assert system_properties[0]["properties"][actual_key]["value"] == actual_value
 
+    # TODO should move to a dedicated test once info is implemented
     response = requests.get(endpoints.info)
     assert response.status_code == 200
     assert response.json()["app"] is not None
 
+    # TODO should move to a dedicated test once health is implemented
     response = requests.get(endpoints.health)
     assert response.status_code == 200
     assert response.json()["status"] == "UP"
+
+
+@pytest.mark.usefixtures("boot_admin_server", "actuator_server")
+@pytest.mark.mark_metrics_endpoint
+def test_metrics_endpoint(endpoints: Endpoints) -> None:
+    response = requests.get(endpoints.metrics)
+    assert response.status_code == 200
+    metric_names = response.json()["names"]
+    assert "memory.rss" in metric_names
+    assert "thread.count" in metric_names
+
+    response = requests.get(f"{endpoints.metrics}/memory.rss")
+    assert response.status_code == 200
+    metric_json = response.json()
+    assert metric_json["name"] == "memory.rss"
+    assert metric_json["measurements"][0]["statistic"] == "VALUE"
+    assert metric_json["measurements"][0]["value"] > 10000
+
+    response = requests.get(f"{endpoints.metrics}/thread.count")
+    assert response.status_code == 200
+    metric_json = response.json()
+    assert metric_json["name"] == "thread.count"
+    assert metric_json["measurements"][0]["statistic"] == "COUNT"
+    assert metric_json["measurements"][0]["value"] > 10
 
 
 @pytest.mark.usefixtures("boot_admin_server", "actuator_server")

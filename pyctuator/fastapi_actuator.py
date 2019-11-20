@@ -1,8 +1,9 @@
 from fastapi import APIRouter, FastAPI
 
 from pyctuator.actuator_data import EnvironmentData, EndpointsData, InfoData, HealthData
-from pyctuator.actuator_router import ActuatorRouter
 from pyctuator.actuator_impl import Actuator
+from pyctuator.actuator_router import ActuatorRouter
+from pyctuator.metrics.metrics_provider import Metric, MetricNames
 
 
 class FastApiActuator(ActuatorRouter):
@@ -26,6 +27,7 @@ class FastApiActuator(ActuatorRouter):
         @router.options("/actuator/env", include_in_schema=False)
         @router.options("/actuator/info", include_in_schema=False)
         @router.options("/actuator/health", include_in_schema=False)
+        @router.options("/actuator/metrics", include_in_schema=False)
         # pylint: disable=unused-variable
         def options() -> None:
             """
@@ -50,5 +52,15 @@ class FastApiActuator(ActuatorRouter):
         # pylint: disable=unused-variable
         def get_health() -> HealthData:
             return actuator.get_health()
+
+        @router.get("/actuator/metrics", tags=["actuator"])
+        # pylint: disable=unused-variable
+        def get_metric_names() -> MetricNames:
+            return actuator.get_metric_names()
+
+        @router.get("/actuator/metrics/{metric_name}", tags=["actuator"])
+        # pylint: disable=unused-variable
+        def get_metric_measurement(metric_name: str) -> Metric:
+            return actuator.get_metric_measurement(metric_name)
 
         app.include_router(router)

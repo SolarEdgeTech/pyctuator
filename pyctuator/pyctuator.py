@@ -1,3 +1,4 @@
+# pylint: disable=import-outside-toplevel
 import importlib.util
 from datetime import datetime, timezone
 from typing import Any, Optional
@@ -105,7 +106,7 @@ def init(
                         registration_interval_sec
                     )
                 return
-        else:       # In case importlib.util.find_spec(framework_name) returns None
+        else:  # In case importlib.util.find_spec(framework_name) returns None
             raise EnvironmentError("framework spec not found (is it properly installed and imported?)")
 
 
