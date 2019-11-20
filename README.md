@@ -41,7 +41,7 @@ myFlaskApp.run(debug=True, port=5000, host="0.0.0.0")
 ### FastAPI
 ```python
 from fastapi import FastAPI
-from uvicorn.config import Config
+from uvicorn import Server
 
 from pyctuator import pyctuator
 from uvicorn.config import Config
