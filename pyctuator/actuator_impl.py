@@ -4,7 +4,7 @@ import sys
 from typing import Dict, List
 
 from pyctuator.actuator_data import EndpointsData, EnvironmentData, InfoData, PropertyValue, PropertySource, \
-    LinkHref, EndpointsLinks, AppInfo, BuildInfo
+    LinkHref, EndpointsLinks, AppInfo, BuildInfo, HealthData
 
 
 class Actuator:
@@ -30,22 +30,6 @@ class Actuator:
         return InfoData(AppInfo(sys.argv[0], sys.argv[0]),
                         BuildInfo("name1", sys.argv[0], sys.argv[0], "group1", str(datetime.datetime.now())))
 
-    def get_health(self) -> Dict:
-        # TODO: health = HealthData(#params#)
-        # TODO: return health
-        x_health = {  # TODO get multiple from decorators
-            "up": True,
-            "Blah": "Blah Blah"
-        }
-
-        return {
-            "status": "UP" if x_health["up"] else "DOWN",
-            "details": {
-                "db": {  # TODO as many as decorated functions are
-                    "status": "UP" if x_health["up"] else "DOWN",
-                    "details": {
-                        "database": x_health["Blah"]
-                    }
-                }
-            }
-        }
+    def get_health(self) -> HealthData:
+        details_dict = {"status": "UP", "details": "More details"}
+        return HealthData("UP", details_dict)

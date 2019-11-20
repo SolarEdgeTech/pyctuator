@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Any
 
 
 @dataclass
@@ -63,4 +63,5 @@ class InfoData:
 
 @dataclass
 class HealthData:
-    pass
+    status: str
+    details: Dict[str, Any]

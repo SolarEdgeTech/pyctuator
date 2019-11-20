@@ -3,7 +3,7 @@ from typing import Dict, Optional
 
 from fastapi import APIRouter, FastAPI
 
-from pyctuator.actuator_data import EnvironmentData, EndpointsData, InfoData
+from pyctuator.actuator_data import EnvironmentData, EndpointsData, InfoData, HealthData
 from pyctuator.actuator_router import ActuatorRouter
 from pyctuator.actuator_impl import Actuator
 
@@ -53,7 +53,7 @@ class FastApiActuator(ActuatorRouter):
 
         @router.get("/actuator/health", tags=["actuator"])
         # pylint: disable=unused-variable
-        def get_health() -> Dict:
+        def get_health() -> HealthData:
             return actuator.get_health()
 
         app.include_router(router)

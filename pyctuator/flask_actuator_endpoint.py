@@ -28,6 +28,6 @@ def get_blueprint(actuator_base_url: str) -> Blueprint:
     @flask_blueprint.route("/actuator/health")
     # pylint: disable=unused-variable
     def get_health() -> Dict:
-        return actuator.get_health()
+        return dataclasses.asdict(actuator.get_health())
 
     return flask_blueprint
