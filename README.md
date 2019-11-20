@@ -70,8 +70,8 @@ pyctuator.init(
     1
 )
 
-myFastAPIApp = Server(config=(Config(app=app, loop="asyncio", host="0.0.0.0")))
-myFastAPIApp.run()
+myFastAPIServer = Server(config=(Config(app=app, loop="asyncio", host="0.0.0.0")))
+myFastAPIServer.run()
 
 ```
 
