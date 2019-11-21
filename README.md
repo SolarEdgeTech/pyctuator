@@ -1,7 +1,11 @@
 # Pyctuator
 
-Pyctuator is a Python implementation of the Spring Actuator API for popular web frameworks which allows a web application written in Python to be managed and monitored by codecentric's [Spring Boot Admin](https://github.com/codecentric/spring-boot-admin).  
-Pyctuator implements a growing subset of the actuator API (see https://docs.spring.io/spring-boot/docs/2.1.8.RELEASE/actuator-api/html/) that allows monitoring Python applications using Spring Boot Admin.
+Pyctuator is a Python implementation of the Spring Actuator API for popular web frameworks,  
+which allows a web application written in Python to be managed and monitored by codecentric's
+[Spring Boot Admin](https://github.com/codecentric/spring-boot-admin).  
+Pyctuator implements a growing subset of the actuator API   
+(see https://docs.spring.io/spring-boot/docs/2.1.8.RELEASE/actuator-api/html/)  
+that allows monitoring Python applications using Spring Boot Admin.
 
 ## Why?
 
@@ -74,7 +78,19 @@ myFastAPIServer.run()
 
 ## Usage notes
 ### Using psutil for process/filesystem metrics
-In order for pyctuator to provide process/filesystem metrics, it is using the *optional* `psutil` library from https://github.com/giampaolo/psutil (if the library isn't available in a system using the pyctuator, pyctuator will not provide such metrics). 
+In order for pyctuator to provide process/filesystem metrics, it is using the *optional* `psutil` library from:  
+https://github.com/giampaolo/psutil  
+(if the library isn't available in a system using the pyctuator, pyctuator will not provide such metrics). 
+### When using uvicorn
+* In order to control the log level of uvicorn, when instantiating, you need to provide a logger object.
+Start uvicorn with `logger` object, for example:   
+`myFastAPIServer = Server(
+    config=Config(
+        logger=logging.getLogger("uvi"), 
+        app=app, 
+        loop="asyncio"
+    )
+)`
 
 ## Contributing
 To set up a development environment, make sure you have Python 3.7 or newer installed, and execute `make bootstrap`.

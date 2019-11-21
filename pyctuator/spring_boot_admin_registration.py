@@ -27,7 +27,7 @@ class BootAdminRegistrationHandler:
         self.service_url = service_url
         self.registration_interval_sec = registration_interval_sec
 
-        self.should_continue_registration_schedule: bool = True
+        self.should_continue_registration_schedule: bool = False
 
     def _schedule_next_registration(
             self,
@@ -42,6 +42,10 @@ class BootAdminRegistrationHandler:
         timer.start()
 
     def _register_with_admin_server(self) -> None:
+        # When waking up, make sure registration is still needed
+        if not self.should_continue_registration_schedule:
+            return
+
         registration_data = {
             "name": self.application_name,
             "managementUrl": self.pyctuator_base_url,
@@ -76,9 +80,6 @@ class BootAdminRegistrationHandler:
         # Schedule the next registration unless asked to abort
         if self.should_continue_registration_schedule:
             self._schedule_next_registration(self.registration_interval_sec)
-        else:
-            # Signal that the loop is stopped and we are ready for startup again
-            self.should_continue_registration_schedule = True
 
     def start(self) -> None:
         logging.info("Starting recurring registration of %s with %s",

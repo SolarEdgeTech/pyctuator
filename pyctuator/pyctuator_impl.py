@@ -8,6 +8,7 @@ from pyctuator.environment.environment_provider import EnvironmentData, Environm
 from pyctuator.environment.os_env_variables_impl import OsEnvironmentVariableProvider
 from pyctuator.health.diskspace_health_impl import DiskSpaceHealthProvider
 from pyctuator.health.health_provider import HealthStatus, HealthSummary, Status
+from pyctuator.logging.pyctuator_logging import PyctuatorLogging
 from pyctuator.metrics.memory_metrics_impl import MemoryMetricsProvider
 from pyctuator.metrics.metrics_provider import Metric, MetricNames, MetricsProvider
 from pyctuator.metrics.thread_metrics_impl import ThreadMetricsProvider
@@ -61,6 +62,7 @@ class PyctuatorImpl:
         self.environment_providers: List[EnvironmentProvider] = [
             OsEnvironmentVariableProvider()
         ]
+        self.logging = PyctuatorLogging()
 
         # Determine the endpoint's URL path prefix and make sure it doesn't ends with a "/"
         self.pyctuator_endpoint_path_prefix = urlparse(pyctuator_endpoint_url).path

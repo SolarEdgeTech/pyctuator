@@ -19,6 +19,7 @@ class EndpointsLinks:
     info: LinkHref
     health: LinkHref
     metrics: LinkHref
+    loggers: LinkHref
 
 
 @dataclass
@@ -43,4 +44,5 @@ class PyctuatorRouter(ABC):
             LinkHref(self.pyctuator_impl.pyctuator_endpoint_url + "/info", False),
             LinkHref(self.pyctuator_impl.pyctuator_endpoint_url + "/health", False),
             LinkHref(self.pyctuator_impl.pyctuator_endpoint_url + "/metrics", False),
+            LinkHref(self.pyctuator_impl.pyctuator_endpoint_url + "/loggers", False),
         ))

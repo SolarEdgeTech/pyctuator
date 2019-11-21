@@ -1,5 +1,8 @@
 import importlib.util
+import json
+import logging
 import os
+import random
 import time
 from dataclasses import dataclass
 from datetime import datetime, timedelta
@@ -89,7 +92,7 @@ def test_health_endpoint(endpoints: Endpoints, monkeypatch: MonkeyPatch) -> None
 
 @pytest.mark.usefixtures("boot_admin_server", "pyctuator_server")
 @pytest.mark.mark_builtin_health_endpoint
-def test_diskspace_no_psutil(endpoints: Endpoints, monkeypatch: MonkeyPatch) -> None:
+def test_diskspace_no_psutil(endpoints: Endpoints) -> None:
     # skip if psutil is installed
     if importlib.util.find_spec("psutil"):
         pytest.skip("psutil installed, skipping")
@@ -145,3 +148,42 @@ def test_recurring_registration(registration_tracker: RegistrationTrackerFixture
     assert registration_tracker.start_time == registration_tracker.registration.metadata["startup"]
     registration_start_time = datetime.fromisoformat(registration_tracker.start_time)
     assert registration_start_time > registration_tracker.test_start_time - timedelta(seconds=10)
+
+
+@pytest.mark.usefixtures("boot_admin_server", "pyctuator_server")
+@pytest.mark.mark_loggers_endpoint
+def test_loggers_endpoint(endpoints: Endpoints) -> None:
+    response = requests.get(endpoints.loggers)
+    assert response.status_code == 200
+    # levels section
+    loggers_levels = response.json()["levels"]
+    assert "ERROR" in loggers_levels
+    assert "INFO" in loggers_levels
+    assert "WARN" in loggers_levels
+    assert "DEBUG" in loggers_levels
+    # logger names section
+    loggers_dict = response.json()["loggers"]
+    assert len(loggers_dict) >= 0
+    for logger in loggers_dict:
+        logger_obj = logging.getLogger(logger)
+        assert hasattr(logger_obj, "level")
+        # Individual Get logger route
+        response = requests.get(f"{endpoints.loggers}/{logger}")
+        assert response.status_code == 200
+        assert "configuredLevel" in json.loads(response.content)
+        assert "effectiveLevel" in json.loads(response.content)
+        # Set logger level
+        if logger in ["uvicorn", ]:  # Skip uvicorn set test, see comment in README.md
+            continue
+
+        current_log_level = json.loads(response.content)["configuredLevel"]
+        other_log_levels = [level for level in loggers_levels if level is not current_log_level]
+        random_log_level = random.choice(other_log_levels)
+        post_data = json.dumps({"configuredLevel": str(random_log_level)})
+
+        response = requests.post(f"{endpoints.loggers}/{logger}",
+                                 data=post_data)
+        assert response.status_code == 200
+        # Perform get logger level to Validate set logger level succeeded
+        response = requests.get(f"{endpoints.loggers}/{logger}")
+        assert json.loads(response.content)["configuredLevel"] == random_log_level
