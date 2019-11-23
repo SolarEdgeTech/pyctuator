@@ -9,6 +9,7 @@ from pyctuator import spring_boot_admin_registration
 # For example, if the webapp is a Flask webapp, we do not want to import FastAPI, and vice versa.
 # To do that, all imports are in conditional branches after detecting which frameworks are installed.
 # DO NOT add any web-framework-dependent imports to the global scope.
+from pyctuator.actuator_impl import Actuator
 
 
 def _is_framework_installed(framework_name: str) -> bool:
@@ -31,7 +32,7 @@ def _integrate_fastapi(
     from fastapi import FastAPI
     if isinstance(app, FastAPI):
         from pyctuator.fastapi_actuator import FastApiActuator
-        FastApiActuator(app, app_name, app_description, app_url, actuator_base_url, start_time)
+        FastApiActuator(app, Actuator(app_name, app_description, app_url, actuator_base_url, start_time))
         return True
     return False
 
@@ -52,7 +53,7 @@ def _integrate_flask(
     from flask import Flask
     if isinstance(app, Flask):
         from pyctuator.flask_actuator import FlaskActuator
-        FlaskActuator(app, app_name, app_description, app_url, actuator_base_url, start_time)
+        FlaskActuator(app, Actuator(app_name, app_description, app_url, actuator_base_url, start_time))
         return True
     return False
 

@@ -1,14 +1,20 @@
 import dataclasses
-from typing import Dict
+from datetime import datetime
+from typing import Dict, Optional
 
 from flask import Blueprint
 
 from pyctuator.actuator_impl import Actuator
 
 
-def get_blueprint(actuator_base_url: str) -> Blueprint:
+def get_blueprint(
+        app_name: str,
+        app_description: Optional[str],
+        app_url: str,
+        actuator_base_url: str,
+        start_time: datetime) -> Blueprint:
     flask_blueprint: Blueprint = Blueprint('flask_blueprint', 'actuator', )
-    actuator = Actuator(actuator_base_url)
+    actuator = Actuator(app_name, app_description, app_url, actuator_base_url, start_time)
 
     @flask_blueprint.route("/actuator")
     # pylint: disable=unused-variable

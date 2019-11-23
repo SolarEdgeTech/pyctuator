@@ -1,3 +1,4 @@
+import datetime
 from dataclasses import dataclass
 
 from typing import List, Dict, Optional, Any
@@ -46,13 +47,13 @@ class BuildInfo:
     artifact: str
     name: str
     group: str
-    time: str
+    time: datetime
 
 
 @dataclass
 class AppInfo:
     name: str
-    description: str
+    description: Optional[str]
 
 
 @dataclass

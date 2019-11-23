@@ -1,15 +1,31 @@
-import datetime
+from datetime import datetime
 import os
 import sys
-from typing import Dict, List
+from typing import Optional
+from typing import List
 
 from pyctuator.actuator_data import EndpointsData, EnvironmentData, InfoData, PropertyValue, PropertySource, \
     LinkHref, EndpointsLinks, AppInfo, BuildInfo, HealthData
 
 
 class Actuator:
-    def __init__(self, actuator_base_url: str) -> None:
+    """
+    A Logic Class that holds the app data which is used in implementation, and implementation logic
+    """
+
+    def __init__(
+            self,
+            app_name: str,
+            app_description: Optional[str],
+            app_url: str,
+            actuator_base_url: str,
+            start_time: datetime
+    ):
+        self.app_name = app_name
+        self.app_description = app_description
+        self.app_url = app_url
         self.actuator_base_url = actuator_base_url
+        self.start_time = start_time
 
     def get_endpoints(self) -> EndpointsData:
         return EndpointsData(EndpointsLinks(
@@ -27,8 +43,8 @@ class Actuator:
         return env_data
 
     def get_info(self) -> InfoData:
-        return InfoData(AppInfo(sys.argv[0], sys.argv[0]),
-                        BuildInfo("name1", sys.argv[0], sys.argv[0], "group1", str(datetime.datetime.now())))
+        return InfoData(AppInfo(self.app_name, self.app_description),
+                        BuildInfo("version", "artifact", self.app_name, "group", self.start_time))
 
     def get_health(self) -> HealthData:
         details_dict = {"status": "UP", "details": "More details"}

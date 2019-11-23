@@ -1,6 +1,3 @@
-from datetime import datetime
-from typing import Dict, Optional
-
 from fastapi import APIRouter, FastAPI
 
 from pyctuator.actuator_data import EnvironmentData, EndpointsData, InfoData, HealthData
@@ -9,19 +6,17 @@ from pyctuator.actuator_impl import Actuator
 
 
 class FastApiActuator(ActuatorRouter):
+    """
+    An Actuator Class of type FastAPI, which holds the ActuatorRouter, and creates FastAPI routs
+    """
 
     def __init__(
             self,
             app: FastAPI,
-            app_name: str,
-            app_description: Optional[str],
-            app_url: str,
-            actuator_base_url: str,
-            start_time: datetime
+            actuator: Actuator
     ):
-        super().__init__(app, app_name, app_description, app_url, actuator_base_url, start_time)
+        super().__init__(app, actuator)
         router = APIRouter()
-        actuator = Actuator(actuator_base_url)
 
         @router.get("/actuator", tags=["actuator"])
         # pylint: disable=unused-variable
