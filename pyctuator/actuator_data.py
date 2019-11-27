@@ -1,7 +1,7 @@
 import datetime
 from dataclasses import dataclass
 
-from typing import List, Dict, Optional, Any
+from typing import List, Dict, Optional, Any, Mapping
 
 
 @dataclass
@@ -67,4 +67,4 @@ class InfoData:
 @dataclass
 class HealthData:
     status: str
-    details: Dict[str, Any]
+    details: Mapping[str, Any]

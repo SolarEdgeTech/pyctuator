@@ -5,6 +5,7 @@ from typing import List
 
 from pyctuator.actuator_data import EndpointsData, EnvironmentData, InfoData, PropertyValue, PropertySource, \
     LinkHref, EndpointsLinks, AppInfo, BuildInfo, HealthData
+from pyctuator.health.diskspace_health_impl import DiskSpaceHealthProvider
 from pyctuator.metrics.memory_metrics_impl import MemoryMetricsProvider
 from pyctuator.metrics.metrics_provider import Metric, MetricNames
 from pyctuator.metrics.thread_metrics_impl import ThreadMetricsProvider
@@ -20,7 +21,8 @@ class Actuator:
             app_name: str,
             app_description: Optional[str],
             actuator_base_url: str,
-            start_time: datetime
+            start_time: datetime,
+            free_disk_space_down_threshold_bytes: int
     ):
         self.app_name = app_name
         self.app_description = app_description
@@ -29,6 +31,9 @@ class Actuator:
         self.metric_providers = [
             MemoryMetricsProvider(),
             ThreadMetricsProvider(),
+        ]
+        self.health_providers = [
+            DiskSpaceHealthProvider(free_disk_space_down_threshold_bytes)
         ]
 
     def get_endpoints(self) -> EndpointsData:
@@ -52,8 +57,17 @@ class Actuator:
                         BuildInfo("version", "artifact", self.app_name, "group", self.start_time))
 
     def get_health(self) -> HealthData:
-        details_dict = {"status": "UP", "details": "More details"}
-        return HealthData("UP", details_dict)
+        service_is_up = True
+        details = {}
+        for provider in self.health_providers:
+            if provider.is_supported():
+                health = provider.get_health()
+                service_is_up = service_is_up and health.status == "UP"
+                details[provider.get_name()] = health
+
+        return HealthData(
+            "UP" if service_is_up else "DOWN",
+            details)
 
     def get_metric_names(self) -> MetricNames:
         metric_names = []

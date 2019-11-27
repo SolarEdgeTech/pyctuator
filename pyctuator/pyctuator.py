@@ -21,7 +21,8 @@ class Pyctuator:
             app_url: str,
             actuator_base_url: str,
             registration_url: Optional[str],
-            registration_interval_sec: int = 10
+            registration_interval_sec: int = 10,
+            free_disk_space_down_threshold_bytes: int = 1024 * 1024 * 100,
     ) -> None:
 
         framework_integrations = {
@@ -30,7 +31,13 @@ class Pyctuator:
         }
 
         start_time = datetime.now(timezone.utc)
-        self.actuator = Actuator(app_name, app_description, actuator_base_url, start_time)
+        self.actuator = Actuator(
+            app_name,
+            app_description,
+            actuator_base_url,
+            start_time,
+            free_disk_space_down_threshold_bytes,
+        )
 
         self.boot_admin_registration_handler: Optional[BootAdminRegistrationHandler] = None
 
@@ -45,7 +52,7 @@ class Pyctuator:
                             actuator_base_url,
                             start_time,
                             app_url,
-                            registration_interval_sec
+                            registration_interval_sec,
                         )
                         self.boot_admin_registration_handler.start()
                     return

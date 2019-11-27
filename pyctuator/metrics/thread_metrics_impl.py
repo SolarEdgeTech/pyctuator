@@ -11,6 +11,7 @@ THREAD_COUNT = PREFIX + "count"
 class ThreadMetricsProvider(MetricsProvider):
     def __init__(self) -> None:
         if importlib.util.find_spec("psutil"):
+            # psutil is optional and must only be imported if it is installed
             import psutil
             self.process = psutil.Process()
         else:

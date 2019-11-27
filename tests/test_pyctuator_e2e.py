@@ -1,10 +1,13 @@
 import os
 import time
+from dataclasses import dataclass
 from datetime import datetime, timedelta
 from typing import Generator
 
+import psutil
 import pytest
 import requests
+from _pytest.monkeypatch import MonkeyPatch
 
 from tests.conftest import Endpoints, ActuatorServer, RegistrationRequest, RegistrationTrackerFixture
 from tests.fast_api_test_server import FastApiActuatorServer
@@ -49,10 +52,36 @@ def test_env_endpoint(endpoints: Endpoints) -> None:
     assert response.status_code == 200
     assert response.json()["app"] is not None
 
-    # TODO should move to a dedicated test once health is implemented
+
+@pytest.mark.usefixtures("boot_admin_server", "actuator_server")
+@pytest.mark.mark_builtin_health_endpoint
+def test_health_endpoint(endpoints: Endpoints, monkeypatch: MonkeyPatch) -> None:
+    # Verify that the diskSpace health check is returning some reasonable values
     response = requests.get(endpoints.health)
     assert response.status_code == 200
     assert response.json()["status"] == "UP"
+    disk_space_health = response.json()["details"]["diskSpace"]
+    assert disk_space_health["status"] == "UP"
+    assert disk_space_health["details"]["free"] > 110000000
+
+    # Now mock the results of psutil so it'll show very small amount of free space
+    @dataclass
+    class MockDiskUsage:
+        total: int
+        free: int
+
+    def mock_disk_usage(path: str) -> MockDiskUsage:
+        # pylint: disable=unused-argument
+        return MockDiskUsage(100000000, 9999999)
+
+    monkeypatch.setattr(psutil, "disk_usage", mock_disk_usage)
+    response = requests.get(endpoints.health)
+    assert response.status_code == 200
+    assert response.json()["status"] == "DOWN"
+    disk_space_health = response.json()["details"]["diskSpace"]
+    assert disk_space_health["status"] == "DOWN"
+    assert disk_space_health["details"]["free"] == 9999999
+    assert disk_space_health["details"]["total"] == 100000000
 
 
 @pytest.mark.usefixtures("boot_admin_server", "actuator_server")
