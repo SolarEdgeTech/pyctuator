@@ -1,7 +1,6 @@
+# pylint: disable=import-outside-toplevel
 import importlib.util
-from typing import List, Optional
-
-import psutil
+from typing import List
 
 from pyctuator.metrics.metrics_provider import MetricsProvider, Metric, Measurement
 
@@ -9,10 +8,9 @@ PREFIX = "memory."
 
 
 class MemoryMetricsProvider(MetricsProvider):
-    process: Optional[psutil.Process]
-
     def __init__(self) -> None:
         if importlib.util.find_spec("psutil"):
+            import psutil
             self.process = psutil.Process()
         else:
             self.process = None
