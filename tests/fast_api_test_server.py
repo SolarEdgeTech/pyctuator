@@ -16,7 +16,7 @@ class FastApiActuatorServer(ActuatorServer):
             docs_url="/api",
         )
 
-        pyctuator.init(
+        self.actuator = pyctuator.init(
             self.app,
             "FastAPI Actuator",
             "FastAPI Actuator",
@@ -34,7 +34,6 @@ class FastApiActuatorServer(ActuatorServer):
             time.sleep(0.01)
 
     def stop(self) -> None:
-        pyctuator.stop()
-
+        self.actuator.stop_recurring_boot_admin_registration()
         self.server.should_exit = True
         self.thread.join()

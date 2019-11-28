@@ -8,6 +8,7 @@ from pyctuator.actuator_data import EndpointsData, EnvironmentData, InfoData, Pr
 from pyctuator.metrics.memory_metrics_impl import MemoryMetricsProvider
 from pyctuator.metrics.metrics_provider import Metric, MetricNames
 from pyctuator.metrics.thread_metrics_impl import ThreadMetricsProvider
+from pyctuator.spring_boot_admin_registration import BootAdminRegistrationHandler
 
 
 class Actuator:
@@ -32,6 +33,8 @@ class Actuator:
             MemoryMetricsProvider(),
             ThreadMetricsProvider(),
         ]
+
+        self.boot_admin_registration_handler: Optional[BootAdminRegistrationHandler] = None
 
     def get_endpoints(self) -> EndpointsData:
         return EndpointsData(EndpointsLinks(
@@ -69,3 +72,19 @@ class Actuator:
             if metric_name.startswith(provider.get_prefix()):
                 return provider.get_metric(metric_name)
         raise KeyError(f"Unknown metric {metric_name}")
+
+    def start_recurring_boot_admin_registration(self, registration_url: str, registration_interval_sec: int) -> None:
+        self.boot_admin_registration_handler = BootAdminRegistrationHandler(
+            registration_url,
+            self.app_name,
+            self.actuator_base_url,
+            self.start_time,
+            self.app_url,
+            registration_interval_sec
+        )
+        self.boot_admin_registration_handler.start()
+
+    def stop_recurring_boot_admin_registration(self) -> None:
+        if self.boot_admin_registration_handler:
+            self.boot_admin_registration_handler.stop()
+        self.boot_admin_registration_handler = None

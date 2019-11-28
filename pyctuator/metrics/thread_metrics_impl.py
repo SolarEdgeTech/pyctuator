@@ -20,13 +20,8 @@ class ThreadMetricsProvider(MetricsProvider):
         return PREFIX
 
     def get_supported_metric_names(self) -> List[str]:
-        if self.process:
-            return [THREAD_COUNT]
-        else:
-            return []
+        return [THREAD_COUNT] if self.process else []
 
     def get_metric(self, metric_name: str) -> Metric:
-        measurements: List[Measurement] = []
-        if self.process:
-            measurements = [Measurement("COUNT", self.process.num_threads())]
+        measurements = [Measurement("COUNT", self.process.num_threads())] if self.process else []
         return Metric(metric_name, None, "Integer", measurements, [])

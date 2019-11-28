@@ -15,7 +15,7 @@ class FlaskActuatorServer(ActuatorServer):
         self.app = Flask("Flask Example Server")
         self.thread = threading.Thread(target=self.app.run)
 
-        pyctuator.init(
+        self.actuator = pyctuator.init(
             self.app,
             "Flask Actuator",
             "Flask Actuator",
@@ -46,7 +46,6 @@ class FlaskActuatorServer(ActuatorServer):
                 pass
 
     def stop(self) -> None:
-        pyctuator.stop()
-
+        self.actuator.stop_recurring_boot_admin_registration()
         requests.post("http://localhost:5000/shutdown")
         self.thread.join()
