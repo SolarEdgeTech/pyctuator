@@ -14,7 +14,7 @@ Pyctuator implements a growing subset of the actuator API (see https://docs.spri
 ```python
 from flask import Flask
 
-from pyctuator import pyctuator
+from pyctuator.pyctuator import Pyctuator
 
 myFlaskApp = Flask("ExampleFlaskApp")
 
@@ -25,7 +25,7 @@ def hello():
 
 
 actuator_server_url = "http://127.0.0.1:5000"
-pyctuator.init(
+Pyctuator(
     myFlaskApp,
     "Flask Actuator",
     "Flask Actuator",
@@ -43,8 +43,8 @@ myFlaskApp.run(debug=True, port=5000, host="0.0.0.0")
 from fastapi import FastAPI
 from uvicorn import Server
 
-from pyctuator import pyctuator
 from uvicorn.config import Config
+from pyctuator.pyctuator import Pyctuator
 
 
 app = FastAPI(
@@ -60,7 +60,7 @@ def read_root():
 
 
 actuator_server_url = "http://127.0.0.1:8000"  # Local Application URL
-pyctuator.init(
+Pyctuator(
     app,
     "FastAPI Actuator",
     "FastAPI Actuator",

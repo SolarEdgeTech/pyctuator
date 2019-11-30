@@ -4,7 +4,7 @@ import time
 from fastapi import FastAPI
 from uvicorn.config import Config
 
-from pyctuator import pyctuator
+from pyctuator.pyctuator import Pyctuator
 from tests.conftest import ActuatorServer, CustomServer
 
 
@@ -16,7 +16,7 @@ class FastApiActuatorServer(ActuatorServer):
             docs_url="/api",
         )
 
-        self.actuator = pyctuator.init(
+        self.pyctuator = Pyctuator(
             self.app,
             "FastAPI Actuator",
             "FastAPI Actuator",
@@ -34,6 +34,6 @@ class FastApiActuatorServer(ActuatorServer):
             time.sleep(0.01)
 
     def stop(self) -> None:
-        self.actuator.stop_recurring_boot_admin_registration()
+        self.pyctuator.stop()
         self.server.should_exit = True
         self.thread.join()

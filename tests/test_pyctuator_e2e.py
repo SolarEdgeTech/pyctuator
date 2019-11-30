@@ -76,7 +76,7 @@ def test_metrics_endpoint(endpoints: Endpoints) -> None:
     metric_json = response.json()
     assert metric_json["name"] == "thread.count"
     assert metric_json["measurements"][0]["statistic"] == "COUNT"
-    assert metric_json["measurements"][0]["value"] > 10
+    assert metric_json["measurements"][0]["value"] > 8
 
 
 @pytest.mark.usefixtures("boot_admin_server", "actuator_server")

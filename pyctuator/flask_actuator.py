@@ -21,12 +21,6 @@ class FlaskActuator(ActuatorRouter):
         super().__init__(app, actuator)
 
         flask_blueprint: Blueprint = Blueprint('flask_blueprint', 'actuator', )
-        actuator = Actuator(
-            actuator.app_name,
-            actuator.app_description,
-            actuator.app_url,
-            actuator.actuator_base_url,
-            actuator.start_time)
 
         @flask_blueprint.route("/actuator")
         # pylint: disable=unused-variable

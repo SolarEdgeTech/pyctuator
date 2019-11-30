@@ -2,7 +2,6 @@ import http.client
 import json
 import logging
 import threading
-import time
 import urllib.parse
 from datetime import datetime
 
@@ -82,7 +81,8 @@ class BootAdminRegistrationHandler:
             self.should_continue_registration_schedule = True
 
     def start(self) -> None:
-        logging.info("Starting recurring registration with %s", self.registration_url)
+        logging.info("Starting recurring registration of %s with %s",
+                     self.actuator_base_url, self.registration_url)
         self.should_continue_registration_schedule = True
         self._register_with_admin_server()
 
