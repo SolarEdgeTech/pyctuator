@@ -1,7 +1,7 @@
 import datetime
 from dataclasses import dataclass
 
-from typing import List, Dict, Optional, Any, Mapping
+from typing import List, Optional, Any, Mapping
 
 
 @dataclass
@@ -34,7 +34,7 @@ class PropertyValue:
 @dataclass
 class PropertySource:
     name: str
-    properties: Dict[str, PropertyValue]
+    properties: Mapping[str, PropertyValue]
 
 
 @dataclass
