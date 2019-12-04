@@ -1,5 +1,4 @@
 import os
-import re
 from datetime import datetime
 from typing import List
 from typing import Optional
@@ -10,13 +9,10 @@ from pyctuator.metrics.memory_metrics_impl import MemoryMetricsProvider
 from pyctuator.metrics.metrics_provider import Metric, MetricNames
 from pyctuator.metrics.thread_metrics_impl import ThreadMetricsProvider
 from pyctuator.pyctuator_data import (
-    EndpointsData,
     EnvironmentData,
     InfoData,
     PropertyValue,
     PropertySource,
-    LinkHref,
-    EndpointsLinks,
     AppInfo,
     BuildInfo,
     HealthData
@@ -51,15 +47,6 @@ class PyctuatorImpl:
         self.pyctuator_endpoint_path_prefix = urlparse(pyctuator_endpoint_url).path
         if self.pyctuator_endpoint_path_prefix[-1:] == "/":
             self.pyctuator_endpoint_path_prefix = self.pyctuator_endpoint_path_prefix[:-1]
-
-    def get_endpoints(self) -> EndpointsData:
-        return EndpointsData(EndpointsLinks(
-            LinkHref(self.pyctuator_endpoint_url, False),
-            LinkHref(self.pyctuator_endpoint_url + "/env", False),
-            LinkHref(self.pyctuator_endpoint_url + "/info", False),
-            LinkHref(self.pyctuator_endpoint_url + "/health", False),
-            LinkHref(self.pyctuator_endpoint_url + "/metrics", False),
-        ))
 
     def get_environment(self) -> EnvironmentData:
         properties_dict = {key: PropertyValue(value) for (key, value) in os.environ.items()}

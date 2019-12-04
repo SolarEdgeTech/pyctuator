@@ -1,7 +1,29 @@
 from abc import ABC
+from dataclasses import dataclass
 from typing import Any
 
 from pyctuator.pyctuator_impl import PyctuatorImpl
+
+
+@dataclass
+class LinkHref:
+    href: str
+    templated: bool
+
+
+# mypy: ignore_errors
+@dataclass
+class EndpointsLinks:
+    self: LinkHref
+    env: LinkHref
+    info: LinkHref
+    health: LinkHref
+    metrics: LinkHref
+
+
+@dataclass
+class EndpointsData:
+    _links: EndpointsLinks
 
 
 class PyctuatorRouter(ABC):
@@ -13,3 +35,12 @@ class PyctuatorRouter(ABC):
     ):
         self.app = app
         self.pyctuator_impl = pyctuator_impl
+
+    def get_endpoints_data(self) -> EndpointsData:
+        return EndpointsData(EndpointsLinks(
+            LinkHref(self.pyctuator_impl.pyctuator_endpoint_url, False),
+            LinkHref(self.pyctuator_impl.pyctuator_endpoint_url + "/env", False),
+            LinkHref(self.pyctuator_impl.pyctuator_endpoint_url + "/info", False),
+            LinkHref(self.pyctuator_impl.pyctuator_endpoint_url + "/health", False),
+            LinkHref(self.pyctuator_impl.pyctuator_endpoint_url + "/metrics", False),
+        ))

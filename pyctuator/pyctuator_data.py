@@ -1,28 +1,7 @@
-import datetime
 from dataclasses import dataclass
+from datetime import datetime
 
 from typing import List, Optional, Any, Mapping
-
-
-@dataclass
-class LinkHref:
-    href: str
-    templated: bool
-
-
-# mypy: ignore_errors
-@dataclass
-class EndpointsLinks:
-    self: LinkHref
-    env: LinkHref
-    info: LinkHref
-    health: LinkHref
-    metrics: LinkHref
-
-
-@dataclass
-class EndpointsData:
-    _links: EndpointsLinks
 
 
 @dataclass

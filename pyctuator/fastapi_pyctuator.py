@@ -1,8 +1,8 @@
 from fastapi import APIRouter, FastAPI
 
-from pyctuator.pyctuator_data import EnvironmentData, EndpointsData, InfoData, HealthData
+from pyctuator.pyctuator_data import EnvironmentData, InfoData, HealthData
 from pyctuator.pyctuator_impl import PyctuatorImpl
-from pyctuator.pyctuator_router import PyctuatorRouter
+from pyctuator.pyctuator_router import PyctuatorRouter, EndpointsData
 from pyctuator.metrics.metrics_provider import Metric, MetricNames
 
 
@@ -20,7 +20,7 @@ class FastApiPyctuator(PyctuatorRouter):
         @router.get(path_prefix, tags=["pyctuator"])
         # pylint: disable=unused-variable
         def get_endpoints() -> EndpointsData:
-            return pyctuator_impl.get_endpoints()
+            return self.get_endpoints_data()
 
         @router.options(path_prefix + "/env", include_in_schema=False)
         @router.options(path_prefix + "/info", include_in_schema=False)

@@ -22,7 +22,7 @@ class FlaskPyctuator(PyctuatorRouter):
         @flask_blueprint.route(path_prefix)
         # pylint: disable=unused-variable
         def get_endpoints() -> Dict:
-            return dataclasses.asdict(pyctuator_impl.get_endpoints())
+            return dataclasses.asdict(self.get_endpoints_data())
 
         @flask_blueprint.route(path_prefix + "/env")
         # pylint: disable=unused-variable
