@@ -1,6 +1,6 @@
 # Pyctuator
 
-Pyctuator is a Python implementation of the Spring Actuator API for popular web frameworks.  
+Pyctuator is a Python implementation of the Spring Actuator API for popular web frameworks which allows a web application written in Python to be managed and monitored by codecentric's [Spring Boot Admin](https://github.com/codecentric/spring-boot-admin).  
 Pyctuator implements a growing subset of the actuator API (see https://docs.spring.io/spring-boot/docs/2.1.8.RELEASE/actuator-api/html/) that allows monitoring Python applications using Spring Boot Admin.
 
 ## Why?
@@ -24,18 +24,16 @@ def hello():
     return "Hello World!"
 
 
-actuator_server_url = "http://127.0.0.1:5000"
 Pyctuator(
     myFlaskApp,
-    "Flask Actuator",
-    "Flask Actuator",
-    actuator_server_url,
-    f"{actuator_server_url}/actuator",
-    "http://localhost:8080/instances",
-    1
+    "Flask Pyctuator",
+    "Flask Pyctuator Example",
+    "http://localhost:5000",
+    "http://localhost:5000/puctuator",
+    "http://localhost:8080/instances"
 )
 
-myFlaskApp.run(debug=True, port=5000, host="0.0.0.0")
+myFlaskApp.run(debug=True, port=5000)
 
 ```
 ### FastAPI
@@ -59,18 +57,16 @@ def read_root():
     return "Hello World!"
 
 
-actuator_server_url = "http://127.0.0.1:8000"  # Local Application URL
 Pyctuator(
     app,
-    "FastAPI Actuator",
-    "FastAPI Actuator",
-    actuator_server_url,
-    f"{actuator_server_url}/actuator",
-    "http://127.0.0.1:8080/instances",
-    1
+    "FastAPI Pyctuator",
+    "FastAPI Pyctuator Example",
+    "http://localhost:8000",
+    "http://localhost:8000/pyctuator",
+    "http://localhost:8080/instances"
 )
 
-myFastAPIServer = Server(config=(Config(app=app, loop="asyncio", host="0.0.0.0")))
+myFastAPIServer = Server(config=(Config(app=app, loop="asyncio")))
 myFastAPIServer.run()
 
 ```

@@ -1,33 +1,44 @@
-from datetime import datetime
 import os
-from typing import Optional
+import re
+from datetime import datetime
 from typing import List
+from typing import Optional
+from urllib.parse import urlparse
 
-from pyctuator.actuator_data import EndpointsData, EnvironmentData, InfoData, PropertyValue, PropertySource, \
-    LinkHref, EndpointsLinks, AppInfo, BuildInfo, HealthData
 from pyctuator.health.diskspace_health_impl import DiskSpaceHealthProvider
 from pyctuator.metrics.memory_metrics_impl import MemoryMetricsProvider
 from pyctuator.metrics.metrics_provider import Metric, MetricNames
 from pyctuator.metrics.thread_metrics_impl import ThreadMetricsProvider
+from pyctuator.pyctuator_data import (
+    EndpointsData,
+    EnvironmentData,
+    InfoData,
+    PropertyValue,
+    PropertySource,
+    LinkHref,
+    EndpointsLinks,
+    AppInfo,
+    BuildInfo,
+    HealthData
+)
 
 
-class Actuator:
-    """
-    A Logic Class that holds the app data which is used in implementation, and implementation logic
-    """
+class PyctuatorImpl:
+
+    # pylint: disable=too-many-instance-attributes
 
     def __init__(
             self,
             app_name: str,
             app_description: Optional[str],
-            actuator_base_url: str,
+            pyctuator_endpoint_url: str,
             start_time: datetime,
-            free_disk_space_down_threshold_bytes: int
+            free_disk_space_down_threshold_bytes: int,
     ):
         self.app_name = app_name
         self.app_description = app_description
-        self.actuator_base_url = actuator_base_url
         self.start_time = start_time
+        self.pyctuator_endpoint_url = pyctuator_endpoint_url
         self.metric_providers = [
             MemoryMetricsProvider(),
             ThreadMetricsProvider(),
@@ -36,13 +47,18 @@ class Actuator:
             DiskSpaceHealthProvider(free_disk_space_down_threshold_bytes)
         ]
 
+        # Determine the endpoint's URL path prefix and make sure it doesn't ends with a "/"
+        self.pyctuator_endpoint_path_prefix = urlparse(pyctuator_endpoint_url).path
+        if self.pyctuator_endpoint_path_prefix[-1:] == "/":
+            self.pyctuator_endpoint_path_prefix = self.pyctuator_endpoint_path_prefix[:-1]
+
     def get_endpoints(self) -> EndpointsData:
         return EndpointsData(EndpointsLinks(
-            LinkHref(self.actuator_base_url, False),
-            LinkHref(self.actuator_base_url + "/env", False),
-            LinkHref(self.actuator_base_url + "/info", False),
-            LinkHref(self.actuator_base_url + "/health", False),
-            LinkHref(self.actuator_base_url + "/metrics", False),
+            LinkHref(self.pyctuator_endpoint_url, False),
+            LinkHref(self.pyctuator_endpoint_url + "/env", False),
+            LinkHref(self.pyctuator_endpoint_url + "/info", False),
+            LinkHref(self.pyctuator_endpoint_url + "/health", False),
+            LinkHref(self.pyctuator_endpoint_url + "/metrics", False),
         ))
 
     def get_environment(self) -> EnvironmentData:

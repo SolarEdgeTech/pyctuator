@@ -7,7 +7,7 @@ from typing import Any, Optional
 # For example, if the webapp is a Flask webapp, we do not want to import FastAPI, and vice versa.
 # To do that, all imports are in conditional branches after detecting which frameworks are installed.
 # DO NOT add any web-framework-dependent imports to the global scope.
-from pyctuator.actuator_impl import Actuator
+from pyctuator.pyctuator_impl import PyctuatorImpl
 from pyctuator.spring_boot_admin_registration import BootAdminRegistrationHandler
 
 
@@ -19,11 +19,37 @@ class Pyctuator:
             app_name: str,
             app_description: Optional[str],
             app_url: str,
-            actuator_base_url: str,
+            pyctuator_endpoint_url: str,
             registration_url: Optional[str],
             registration_interval_sec: int = 10,
             free_disk_space_down_threshold_bytes: int = 1024 * 1024 * 100,
     ) -> None:
+        """The entry point for integrating pyctuator with a web-frameworks such as FastAPI and Flask.
+
+        Given an application built on top of a supported web-framework, it'll add to the application the REST API
+         endpoints that required for Spring Boot Admin to monitor and manage the application.
+
+        Pyctuator currently supports application built on top of FastAPI and Flask. The type of first argument, app is
+         specific to the target web-framework:
+
+        * FastAPI - `app` is an instance of `fastapi.applications.FastAPI`
+
+        * Flask - `app` is an instance of `flask.app.Flask`
+
+        :param app: an instance of a supported web-framework with which the pyctuator endpoints will be registered
+        :param app_name: the application's name that will be presented in the "Info" section in boot-admin
+        :param app_description: a description that will be presented in the "Info" section in boot-admin
+        :param app_url: the full URL of the application being monitored which will be displayed in spring-boot-admin, we
+         recommend this URL to be accessible by those who manage the application (i.e. don't use "http://localhost..."
+         as it is only accessible from within the application's host)
+        :param pyctuator_endpoint_url: the public URL from which Pyctuator REST API will be accessible, used for
+        registering the application with spring-boot-admin, must be accessible from spring-boot-admin server (i.e. don't
+        use http://localhost:8080/... unless spring-boot-admin is running on the same host as the monitored application)
+        :param registration_url: the spring-boot-admin endpoint to which registration requests must be posted
+        :param registration_interval_sec: how often pyctuator will renew its registration with spring-boot-admin
+        :param free_disk_space_down_threshold_bytes: amount of free space in bytes in "./" (the application's current
+         working directory) below which the built-in disk-space health-indicator will fail
+        """
 
         framework_integrations = {
             "flask": self._integrate_flask,
@@ -31,10 +57,10 @@ class Pyctuator:
         }
 
         start_time = datetime.now(timezone.utc)
-        self.actuator = Actuator(
+        self.pyctuator_impl = PyctuatorImpl(
             app_name,
             app_description,
-            actuator_base_url,
+            pyctuator_endpoint_url,
             start_time,
             free_disk_space_down_threshold_bytes,
         )
@@ -43,13 +69,13 @@ class Pyctuator:
 
         for framework_name, framework_integration_function in framework_integrations.items():
             if self._is_framework_installed(framework_name):
-                success = framework_integration_function(app, self.actuator)
+                success = framework_integration_function(app, self.pyctuator_impl)
                 if success:
                     if registration_url is not None:
                         self.boot_admin_registration_handler = BootAdminRegistrationHandler(
                             registration_url,
                             app_name,
-                            actuator_base_url,
+                            self.pyctuator_impl.pyctuator_endpoint_url,
                             start_time,
                             app_url,
                             registration_interval_sec,
@@ -69,28 +95,28 @@ class Pyctuator:
     def _is_framework_installed(self, framework_name: str) -> bool:
         return importlib.util.find_spec(framework_name) is not None
 
-    def _integrate_fastapi(self, app: Any, actuator: Actuator) -> bool:
+    def _integrate_fastapi(self, app: Any, pyctuator_impl: PyctuatorImpl) -> bool:
         """
         This method should only be called if we detected that FastAPI is installed.
-        It will then check whether the given app is a FastAPI app, and if so - it will add the Actuator
+        It will then check whether the given app is a FastAPI app, and if so - it will add the Pyctuator
         endpoints to it.
         """
         from fastapi import FastAPI
         if isinstance(app, FastAPI):
-            from pyctuator.fastapi_actuator import FastApiActuator
-            FastApiActuator(app, actuator)
+            from pyctuator.fastapi_pyctuator import FastApiPyctuator
+            FastApiPyctuator(app, pyctuator_impl)
             return True
         return False
 
-    def _integrate_flask(self, app: Any, actuator: Actuator) -> bool:
+    def _integrate_flask(self, app: Any, pyctuator_impl: PyctuatorImpl) -> bool:
         """
         This method should only be called if we detected that Flask is installed.
-        It will then check whether the given app is a Flask app, and if so - it will add the Actuator
+        It will then check whether the given app is a Flask app, and if so - it will add the Pyctuator
         endpoints to it.
         """
         from flask import Flask
         if isinstance(app, Flask):
-            from pyctuator.flask_actuator import FlaskActuator
-            FlaskActuator(app, actuator)
+            from pyctuator.flask_pyctuator import FlaskPyctuator
+            FlaskPyctuator(app, pyctuator_impl)
             return True
         return False

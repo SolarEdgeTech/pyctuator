@@ -9,33 +9,33 @@ import pytest
 import requests
 from _pytest.monkeypatch import MonkeyPatch
 
-from tests.conftest import Endpoints, ActuatorServer, RegistrationRequest, RegistrationTrackerFixture
-from tests.fast_api_test_server import FastApiActuatorServer
-from tests.flask_test_server import FlaskActuatorServer
+from tests.conftest import Endpoints, PyctuatorServer, RegistrationRequest, RegistrationTrackerFixture
+from tests.fast_api_test_server import FastApiPyctuatorServer
+from tests.flask_test_server import FlaskPyctuatorServer
 
 
-@pytest.fixture(params=[FastApiActuatorServer, FlaskActuatorServer], ids=["FastAPI", "Flask"])
-def actuator_server(request) -> Generator:  # type: ignore
-    # Start a the web-server in which the actuator is integrated
-    actuator_server: ActuatorServer = request.param()
-    actuator_server.start()
+@pytest.fixture(params=[FastApiPyctuatorServer, FlaskPyctuatorServer], ids=["FastAPI", "Flask"])
+def pyctuator_server(request) -> Generator:  # type: ignore
+    # Start a the web-server in which the pyctuator is integrated
+    pyctuator_server: PyctuatorServer = request.param()
+    pyctuator_server.start()
 
     # Yield back to pytest until the module is done
     yield None
 
-    # Once the module is done, stop the actuator-server
-    actuator_server.stop()
+    # Once the module is done, stop the pyctuator-server
+    pyctuator_server.stop()
 
 
-@pytest.mark.usefixtures("boot_admin_server", "actuator_server")
+@pytest.mark.usefixtures("boot_admin_server", "pyctuator_server")
 @pytest.mark.mark_self_endpoint
 def test_self_endpoint(endpoints: Endpoints) -> None:
-    response = requests.get(endpoints.actuator)
+    response = requests.get(endpoints.pyctuator)
     assert response.status_code == 200
     assert response.json()["_links"] is not None
 
 
-@pytest.mark.usefixtures("boot_admin_server", "actuator_server")
+@pytest.mark.usefixtures("boot_admin_server", "pyctuator_server")
 @pytest.mark.mark_env_endpoint
 def test_env_endpoint(endpoints: Endpoints) -> None:
     actual_key, actual_value = list(os.environ.items())[3]
@@ -53,7 +53,7 @@ def test_env_endpoint(endpoints: Endpoints) -> None:
     assert response.json()["app"] is not None
 
 
-@pytest.mark.usefixtures("boot_admin_server", "actuator_server")
+@pytest.mark.usefixtures("boot_admin_server", "pyctuator_server")
 @pytest.mark.mark_builtin_health_endpoint
 def test_health_endpoint(endpoints: Endpoints, monkeypatch: MonkeyPatch) -> None:
     # Verify that the diskSpace health check is returning some reasonable values
@@ -84,7 +84,7 @@ def test_health_endpoint(endpoints: Endpoints, monkeypatch: MonkeyPatch) -> None
     assert disk_space_health["details"]["total"] == 100000000
 
 
-@pytest.mark.usefixtures("boot_admin_server", "actuator_server")
+@pytest.mark.usefixtures("boot_admin_server", "pyctuator_server")
 @pytest.mark.mark_metrics_endpoint
 def test_metrics_endpoint(endpoints: Endpoints) -> None:
     response = requests.get(endpoints.metrics)
@@ -108,7 +108,7 @@ def test_metrics_endpoint(endpoints: Endpoints) -> None:
     assert metric_json["measurements"][0]["value"] > 8
 
 
-@pytest.mark.usefixtures("boot_admin_server", "actuator_server")
+@pytest.mark.usefixtures("boot_admin_server", "pyctuator_server")
 @pytest.mark.mark_recurring_registration
 def test_recurring_registration(registration_tracker: RegistrationTrackerFixture) -> None:
     # Verify that at least 4 registrations occurred within 10 seconds since the test started

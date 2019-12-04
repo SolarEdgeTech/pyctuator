@@ -25,7 +25,7 @@ class RegistrationRequest(BaseModel):
 
 @dataclass
 class Endpoints:
-    actuator: str
+    pyctuator: str
     env: str
     info: str
     health: str
@@ -67,7 +67,7 @@ def boot_admin_server(registration_tracker: RegistrationTrackerFixture) -> Gener
         if registration_tracker.start_time is None:
             registration_tracker.start_time = registration.metadata["startup"]
 
-    # Start the mock boot-admin server that is needed to test teh actuator's registration
+    # Start the mock boot-admin server that is needed to test pyctuator's registration
     boot_admin_config = Config(app=boot_admin_app, port=8001, loop="asyncio")
     boot_admin_server = CustomServer(config=boot_admin_config)
     boot_admin_thread = threading.Thread(target=boot_admin_server.run)
@@ -85,7 +85,7 @@ def boot_admin_server(registration_tracker: RegistrationTrackerFixture) -> Gener
 @pytest.mark.usefixtures("boot_admin_server")
 @pytest.fixture
 def endpoints(registration_tracker: RegistrationTrackerFixture) -> Endpoints:
-    # Wait for the actuator to register with the boot-admin at least once
+    # Wait for pyctuator to register with the boot-admin at least once
     while registration_tracker.registration is None:
         time.sleep(0.01)
 
@@ -96,7 +96,7 @@ def endpoints(registration_tracker: RegistrationTrackerFixture) -> Endpoints:
 
     links = response.json()["_links"]
     return Endpoints(
-        actuator=links["self"]["href"],
+        pyctuator=links["self"]["href"],
         env=links["env"]["href"],
         info=links["info"]["href"],
         health=links["health"]["href"],
@@ -104,7 +104,7 @@ def endpoints(registration_tracker: RegistrationTrackerFixture) -> Endpoints:
     )
 
 
-class ActuatorServer(ABC):
+class PyctuatorServer(ABC):
 
     @abstractmethod
     def start(self) -> None:

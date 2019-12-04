@@ -15,14 +15,14 @@ class BootAdminRegistrationHandler:
             self,
             registration_url: str,
             application_name: str,
-            actuator_base_url: str,
+            pyctuator_base_url: str,
             start_time: datetime,
             service_url: str,
             registration_interval_sec: int,
     ) -> None:
         self.registration_url = registration_url
         self.application_name = application_name
-        self.actuator_base_url = actuator_base_url
+        self.pyctuator_base_url = pyctuator_base_url
         self.start_time = start_time
         self.service_url = service_url
         self.registration_interval_sec = registration_interval_sec
@@ -44,8 +44,8 @@ class BootAdminRegistrationHandler:
     def _register_with_admin_server(self) -> None:
         registration_data = {
             "name": self.application_name,
-            "managementUrl": self.actuator_base_url,
-            "healthUrl": f"{self.actuator_base_url}/health",
+            "managementUrl": self.pyctuator_base_url,
+            "healthUrl": f"{self.pyctuator_base_url}/health",
             "serviceUrl": self.service_url,
             "metadata": {"startup": self.start_time.isoformat()}
         }
@@ -82,7 +82,7 @@ class BootAdminRegistrationHandler:
 
     def start(self) -> None:
         logging.info("Starting recurring registration of %s with %s",
-                     self.actuator_base_url, self.registration_url)
+                     self.pyctuator_base_url, self.registration_url)
         self.should_continue_registration_schedule = True
         self._register_with_admin_server()
 
