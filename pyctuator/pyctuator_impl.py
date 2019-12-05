@@ -1,22 +1,37 @@
-import os
+from dataclasses import dataclass
 from datetime import datetime
-from typing import List
+from typing import List, Mapping
 from typing import Optional
 from urllib.parse import urlparse
 
+from pyctuator.environment.environment_provider import EnvironmentData, EnvironmentProvider
+from pyctuator.environment.os_env_variables_impl import OsEnvironmentVariableProvider
 from pyctuator.health.diskspace_health_impl import DiskSpaceHealthProvider
+from pyctuator.health.health_provider import HealthStatus, HealthSummary
 from pyctuator.metrics.memory_metrics_impl import MemoryMetricsProvider
-from pyctuator.metrics.metrics_provider import Metric, MetricNames
+from pyctuator.metrics.metrics_provider import Metric, MetricNames, MetricsProvider
 from pyctuator.metrics.thread_metrics_impl import ThreadMetricsProvider
-from pyctuator.pyctuator_data import (
-    EnvironmentData,
-    InfoData,
-    PropertyValue,
-    PropertySource,
-    AppInfo,
-    BuildInfo,
-    HealthData
-)
+
+
+@dataclass
+class BuildInfo:
+    version: str
+    artifact: str
+    name: str
+    group: str
+    time: datetime
+
+
+@dataclass
+class AppInfo:
+    name: str
+    description: Optional[str]
+
+
+@dataclass
+class InfoData:
+    app: AppInfo
+    build: BuildInfo
 
 
 class PyctuatorImpl:
@@ -35,12 +50,16 @@ class PyctuatorImpl:
         self.app_description = app_description
         self.start_time = start_time
         self.pyctuator_endpoint_url = pyctuator_endpoint_url
-        self.metric_providers = [
+
+        self.metric_providers: List[MetricsProvider] = [
             MemoryMetricsProvider(),
             ThreadMetricsProvider(),
         ]
         self.health_providers = [
             DiskSpaceHealthProvider(free_disk_space_down_threshold_bytes)
+        ]
+        self.environment_providers: List[EnvironmentProvider] = [
+            OsEnvironmentVariableProvider()
         ]
 
         # Determine the endpoint's URL path prefix and make sure it doesn't ends with a "/"
@@ -49,28 +68,22 @@ class PyctuatorImpl:
             self.pyctuator_endpoint_path_prefix = self.pyctuator_endpoint_path_prefix[:-1]
 
     def get_environment(self) -> EnvironmentData:
-        properties_dict = {key: PropertyValue(value) for (key, value) in os.environ.items()}
-        property_src = [(PropertySource("systemEnvironment", properties_dict))]
         active_profiles: List[str] = list()
-        env_data = EnvironmentData(active_profiles, property_src)
+        env_data = EnvironmentData(
+            active_profiles,
+            [source.get_properties_source() for source in self.environment_providers]
+        )
         return env_data
 
     def get_info(self) -> InfoData:
         return InfoData(AppInfo(self.app_name, self.app_description),
                         BuildInfo("version", "artifact", self.app_name, "group", self.start_time))
 
-    def get_health(self) -> HealthData:
-        service_is_up = True
-        details = {}
-        for provider in self.health_providers:
-            if provider.is_supported():
-                health = provider.get_health()
-                service_is_up = service_is_up and health.status == "UP"
-                details[provider.get_name()] = health
-
-        return HealthData(
-            "UP" if service_is_up else "DOWN",
-            details)
+    def get_health(self) -> HealthSummary:
+        health_statuses: Mapping[str, HealthStatus] = \
+            {provider.get_name(): provider.get_health() for provider in self.health_providers}
+        service_is_up = all(health_status.status == "UP" for health_status in health_statuses.values())
+        return HealthSummary("UP" if service_is_up else "DOWN", health_statuses)
 
     def get_metric_names(self) -> MetricNames:
         metric_names = []

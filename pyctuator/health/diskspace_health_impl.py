@@ -2,21 +2,23 @@
 import importlib.util
 from dataclasses import dataclass
 
+from pyctuator.health.health_provider import HealthProvider, HealthDetails, HealthStatus
+
 
 @dataclass
-class DiskSpaceHealthDetails:
+class DiskSpaceHealthDetails(HealthDetails):
     total: int
     free: int
     threshold: int
 
 
 @dataclass
-class DiskSpaceHealth:
+class DiskSpaceHealth(HealthStatus):
     status: str
     details: DiskSpaceHealthDetails
 
 
-class DiskSpaceHealthProvider:
+class DiskSpaceHealthProvider(HealthProvider):
 
     def __init__(self, free_bytes_down_threshold: int) -> None:
         self.free_bytes_down_threshold = free_bytes_down_threshold
