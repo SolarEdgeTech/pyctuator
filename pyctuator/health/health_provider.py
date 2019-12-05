@@ -1,7 +1,14 @@
 from abc import ABC
 from dataclasses import dataclass
+from enum import Enum
 
 from typing import Mapping
+
+
+class Status(str, Enum):
+    UP = "UP"
+    DOWN = "DOWN"
+    UNKNOWN = "UNKNOWN"
 
 
 @dataclass
@@ -11,13 +18,13 @@ class HealthDetails:
 
 @dataclass
 class HealthStatus:
-    status: str
+    status: Status
     details: HealthDetails
 
 
 @dataclass
 class HealthSummary:
-    status: str
+    status: Status
     details: Mapping[str, HealthStatus]
 
 

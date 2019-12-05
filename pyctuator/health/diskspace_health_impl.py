@@ -2,7 +2,7 @@
 import importlib.util
 from dataclasses import dataclass
 
-from pyctuator.health.health_provider import HealthProvider, HealthDetails, HealthStatus
+from pyctuator.health.health_provider import HealthProvider, HealthDetails, HealthStatus, Status
 
 
 @dataclass
@@ -14,7 +14,7 @@ class DiskSpaceHealthDetails(HealthDetails):
 
 @dataclass
 class DiskSpaceHealth(HealthStatus):
-    status: str
+    status: Status
     details: DiskSpaceHealthDetails
 
 
@@ -39,6 +39,6 @@ class DiskSpaceHealthProvider(HealthProvider):
     def get_health(self) -> DiskSpaceHealth:
         usage = self.psutil.disk_usage(".")
         return DiskSpaceHealth(
-            "UP" if usage.free > self.free_bytes_down_threshold else "DOWN",
+            Status.UP if usage.free > self.free_bytes_down_threshold else Status.DOWN,
             DiskSpaceHealthDetails(usage.total, usage.free, self.free_bytes_down_threshold)
         )

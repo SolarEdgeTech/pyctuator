@@ -7,7 +7,7 @@ from urllib.parse import urlparse
 from pyctuator.environment.environment_provider import EnvironmentData, EnvironmentProvider
 from pyctuator.environment.os_env_variables_impl import OsEnvironmentVariableProvider
 from pyctuator.health.diskspace_health_impl import DiskSpaceHealthProvider
-from pyctuator.health.health_provider import HealthStatus, HealthSummary
+from pyctuator.health.health_provider import HealthStatus, HealthSummary, Status
 from pyctuator.metrics.memory_metrics_impl import MemoryMetricsProvider
 from pyctuator.metrics.metrics_provider import Metric, MetricNames, MetricsProvider
 from pyctuator.metrics.thread_metrics_impl import ThreadMetricsProvider
@@ -82,8 +82,8 @@ class PyctuatorImpl:
     def get_health(self) -> HealthSummary:
         health_statuses: Mapping[str, HealthStatus] = \
             {provider.get_name(): provider.get_health() for provider in self.health_providers}
-        service_is_up = all(health_status.status == "UP" for health_status in health_statuses.values())
-        return HealthSummary("UP" if service_is_up else "DOWN", health_statuses)
+        service_is_up = all(health_status.status == Status.UP for health_status in health_statuses.values())
+        return HealthSummary(Status.UP if service_is_up else Status.DOWN, health_statuses)
 
     def get_metric_names(self) -> MetricNames:
         metric_names = []
