@@ -80,8 +80,11 @@ class PyctuatorImpl:
                         BuildInfo("version", "artifact", self.app_name, "group", self.start_time))
 
     def get_health(self) -> HealthSummary:
-        health_statuses: Mapping[str, HealthStatus] = \
-            {provider.get_name(): provider.get_health() for provider in self.health_providers}
+        health_statuses: Mapping[str, HealthStatus] = {
+            provider.get_name(): provider.get_health()
+            for provider in self.health_providers
+            if provider.is_supported()
+        }
         service_is_up = all(health_status.status == Status.UP for health_status in health_statuses.values())
         return HealthSummary(Status.UP if service_is_up else Status.DOWN, health_statuses)
 

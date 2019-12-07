@@ -1,10 +1,10 @@
+import importlib.util
 import os
 import time
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from typing import Generator
 
-import psutil
 import pytest
 import requests
 from _pytest.monkeypatch import MonkeyPatch
@@ -56,6 +56,9 @@ def test_env_endpoint(endpoints: Endpoints) -> None:
 @pytest.mark.usefixtures("boot_admin_server", "pyctuator_server")
 @pytest.mark.mark_builtin_health_endpoint
 def test_health_endpoint(endpoints: Endpoints, monkeypatch: MonkeyPatch) -> None:
+    # Skip this test if psutil isn't installed
+    psutil = pytest.importorskip("psutil")
+
     # Verify that the diskSpace health check is returning some reasonable values
     response = requests.get(endpoints.health)
     assert response.status_code == 200
@@ -85,8 +88,25 @@ def test_health_endpoint(endpoints: Endpoints, monkeypatch: MonkeyPatch) -> None
 
 
 @pytest.mark.usefixtures("boot_admin_server", "pyctuator_server")
+@pytest.mark.mark_builtin_health_endpoint
+def test_diskspace_no_psutil(endpoints: Endpoints, monkeypatch: MonkeyPatch) -> None:
+    # skip if psutil is installed
+    if importlib.util.find_spec("psutil"):
+        pytest.skip("psutil installed, skipping")
+
+    # Verify that the diskSpace health check is returning some reasonable values
+    response = requests.get(endpoints.health)
+    assert response.status_code == 200
+    assert response.json()["status"] == "UP"
+    assert "diskSpace" not in response.json()["details"]
+
+
+@pytest.mark.usefixtures("boot_admin_server", "pyctuator_server")
 @pytest.mark.mark_metrics_endpoint
 def test_metrics_endpoint(endpoints: Endpoints) -> None:
+    # Skip this test if psutil isn't installed
+    pytest.importorskip("psutil")
+
     response = requests.get(endpoints.metrics)
     assert response.status_code == 200
     metric_names = response.json()["names"]

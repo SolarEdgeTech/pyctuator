@@ -14,9 +14,12 @@ build:
   script:
     - poetry config settings.virtualenvs.in-project true
     - make bootstrap
+    - make package
+    - poetry install --extras flask --extras fastapi
     - make check
     - make coverage
-    - make package
+    - poetry install --extras psutil
+    - make test
   artifacts:
     paths:
       - htmlcov
