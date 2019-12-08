@@ -3,8 +3,7 @@ import threading
 import time
 
 import requests
-from flask import Flask
-from flask import request
+from flask import Flask, request, Response
 
 from pyctuator.pyctuator import Pyctuator
 from tests.conftest import PyctuatorServer
@@ -34,12 +33,19 @@ class FlaskPyctuatorServer(PyctuatorServer):
             func()
             return "Flask server off"
 
-        @self.app.route("/pyctuator/logfile_test_repeater")
+        @self.app.route("/logfile_test_repeater")
         # pylint: disable=unused-variable
         def logfile_test_repeater() -> str:
             repeated_string: str = str(request.args.get('repeated_string'))
             logging.error(repeated_string)
             return repeated_string
+
+        @self.app.route("/httptrace_test_url", methods=["GET"])
+        # pylint: disable=unused-variable
+        def get_httptrace_test_url() -> Response:
+            resp = Response()
+            resp.headers["header"] = str(request.headers.get('header'))
+            return resp
 
     def start(self) -> None:
         self.thread.start()

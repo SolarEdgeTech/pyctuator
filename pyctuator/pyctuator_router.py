@@ -24,6 +24,7 @@ class EndpointsLinks:
     dump: LinkHref
     threaddump: LinkHref
     logfile: LinkHref
+    httptrace: LinkHref
 
 
 @dataclass
@@ -52,4 +53,5 @@ class PyctuatorRouter(ABC):
             LinkHref(self.pyctuator_impl.pyctuator_endpoint_url + "/dump", False),
             LinkHref(self.pyctuator_impl.pyctuator_endpoint_url + "/threaddump", False),
             LinkHref(self.pyctuator_impl.pyctuator_endpoint_url + "/logfile", False),
+            LinkHref(self.pyctuator_impl.pyctuator_endpoint_url + "/httptrace", False),
         ))

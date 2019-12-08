@@ -3,6 +3,8 @@ import threading
 import time
 
 from fastapi import FastAPI
+from starlette.requests import Request
+from starlette.responses import Response
 from uvicorn.config import Config
 
 from pyctuator.pyctuator import Pyctuator
@@ -26,7 +28,7 @@ class FastApiPyctuatorServer(PyctuatorServer):
             registration_interval_sec=1,
         )
 
-        @self.app.get("/pyctuator/logfile_test_repeater", tags=["pyctuator"])
+        @self.app.get("/logfile_test_repeater", tags=["pyctuator"])
         # pylint: disable=unused-variable
         def logfile_test_repeater(repeated_string: str) -> str:
             logging.error(repeated_string)
@@ -34,6 +36,11 @@ class FastApiPyctuatorServer(PyctuatorServer):
 
         self.server = CustomServer(config=(Config(app=self.app, loop="asyncio")))
         self.thread = threading.Thread(target=self.server.run)
+
+        @self.app.get("/httptrace_test_url")
+        # pylint: disable=unused-variable
+        def get_httptrace_test_url(request: Request) -> Response:
+            return Response(headers={"header": str(request.headers.get('header'))})
 
     def start(self) -> None:
         self.thread.start()

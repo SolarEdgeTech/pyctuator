@@ -1,3 +1,4 @@
+# pylint: disable=protected-access
 import logging
 
 import pytest
@@ -44,7 +45,7 @@ def test_buffer_overflow() -> None:
 
     log, start, end = logfile.get_logfile(f"bytes=-{2 * test_buffer_size}")
     assert log.count("0123456789") == 4  # Implicitly Added newlines "break" a single string appearance
-    assert start == logfile.log_messages._offset
+    assert start == logfile.get_log_buffer_offset()
     assert end == start + len(log)
 
 
@@ -62,5 +63,5 @@ def test_forgotten_records() -> None:
 
     log, start, end = logfile.get_logfile(f"bytes=-{2 * test_buffer_size}")
     assert log.count("ABCDEFGHIJ") == 0
-    assert start == logfile.log_messages._offset
+    assert start == logfile.get_log_buffer_offset()
     assert end == start + len(log)

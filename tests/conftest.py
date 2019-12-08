@@ -26,6 +26,7 @@ class RegistrationRequest(BaseModel):
 @dataclass
 # pylint: disable=too-many-instance-attributes
 class Endpoints:
+    root: str
     pyctuator: str
     env: str
     info: str
@@ -34,6 +35,7 @@ class Endpoints:
     loggers: str
     threads: str
     logfile: str
+    httptrace: str
 
 
 @dataclass
@@ -89,6 +91,7 @@ def boot_admin_server(registration_tracker: RegistrationTrackerFixture) -> Gener
 @pytest.mark.usefixtures("boot_admin_server")
 @pytest.fixture
 def endpoints(registration_tracker: RegistrationTrackerFixture) -> Endpoints:
+    # time.sleep(600)
     # Wait for pyctuator to register with the boot-admin at least once
     while registration_tracker.registration is None:
         time.sleep(0.01)
@@ -100,6 +103,7 @@ def endpoints(registration_tracker: RegistrationTrackerFixture) -> Endpoints:
 
     links = response.json()["_links"]
     return Endpoints(
+        root=registration_tracker.registration.serviceUrl,
         pyctuator=links["self"]["href"],
         env=links["env"]["href"],
         info=links["info"]["href"],
@@ -108,6 +112,7 @@ def endpoints(registration_tracker: RegistrationTrackerFixture) -> Endpoints:
         loggers=links["loggers"]["href"],
         threads=links["threaddump"]["href"],
         logfile=links["logfile"]["href"],
+        httptrace=links["httptrace"]["href"],
     )
 
 

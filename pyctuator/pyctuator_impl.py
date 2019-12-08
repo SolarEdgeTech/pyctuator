@@ -1,11 +1,13 @@
 from dataclasses import dataclass
 from datetime import datetime
-from typing import List, Mapping
+from typing import List
+from typing import Mapping
 from typing import Optional
 from urllib.parse import urlparse
 
 from pyctuator.environment.environment_provider import EnvironmentData, EnvironmentProvider
 from pyctuator.health.health_provider import HealthStatus, HealthSummary, Status, HealthProvider
+from pyctuator.httptrace.http_tracer import HttpTracer
 from pyctuator.logfile.logfile import PyctuatorLogfile  # type: ignore
 from pyctuator.logging.pyctuator_logging import PyctuatorLogging
 from pyctuator.metrics.metrics_provider import Metric, MetricNames, MetricsProvider
@@ -64,6 +66,7 @@ class PyctuatorImpl:
         self.logging = PyctuatorLogging()
         self.thread_dump_provider = ThreadDumpProvider()
         self.logfile = PyctuatorLogfile(max_size=logfile_max_size, formatter=logfile_formatter)
+        self.http_tracer = HttpTracer()
 
         # Determine the endpoint's URL path prefix and make sure it doesn't ends with a "/"
         self.pyctuator_endpoint_path_prefix = urlparse(pyctuator_endpoint_url).path

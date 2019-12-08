@@ -214,7 +214,7 @@ def test_loggers_endpoint(endpoints: Endpoints) -> None:
 def test_logfile_endpoint(endpoints: Endpoints) -> None:
     thirsty_str = "These pretzels are making me thirsty"
     response: Response = requests.get(
-        endpoints.pyctuator + "/logfile_test_repeater",
+        endpoints.root + "/logfile_test_repeater",
         params={"repeated_string": "thirsty_str"}
     )
     assert response.status_code == HTTPStatus.OK.value
@@ -225,3 +225,16 @@ def test_logfile_endpoint(endpoints: Endpoints) -> None:
 
     response = requests.get(endpoints.logfile, headers={"Range": "bytes=-307200"})  # Immitate SBA's 1st request
     assert response.status_code == HTTPStatus.PARTIAL_CONTENT.value
+
+
+@pytest.mark.usefixtures("boot_admin_server", "pyctuator_server")
+@pytest.mark.mark_traces_endpoint
+def test_traces_endpoint(endpoints: Endpoints) -> None:
+    response = requests.get(endpoints.httptrace)
+    assert response.status_code == 200
+
+    # Create request with header
+    user_header = "my header test"
+    response = requests.get(endpoints.root + "/httptrace_test_url", headers={"header": user_header})
+    print("@@@ Test request header: " + str(response.headers.get('header')))
+    assert user_header == response.headers.get('header')
