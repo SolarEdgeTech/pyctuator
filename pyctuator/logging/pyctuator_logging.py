@@ -16,29 +16,34 @@ class LoggersData:
     groups: Dict[str, LoggerLevels]
 
 
-def python_to_admin_log_level(log_level: int) -> str:
-    if logging.NOTSET < log_level <= logging.DEBUG:
-        return "DEBUG"
-    if logging.DEBUG < log_level <= logging.INFO:
-        return "INFO"
-    if logging.INFO < log_level <= logging.WARNING:
-        return "WARN"
-    if log_level > logging.WARNING:
-        return "ERROR"
-    return ""
+@dataclass
+class LogLevelMapping:
+    boot_admin_log_level: str
+    python_log_level: int
+    python_from_log_level: int
 
 
-_admin_to_python_level_name: Dict[str, int] = {
-    "DEBUG": logging.DEBUG,
-    "INFO": logging.INFO,
-    "WARN": logging.WARNING,
-    "ERROR": logging.ERROR,
-    "OFF": logging.NOTSET,
-}
+_log_level_mapping: List[LogLevelMapping] = [
+    LogLevelMapping("DEBUG", logging.DEBUG, logging.NOTSET),
+    LogLevelMapping("INFO", logging.INFO, logging.DEBUG),
+    LogLevelMapping("WARN", logging.WARNING, logging.INFO),
+    LogLevelMapping("ERROR", logging.ERROR, logging.WARNING),
+    LogLevelMapping("OFF", logging.NOTSET, -1),
+]
+
+
+def _python_to_admin_log_level(log_level: int) -> str:
+    for mapping in _log_level_mapping:
+        if mapping.python_from_log_level < log_level <= mapping.python_log_level:
+            return mapping.boot_admin_log_level
+
+    # If log_level is unknown, simply return its string representation
+    return str(log_level)
 
 
 def _admin_to_python_log_level(log_level: str) -> int:
-    return _admin_to_python_level_name[log_level]
+    log_level_mapping = next(mapping for mapping in _log_level_mapping if mapping.boot_admin_log_level == log_level)
+    return log_level_mapping.python_log_level
 
 
 class PyctuatorLogging:
@@ -54,17 +59,19 @@ class PyctuatorLogging:
         logging.debug("Setting logger '%s' level to %s", logger_name, level)
 
     def get_loggers(self) -> LoggersData:
-        level_names = [level for level in _admin_to_python_level_name if level != "OFF"]
+        level_names = [mapping.boot_admin_log_level for mapping
+                       in _log_level_mapping
+                       if mapping.boot_admin_log_level != "OFF"]
 
         loggers = {}
         for logger_dict_member in logging.root.manager.loggerDict:  # type: ignore
             logger_inst = logging.getLogger(logger_dict_member)
-            level = python_to_admin_log_level(logger_inst.level)
+            level = _python_to_admin_log_level(logger_inst.level)
             loggers[logger_inst.name] = LoggerLevels(level, level)
 
         return LoggersData(levels=level_names, loggers=loggers, groups={})
 
     def get_logger(self, logger_name: str) -> LoggerLevels:
         logger = logging.getLogger(logger_name)
-        level = python_to_admin_log_level(logger.level)
+        level = _python_to_admin_log_level(logger.level)
         return LoggerLevels(level, level)
