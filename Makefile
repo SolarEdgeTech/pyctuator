@@ -29,3 +29,7 @@ mypy:
 
 package:
 	poetry build
+	
+clean:
+	find . -name __pycache__ -exec rm -rf {} \;
+	rm -rf .pytest_cache 
