@@ -1,12 +1,12 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 
-from typing import Mapping, Optional, List
+from typing import Mapping, Optional, List, Any
 
 
 @dataclass
 class PropertyValue:
-    value: str
+    value: Any
     origin: Optional[str] = None
 
 

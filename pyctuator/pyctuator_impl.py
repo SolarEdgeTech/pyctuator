@@ -5,13 +5,9 @@ from typing import Optional
 from urllib.parse import urlparse
 
 from pyctuator.environment.environment_provider import EnvironmentData, EnvironmentProvider
-from pyctuator.environment.os_env_variables_impl import OsEnvironmentVariableProvider
-from pyctuator.health.diskspace_health_impl import DiskSpaceHealthProvider
-from pyctuator.health.health_provider import HealthStatus, HealthSummary, Status
+from pyctuator.health.health_provider import HealthStatus, HealthSummary, Status, HealthProvider
 from pyctuator.logging.pyctuator_logging import PyctuatorLogging
-from pyctuator.metrics.memory_metrics_impl import MemoryMetricsProvider
 from pyctuator.metrics.metrics_provider import Metric, MetricNames, MetricsProvider
-from pyctuator.metrics.thread_metrics_impl import ThreadMetricsProvider
 
 
 @dataclass
@@ -45,29 +41,30 @@ class PyctuatorImpl:
             app_description: Optional[str],
             pyctuator_endpoint_url: str,
             start_time: datetime,
-            free_disk_space_down_threshold_bytes: int,
     ):
         self.app_name = app_name
         self.app_description = app_description
         self.start_time = start_time
         self.pyctuator_endpoint_url = pyctuator_endpoint_url
 
-        self.metric_providers: List[MetricsProvider] = [
-            MemoryMetricsProvider(),
-            ThreadMetricsProvider(),
-        ]
-        self.health_providers = [
-            DiskSpaceHealthProvider(free_disk_space_down_threshold_bytes)
-        ]
-        self.environment_providers: List[EnvironmentProvider] = [
-            OsEnvironmentVariableProvider()
-        ]
+        self.metrics_providers: List[MetricsProvider] = []
+        self.health_providers: List[HealthProvider] = []
+        self.environment_providers: List[EnvironmentProvider] = []
         self.logging = PyctuatorLogging()
 
         # Determine the endpoint's URL path prefix and make sure it doesn't ends with a "/"
         self.pyctuator_endpoint_path_prefix = urlparse(pyctuator_endpoint_url).path
         if self.pyctuator_endpoint_path_prefix[-1:] == "/":
             self.pyctuator_endpoint_path_prefix = self.pyctuator_endpoint_path_prefix[:-1]
+
+    def register_metrics_provider(self, provider: MetricsProvider) -> None:
+        self.metrics_providers.append(provider)
+
+    def register_health_providers(self, provider: HealthProvider) -> None:
+        self.health_providers.append(provider)
+
+    def register_environment_provider(self, provider: EnvironmentProvider) -> None:
+        self.environment_providers.append(provider)
 
     def get_environment(self) -> EnvironmentData:
         active_profiles: List[str] = list()
@@ -92,13 +89,13 @@ class PyctuatorImpl:
 
     def get_metric_names(self) -> MetricNames:
         metric_names = []
-        for provider in self.metric_providers:
+        for provider in self.metrics_providers:
             for metric_name in provider.get_supported_metric_names():
                 metric_names.append(metric_name)
         return MetricNames(metric_names)
 
     def get_metric_measurement(self, metric_name: str) -> Metric:
-        for provider in self.metric_providers:
+        for provider in self.metrics_providers:
             if metric_name.startswith(provider.get_prefix()):
                 return provider.get_metric(metric_name)
         raise KeyError(f"Unknown metric {metric_name}")

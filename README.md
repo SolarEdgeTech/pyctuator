@@ -12,7 +12,101 @@ that allows monitoring Python applications using Spring Boot Admin.
 ## Quickstart
 
 ## Configuration
+### Custom Environment
+Out of the box, Pyctuator is exposing python's environment variables to Spring Boot Admin. In addition, an application may register an environment-provider which when called, returns a dictionary that may contain primitives and other dictionaries, which is then exposed to Spring Boot Admin.
 
+Since Spring Boot Admin doesn't support hierarchical environment (only a flat key/value mapping), the provided environment is flattened as dot-delimited keys.
+
+Also, Pyctuator tries to hide/scrub secrets from being exposed to Spring Boot Admin by replacing values that their keys hit they are secrets (i.e. containing the words "secret", "password" and some forms of "key").
+
+For example, if an application's configuration looks like this:
+```python
+config = {
+    "a": "s1",
+    "b": {
+        "secret": "ha ha",
+        "c": 625,
+    },
+    "d": {
+        "e": True,
+        "f": "hello",
+        "g": {
+            "h": 123,
+            "i": "abcde"
+        }
+    }
+}
+```
+And an environment provider was registered like this:
+```python
+pyctuator.register_environment_provider("conf", lambda: conf)
+```
+Then calling on http://localhost:8080/pyctuator/env will return:
+```JSON
+{
+  "activeProfiles": [],
+  "propertySources": [
+    {
+      "name": "systemEnvironment",
+      "properties": {
+        "COMPUTERNAME": {
+          "value": "SERVER-X",
+          "origin": null
+        },
+        "NUMBER_OF_PROCESSORS": {
+          "value": "8",
+          "origin": null
+        },
+        "OS": {
+          "value": "Windows_NT",
+          "origin": null
+        },
+        "PROMPT": {
+          "value": "(pyctuator-py3.7) $P$G",
+          "origin": null
+        },
+        "USERNAME": {
+          "value": "Joe",
+          "origin": null
+        },
+      }
+    },
+    {
+      "name": "conf",
+      "properties": {
+        "a": {
+          "value": "s1",
+          "origin": null
+        },
+        "b.secret": {
+          "value": "******",
+          "origin": null
+        },
+        "b.c": {
+          "value": 625,
+          "origin": null
+        },
+        "d.e": {
+          "value": true,
+          "origin": null
+        },
+        "d.f": {
+          "value": "hello",
+          "origin": null
+        },
+        "d.g.h": {
+          "value": 123,
+          "origin": null
+        },
+        "d.g.i": {
+          "value": "abcde",
+          "origin": null
+        }
+      }
+    }
+  ]
+}
+```
 ## Examples
 ### Flask
 ```python

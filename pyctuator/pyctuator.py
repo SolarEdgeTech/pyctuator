@@ -1,12 +1,17 @@
 # pylint: disable=import-outside-toplevel
 import importlib.util
 from datetime import datetime, timezone
-from typing import Any, Optional
+from typing import Any, Optional, Dict, Callable
 
 # A note about imports: this module ensure that only relevant modules are imported.
 # For example, if the webapp is a Flask webapp, we do not want to import FastAPI, and vice versa.
 # To do that, all imports are in conditional branches after detecting which frameworks are installed.
 # DO NOT add any web-framework-dependent imports to the global scope.
+from pyctuator.environment.custom_environment_provider import CustomEnvironmentProvider
+from pyctuator.environment.os_env_variables_impl import OsEnvironmentVariableProvider
+from pyctuator.health.diskspace_health_impl import DiskSpaceHealthProvider
+from pyctuator.metrics.memory_metrics_impl import MemoryMetricsProvider
+from pyctuator.metrics.thread_metrics_impl import ThreadMetricsProvider
 from pyctuator.pyctuator_impl import PyctuatorImpl
 from pyctuator.spring_boot_admin_registration import BootAdminRegistrationHandler
 
@@ -51,22 +56,28 @@ class Pyctuator:
          working directory) below which the built-in disk-space health-indicator will fail
         """
 
-        framework_integrations = {
-            "flask": self._integrate_flask,
-            "fastapi": self._integrate_fastapi,
-        }
-
+        # Instantiate an instance of PyctuatorImpl which abstracts the state and logic of the pyctuator
         start_time = datetime.now(timezone.utc)
         self.pyctuator_impl = PyctuatorImpl(
             app_name,
             app_description,
             pyctuator_endpoint_url,
             start_time,
-            free_disk_space_down_threshold_bytes,
         )
+
+        # Register default health/metrics/environment providers
+        self.pyctuator_impl.register_environment_provider(OsEnvironmentVariableProvider())
+        self.pyctuator_impl.register_health_providers(DiskSpaceHealthProvider(free_disk_space_down_threshold_bytes))
+        self.pyctuator_impl.register_metrics_provider(MemoryMetricsProvider())
+        self.pyctuator_impl.register_metrics_provider(ThreadMetricsProvider())
 
         self.boot_admin_registration_handler: Optional[BootAdminRegistrationHandler] = None
 
+        # Find and initialize an integration layer between the web-framework adn pyctuator
+        framework_integrations = {
+            "flask": self._integrate_flask,
+            "fastapi": self._integrate_fastapi,
+        }
         for framework_name, framework_integration_function in framework_integrations.items():
             if self._is_framework_installed(framework_name):
                 success = framework_integration_function(app, self.pyctuator_impl)
@@ -91,6 +102,9 @@ class Pyctuator:
         if self.boot_admin_registration_handler:
             self.boot_admin_registration_handler.stop()
         self.boot_admin_registration_handler = None
+
+    def register_environment_provider(self, name: str, env_provider: Callable[[], Dict]) -> None:
+        self.pyctuator_impl.environment_providers.append(CustomEnvironmentProvider(name, env_provider))
 
     def _is_framework_installed(self, framework_name: str) -> bool:
         return importlib.util.find_spec(framework_name) is not None
