@@ -12,12 +12,19 @@ build:
   image: matanrubin/python-poetry:3.7
   stage: build
   script:
+    # Instruct poetry to keep the .venv directory in the current working directory so gitlab would cache it
     - poetry config settings.virtualenvs.in-project true
-    - make bootstrap
+
+    # Ask poetry to install all required modules (skipping the "dev" and "extra" modules) than build
+    - poetry install
     - make package
+
+    # Install the extra flask and fastapi modules required for the tests, then checkstyle and run the tests in "no psutil" env
     - poetry install --extras flask --extras fastapi
     - make check
     - make coverage
+
+    # Install the extra psutil module and run the tests in "with psutil" env
     - poetry install --extras psutil
     - make test
   artifacts:

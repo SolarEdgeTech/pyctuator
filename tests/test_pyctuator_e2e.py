@@ -58,7 +58,7 @@ def test_env_endpoint(endpoints: Endpoints) -> None:
 
 @pytest.mark.usefixtures("boot_admin_server", "pyctuator_server")
 @pytest.mark.mark_builtin_health_endpoint
-def test_health_endpoint(endpoints: Endpoints, monkeypatch: MonkeyPatch) -> None:
+def test_health_endpoint_with_psutil(endpoints: Endpoints, monkeypatch: MonkeyPatch) -> None:
     # Skip this test if psutil isn't installed
     psutil = pytest.importorskip("psutil")
 
@@ -155,6 +155,7 @@ def test_recurring_registration(registration_tracker: RegistrationTrackerFixture
 def test_loggers_endpoint(endpoints: Endpoints) -> None:
     response = requests.get(endpoints.loggers)
     assert response.status_code == 200
+
     # levels section
     loggers_levels = response.json()["levels"]
     assert "ERROR" in loggers_levels
