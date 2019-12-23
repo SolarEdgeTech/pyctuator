@@ -6,6 +6,7 @@ from urllib.parse import urlparse
 
 from pyctuator.environment.environment_provider import EnvironmentData, EnvironmentProvider
 from pyctuator.health.health_provider import HealthStatus, HealthSummary, Status, HealthProvider
+from pyctuator.logfile.logfile import PyctuatorLogfile  # type: ignore
 from pyctuator.logging.pyctuator_logging import PyctuatorLogging
 from pyctuator.metrics.metrics_provider import Metric, MetricNames, MetricsProvider
 from pyctuator.threads.thread_dump_provider import ThreadDump, ThreadDumpProvider
@@ -46,13 +47,13 @@ class AppInfo:
 
 
 class PyctuatorImpl:
-
     # pylint: disable=too-many-instance-attributes
-
     def __init__(
             self,
             app_info: AppInfo,
             pyctuator_endpoint_url: str,
+            logfile_max_size: int,
+            logfile_formatter: str,
     ):
         self.app_info = app_info
         self.pyctuator_endpoint_url = pyctuator_endpoint_url
@@ -62,6 +63,7 @@ class PyctuatorImpl:
         self.environment_providers: List[EnvironmentProvider] = []
         self.logging = PyctuatorLogging()
         self.thread_dump_provider = ThreadDumpProvider()
+        self.logfile = PyctuatorLogfile(max_size=logfile_max_size, formatter=logfile_formatter)
 
         # Determine the endpoint's URL path prefix and make sure it doesn't ends with a "/"
         self.pyctuator_endpoint_path_prefix = urlparse(pyctuator_endpoint_url).path

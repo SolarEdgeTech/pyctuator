@@ -1,7 +1,9 @@
+from http import HTTPStatus
 from typing import Optional, Dict
 
-from fastapi import APIRouter, FastAPI
+from fastapi import APIRouter, FastAPI, Header
 from pydantic import BaseModel
+from starlette.responses import Response
 
 from pyctuator.environment.environment_provider import EnvironmentData
 from pyctuator.health.health_provider import HealthSummary
@@ -40,6 +42,7 @@ class FastApiPyctuator(PyctuatorRouter):
         @router.options(path_prefix + "/loggers", include_in_schema=False)
         @router.options(path_prefix + "/dump", include_in_schema=False)
         @router.options(path_prefix + "/threaddump", include_in_schema=False)
+        @router.options(path_prefix + "/logfile", include_in_schema=False)
         # pylint: disable=unused-variable
         def options() -> None:
             """
@@ -97,5 +100,24 @@ class FastApiPyctuator(PyctuatorRouter):
         # pylint: disable=unused-variable
         def get_thread_dump() -> ThreadDump:
             return pyctuator_impl.get_thread_dump()
+
+        @router.get(path_prefix + "/logfile", tags=["pyctuator"])
+        # pylint: disable=unused-variable
+        def get_logfile(range_header: str = Header(default=None, alias="range")) -> Response:  # pylint: disable=redefined-builtin
+            if not range_header:
+                return Response(content=pyctuator_impl.logfile.log_messages.get_range())
+
+            str_res, start, end = pyctuator_impl.logfile.get_logfile(range_header)
+
+            my_res = Response(
+                status_code=HTTPStatus.PARTIAL_CONTENT.value,
+                content=str_res,
+                headers={
+                    "Content-Type": "text/html; charset=UTF-8",
+                    "Accept-Ranges": "bytes",
+                    "Content-Range": f"bytes {start}-{end}/{end}",
+                })
+
+            return my_res
 
         app.include_router(router)

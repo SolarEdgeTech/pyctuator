@@ -1,3 +1,4 @@
+import logging
 import threading
 import time
 
@@ -22,8 +23,15 @@ class FastApiPyctuatorServer(PyctuatorServer):
             "http://localhost:8000",
             "http://localhost:8000/pyctuator",
             "http://localhost:8001/register",
-            registration_interval_sec=1
+            registration_interval_sec=1,
         )
+
+        @self.app.get("/pyctuator/logfile_test_repeater", tags=["pyctuator"])
+        # pylint: disable=unused-variable
+        def logfile_test_repeater(repeated_string: str) -> str:
+            logging.error(repeated_string)
+            return repeated_string
+
         self.server = CustomServer(config=(Config(app=self.app, loop="asyncio")))
         self.thread = threading.Thread(target=self.server.run)
 

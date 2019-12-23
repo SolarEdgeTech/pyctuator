@@ -24,6 +24,7 @@ class RegistrationRequest(BaseModel):
 
 
 @dataclass
+# pylint: disable=too-many-instance-attributes
 class Endpoints:
     pyctuator: str
     env: str
@@ -32,6 +33,7 @@ class Endpoints:
     metrics: str
     loggers: str
     threads: str
+    logfile: str
 
 
 @dataclass
@@ -105,6 +107,7 @@ def endpoints(registration_tracker: RegistrationTrackerFixture) -> Endpoints:
         metrics=links["metrics"]["href"],
         loggers=links["loggers"]["href"],
         threads=links["threaddump"]["href"],
+        logfile=links["logfile"]["href"],
     )
 
 

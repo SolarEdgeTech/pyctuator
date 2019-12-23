@@ -34,6 +34,13 @@ class FlaskPyctuatorServer(PyctuatorServer):
             func()
             return "Flask server off"
 
+        @self.app.route("/pyctuator/logfile_test_repeater")
+        # pylint: disable=unused-variable
+        def logfile_test_repeater() -> str:
+            repeated_string: str = str(request.args.get('repeated_string'))
+            logging.error(repeated_string)
+            return repeated_string
+
     def start(self) -> None:
         self.thread.start()
         while True:

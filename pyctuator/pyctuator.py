@@ -1,5 +1,6 @@
 # pylint: disable=import-outside-toplevel
 import importlib.util
+import logging
 from datetime import datetime, timezone
 from typing import Any, Optional, Dict, Callable
 
@@ -16,9 +17,11 @@ from pyctuator.metrics.thread_metrics_impl import ThreadMetricsProvider
 from pyctuator.pyctuator_impl import PyctuatorImpl, AppInfo, BuildInfo, GitInfo, GitCommitInfo, AppDetails
 from pyctuator.spring_boot_admin_registration import BootAdminRegistrationHandler
 
+default_logfile_format = '%(asctime)s  %(levelname)-5s %(process)d -- [%(threadName)s] %(module)s: %(message)s'
+
 
 class Pyctuator:
-
+    # pylint: disable=too-many-locals
     def __init__(
             self,
             app: Any,
@@ -29,6 +32,8 @@ class Pyctuator:
             app_description: Optional[str] = None,
             registration_interval_sec: int = 10,
             free_disk_space_down_threshold_bytes: int = 1024 * 1024 * 100,
+            logfile_max_size: int = 10000,
+            logfile_formatter: str = default_logfile_format
     ) -> None:
         """The entry point for integrating pyctuator with a web-frameworks such as FastAPI and Flask.
 
@@ -63,6 +68,8 @@ class Pyctuator:
         self.pyctuator_impl = PyctuatorImpl(
             AppInfo(app=AppDetails(name=app_name, description=app_description)),
             pyctuator_endpoint_url,
+            logfile_max_size,
+            logfile_formatter,
         )
 
         # Register default health/metrics/environment providers
@@ -72,6 +79,9 @@ class Pyctuator:
         self.pyctuator_impl.register_metrics_provider(ThreadMetricsProvider())
 
         self.boot_admin_registration_handler: Optional[BootAdminRegistrationHandler] = None
+
+        root_logger = logging.getLogger()
+        root_logger.addHandler(self.pyctuator_impl.logfile.log_messages)
 
         # Find and initialize an integration layer between the web-framework adn pyctuator
         framework_integrations = {

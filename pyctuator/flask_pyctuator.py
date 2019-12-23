@@ -1,8 +1,9 @@
 import dataclasses
 import json
-from typing import Dict
+from http import HTTPStatus
+from typing import Dict, Tuple
 
-from flask import Blueprint, request
+from flask import Blueprint, request, Response, make_response
 from flask import Flask
 
 from pyctuator.pyctuator_impl import PyctuatorImpl
@@ -11,6 +12,7 @@ from pyctuator.pyctuator_router import PyctuatorRouter
 
 class FlaskPyctuator(PyctuatorRouter):
 
+    # pylint: disable=too-many-locals
     def __init__(
             self,
             app: Flask,
@@ -73,5 +75,22 @@ class FlaskPyctuator(PyctuatorRouter):
         # pylint: disable=unused-variable
         def get_thread_dump() -> Dict:
             return dataclasses.asdict(pyctuator_impl.get_thread_dump())
+
+        @flask_blueprint.route(path_prefix + "/logfile")
+        # pylint: disable=unused-variable
+        def get_logfile() -> Tuple[Response, int]:
+            range_header: str = request.headers.environ.get('HTTP_RANGE')
+            if not range_header:
+                response: Response = make_response(pyctuator_impl.logfile.log_messages.get_range())
+                return response, HTTPStatus.OK.value
+
+            str_res, start, end = pyctuator_impl.logfile.get_logfile(range_header)
+
+            resp: Response = make_response(str_res)
+            resp.headers["Content-Type"] = "text/html; charset=UTF-8"
+            resp.headers["Accept-Ranges"] = "bytes"
+            resp.headers["Content-Range"] = f"bytes {start}-{end}/{end}"
+
+            return resp, HTTPStatus.PARTIAL_CONTENT.value
 
         app.register_blueprint(flask_blueprint)
