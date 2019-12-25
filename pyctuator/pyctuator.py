@@ -12,7 +12,7 @@ from pyctuator.environment.os_env_variables_impl import OsEnvironmentVariablePro
 from pyctuator.health.diskspace_health_impl import DiskSpaceHealthProvider
 from pyctuator.metrics.memory_metrics_impl import MemoryMetricsProvider
 from pyctuator.metrics.thread_metrics_impl import ThreadMetricsProvider
-from pyctuator.pyctuator_impl import PyctuatorImpl
+from pyctuator.pyctuator_impl import PyctuatorImpl, AppInfo, BuildInfo, GitInfo, GitCommitInfo, AppDetails
 from pyctuator.spring_boot_admin_registration import BootAdminRegistrationHandler
 
 
@@ -22,10 +22,10 @@ class Pyctuator:
             self,
             app: Any,
             app_name: str,
-            app_description: Optional[str],
             app_url: str,
             pyctuator_endpoint_url: str,
             registration_url: Optional[str],
+            app_description: Optional[str] = None,
             registration_interval_sec: int = 10,
             free_disk_space_down_threshold_bytes: int = 1024 * 1024 * 100,
     ) -> None:
@@ -56,13 +56,12 @@ class Pyctuator:
          working directory) below which the built-in disk-space health-indicator will fail
         """
 
-        # Instantiate an instance of PyctuatorImpl which abstracts the state and logic of the pyctuator
         start_time = datetime.now(timezone.utc)
+
+        # Instantiate an instance of PyctuatorImpl which abstracts the state and logic of the pyctuator
         self.pyctuator_impl = PyctuatorImpl(
-            app_name,
-            app_description,
+            AppInfo(app=AppDetails(name=app_name, description=app_description)),
             pyctuator_endpoint_url,
-            start_time,
         )
 
         # Register default health/metrics/environment providers
@@ -105,6 +104,19 @@ class Pyctuator:
 
     def register_environment_provider(self, name: str, env_provider: Callable[[], Dict]) -> None:
         self.pyctuator_impl.environment_providers.append(CustomEnvironmentProvider(name, env_provider))
+
+    def set_git_info(self, commit: str, time: datetime, branch: Optional[str] = None) -> None:
+        self.pyctuator_impl.set_git_info(GitInfo(GitCommitInfo(time, commit), branch))
+
+    def set_build_info(
+            self,
+            artifact: Optional[str] = None,
+            group: Optional[str] = None,
+            name: Optional[str] = None,
+            version: Optional[str] = None,
+            time: Optional[datetime] = None,
+    ) -> None:
+        self.pyctuator_impl.set_build_info(BuildInfo(name, artifact, group, version, time))
 
     def _is_framework_installed(self, framework_name: str) -> bool:
         return importlib.util.find_spec(framework_name) is not None

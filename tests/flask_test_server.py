@@ -18,7 +18,6 @@ class FlaskPyctuatorServer(PyctuatorServer):
         self.pyctuator = Pyctuator(
             self.app,
             "Flask Pyctuator",
-            "Flask Pyctuator Example",
             "http://localhost:5000",
             "http://localhost:5000/pyctuator",
             "http://localhost:8001/register",

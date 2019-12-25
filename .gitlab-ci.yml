@@ -13,7 +13,7 @@ build:
   stage: build
   script:
     # Instruct poetry to keep the .venv directory in the current working directory so gitlab would cache it
-    - poetry config settings.virtualenvs.in-project true
+    - poetry config virtualenvs.in-project true
 
     # Ask poetry to install all required modules (skipping the "dev" and "extra" modules) than build
     - poetry install

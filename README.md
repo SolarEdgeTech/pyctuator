@@ -12,6 +12,33 @@ that allows monitoring Python applications using Spring Boot Admin.
 ## Quickstart
 
 ## Configuration
+### Application Info
+While Pyctuator only require to know the application's name, it is recommended that applications monitored by Spring Boot Admin will show additional build and git details - this becomes handy when a service is scaled out with multiple instances by showing the version of each instance.
+To do so, you can provide additional build and git info using methods of the Pyctuator object:
+```python
+pyctuator = Pyctuator(
+    app,
+    "Pyctuator",
+    "http://localhost:8000",
+    "http://localhost:8000/pyctuator",
+    "http://localhost:8082/instances",
+    app_description="An example application that is managed by Spring Boot Admin",
+)
+
+pyctuator.set_build_info(
+    name="app",
+    version="1.3.1",
+    time=datetime.fromisoformat("2019-12-21T10:09:54.876091"),
+)
+pyctuator.set_git_info(
+    commit="7d4fef3",
+    time=datetime.fromisoformat("2019-12-24T14:18:32.123432"),
+    branch="origin/branch",
+)
+```
+This results with the following:
+![Pyctuator](/uploads/7194d2657ab769cda2a12e516d789da4/image.png)
+
 ### Custom Environment
 Out of the box, Pyctuator is exposing python's environment variables to Spring Boot Admin. In addition, an application may register an environment-provider which when called, returns a dictionary that may contain primitives and other dictionaries, which is then exposed to Spring Boot Admin.
 
@@ -158,7 +185,6 @@ def read_root():
 Pyctuator(
     app,
     "FastAPI Pyctuator",
-    "FastAPI Pyctuator Example",
     "http://localhost:8000",
     "http://localhost:8000/pyctuator",
     "http://localhost:8080/instances"

@@ -11,24 +11,37 @@ from pyctuator.metrics.metrics_provider import Metric, MetricNames, MetricsProvi
 
 
 @dataclass
-class BuildInfo:
-    version: str
-    artifact: str
-    name: str
-    group: str
+class GitCommitInfo:
     time: datetime
+    id: str
+
+
+@dataclass
+class GitInfo:
+    commit: GitCommitInfo
+    branch: Optional[str] = None
+
+
+@dataclass
+class BuildInfo:
+    name: Optional[str] = None
+    artifact: Optional[str] = None
+    group: Optional[str] = None
+    version: Optional[str] = None
+    time: Optional[datetime] = None
+
+
+@dataclass
+class AppDetails:
+    name: str
+    description: Optional[str] = None
 
 
 @dataclass
 class AppInfo:
-    name: str
-    description: Optional[str]
-
-
-@dataclass
-class InfoData:
-    app: AppInfo
-    build: BuildInfo
+    app: AppDetails
+    build: Optional[BuildInfo] = None
+    git: Optional[GitInfo] = None
 
 
 class PyctuatorImpl:
@@ -37,14 +50,10 @@ class PyctuatorImpl:
 
     def __init__(
             self,
-            app_name: str,
-            app_description: Optional[str],
+            app_info: AppInfo,
             pyctuator_endpoint_url: str,
-            start_time: datetime,
     ):
-        self.app_name = app_name
-        self.app_description = app_description
-        self.start_time = start_time
+        self.app_info = app_info
         self.pyctuator_endpoint_url = pyctuator_endpoint_url
 
         self.metrics_providers: List[MetricsProvider] = []
@@ -74,9 +83,14 @@ class PyctuatorImpl:
         )
         return env_data
 
-    def get_info(self) -> InfoData:
-        return InfoData(AppInfo(self.app_name, self.app_description),
-                        BuildInfo("version", "artifact", self.app_name, "group", self.start_time))
+    def set_git_info(self, git_info: GitInfo) -> None:
+        self.app_info.git = git_info
+
+    def set_build_info(self, build_info: BuildInfo) -> None:
+        self.app_info.build = build_info
+
+    def get_info(self) -> AppInfo:
+        return self.app_info
 
     def get_health(self) -> HealthSummary:
         health_statuses: Mapping[str, HealthStatus] = {

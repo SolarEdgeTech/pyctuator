@@ -19,7 +19,6 @@ class FastApiPyctuatorServer(PyctuatorServer):
         self.pyctuator = Pyctuator(
             self.app,
             "FastAPI Pyctuator",
-            "FastAPI Pyctuator Example",
             "http://localhost:8000",
             "http://localhost:8000/pyctuator",
             "http://localhost:8001/register",
