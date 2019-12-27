@@ -10,6 +10,7 @@ from typing import Any, Optional, Dict, Callable
 from pyctuator.environment.custom_environment_provider import CustomEnvironmentProvider
 from pyctuator.environment.os_env_variables_impl import OsEnvironmentVariableProvider
 from pyctuator.health.diskspace_health_impl import DiskSpaceHealthProvider
+from pyctuator.health.health_provider import HealthProvider
 from pyctuator.metrics.memory_metrics_impl import MemoryMetricsProvider
 from pyctuator.metrics.thread_metrics_impl import ThreadMetricsProvider
 from pyctuator.pyctuator_impl import PyctuatorImpl, AppInfo, BuildInfo, GitInfo, GitCommitInfo, AppDetails
@@ -103,7 +104,10 @@ class Pyctuator:
         self.boot_admin_registration_handler = None
 
     def register_environment_provider(self, name: str, env_provider: Callable[[], Dict]) -> None:
-        self.pyctuator_impl.environment_providers.append(CustomEnvironmentProvider(name, env_provider))
+        self.pyctuator_impl.register_environment_provider(CustomEnvironmentProvider(name, env_provider))
+
+    def register_health_provider(self, provider: HealthProvider) -> None:
+        self.pyctuator_impl.register_health_providers(provider)
 
     def set_git_info(self, commit: str, time: datetime, branch: Optional[str] = None) -> None:
         self.pyctuator_impl.set_git_info(GitInfo(GitCommitInfo(time, commit), branch))

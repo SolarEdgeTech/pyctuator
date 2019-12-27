@@ -32,4 +32,5 @@ package:
 	
 clean:
 	find  . -type d -name __pycache__ -print | xargs rm -rf
-	rm -rf .pytest_cache dist htmlcov .mypy_cache
+	find  . -type d -name .pytest_cache -print | xargs rm -rf
+	rm -rf dist htmlcov .mypy_cache

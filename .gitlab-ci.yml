@@ -20,7 +20,7 @@ build:
     - make package
 
     # Install the extra flask and fastapi modules required for the tests, then checkstyle and run the tests in "no psutil" env
-    - poetry install --extras flask --extras fastapi
+    - poetry install --extras flask --extras fastapi --extras db
     - make check
     - make coverage
 

@@ -39,6 +39,60 @@ pyctuator.set_git_info(
 This results with the following:
 ![Pyctuator](/uploads/7194d2657ab769cda2a12e516d789da4/image.png)
 
+### DB Health
+For services that using SQL database via SQLAlchemy, Pyctuator can easily monitor and expose the connection's health using the DbHealthProvider class as demonstrated below using MySQL:
+```python
+engine: Engine = create_engine("mysql+pymysql://root:root@localhost:3306", echo=True)
+pyctuator = Pyctuator(...)
+pyctuator.register_health_provider(DbHealthProvider(engine))
+```
+When the DB is up and running, the health API returns:
+```json
+{
+  "status": "UP",
+  "details": {
+    "diskSpace": {
+      "status": "UP",
+      "details": {
+        "total": 506333229056,
+        "free": 332432617472,
+        "threshold": 104857600
+      }
+    },
+    "db": {
+      "status": "UP",
+      "details": {
+        "engine": "mysql",
+        "failure": null
+      }
+    }
+  }
+}
+```
+However, when the DB is offline (or any other failure), the health API will return:
+```json
+{
+  "status": "DOWN",
+  "details": {
+    "diskSpace": {
+      "status": "UP",
+      "details": {
+        "total": 506333229056,
+        "free": 332507475968,
+        "threshold": 104857600
+      }
+    },
+    "db": {
+      "status": "DOWN",
+      "details": {
+        "engine": "mysql",
+        "failure": "(pymysql.err.OperationalError) (2013, 'Lost connection to MySQL server during query')\n[SQL: SELECT 1577567795140]\n(Background on this error at: http://sqlalche.me/e/e3q8)"
+      }
+    }
+  }
+}
+``` 
+
 ### Custom Environment
 Out of the box, Pyctuator is exposing python's environment variables to Spring Boot Admin. In addition, an application may register an environment-provider which when called, returns a dictionary that may contain primitives and other dictionaries, which is then exposed to Spring Boot Admin.
 
