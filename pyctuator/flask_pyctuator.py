@@ -33,7 +33,7 @@ class FlaskPyctuator(PyctuatorRouter):
         @flask_blueprint.route(path_prefix + "/info")
         # pylint: disable=unused-variable
         def get_info() -> Dict:
-            return dataclasses.asdict(pyctuator_impl.get_info())
+            return dataclasses.asdict(pyctuator_impl.app_info)
 
         @flask_blueprint.route(path_prefix + "/health")
         # pylint: disable=unused-variable

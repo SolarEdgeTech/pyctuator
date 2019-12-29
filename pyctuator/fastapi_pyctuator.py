@@ -54,7 +54,7 @@ class FastApiPyctuator(PyctuatorRouter):
         @router.get(path_prefix + "/info", tags=["pyctuator"])
         # pylint: disable=unused-variable
         def get_info() -> AppInfo:
-            return pyctuator_impl.get_info()
+            return pyctuator_impl.app_info
 
         @router.get(path_prefix + "/health", tags=["pyctuator"])
         # pylint: disable=unused-variable

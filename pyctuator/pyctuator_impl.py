@@ -89,9 +89,6 @@ class PyctuatorImpl:
     def set_build_info(self, build_info: BuildInfo) -> None:
         self.app_info.build = build_info
 
-    def get_info(self) -> AppInfo:
-        return self.app_info
-
     def get_health(self) -> HealthSummary:
         health_statuses: Mapping[str, HealthStatus] = {
             provider.get_name(): provider.get_health()

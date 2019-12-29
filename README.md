@@ -13,15 +13,17 @@ that allows monitoring Python applications using Spring Boot Admin.
 
 ## Configuration
 ### Application Info
-While Pyctuator only require to know the application's name, it is recommended that applications monitored by Spring Boot Admin will show additional build and git details - this becomes handy when a service is scaled out with multiple instances by showing the version of each instance.
+While Pyctuator only require to know the application's name, it is recommended that applications monitored by Spring 
+Boot Admin will show additional build and git details - this becomes handy when a service is scaled out with multiple 
+instances by showing the version of each instance.
 To do so, you can provide additional build and git info using methods of the Pyctuator object:
 ```python
 pyctuator = Pyctuator(
     app,
     "Pyctuator",
-    "http://localhost:8000",
-    "http://localhost:8000/pyctuator",
-    "http://localhost:8082/instances",
+    "http://my-micro-service:8000",
+    "http://my-micro-service:8000/pyctuator",
+    "http://spring-boot-admin:8082/instances",
     app_description="An example application that is managed by Spring Boot Admin",
 )
 
@@ -40,7 +42,8 @@ This results with the following:
 ![Pyctuator](/uploads/7194d2657ab769cda2a12e516d789da4/image.png)
 
 ### DB Health
-For services that using SQL database via SQLAlchemy, Pyctuator can easily monitor and expose the connection's health using the DbHealthProvider class as demonstrated below using MySQL:
+For services that using SQL database via SQLAlchemy, Pyctuator can easily monitor and expose the connection's health 
+using the DbHealthProvider class as demonstrated below:
 ```python
 engine: Engine = create_engine("mysql+pymysql://root:root@localhost:3306", echo=True)
 pyctuator = Pyctuator(...)
@@ -93,12 +96,25 @@ However, when the DB is offline (or any other failure), the health API will retu
 }
 ``` 
 
+### Redis health
+If your service is using Redis, Pyctuator can monitor the connection to redis by simply initializing a 
+`RedisHealthProvider`:
+```python
+r = redis.Redis()
+pyctuator = Pyctuator(...)
+pyctuator.register_health_provider(RedisHealthProvider(r))
+```
+
 ### Custom Environment
-Out of the box, Pyctuator is exposing python's environment variables to Spring Boot Admin. In addition, an application may register an environment-provider which when called, returns a dictionary that may contain primitives and other dictionaries, which is then exposed to Spring Boot Admin.
+Out of the box, Pyctuator is exposing python's environment variables to Spring Boot Admin. In addition, an application 
+may register an environment-provider which when called, returns a dictionary that may contain primitives and other 
+dictionaries, which is then exposed to Spring Boot Admin.
 
-Since Spring Boot Admin doesn't support hierarchical environment (only a flat key/value mapping), the provided environment is flattened as dot-delimited keys.
+Since Spring Boot Admin doesn't support hierarchical environment (only a flat key/value mapping), the provided 
+environment is flattened as dot-delimited keys.
 
-Also, Pyctuator tries to hide/scrub secrets from being exposed to Spring Boot Admin by replacing values that their keys hit they are secrets (i.e. containing the words "secret", "password" and some forms of "key").
+Also, Pyctuator tries to hide/scrub secrets from being exposed to Spring Boot Admin by replacing values that their 
+keys hit they are secrets (i.e. containing the words "secret", "password" and some forms of "key").
 
 For example, if an application's configuration looks like this:
 ```python
