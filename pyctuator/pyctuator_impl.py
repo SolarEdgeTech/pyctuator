@@ -8,6 +8,7 @@ from pyctuator.environment.environment_provider import EnvironmentData, Environm
 from pyctuator.health.health_provider import HealthStatus, HealthSummary, Status, HealthProvider
 from pyctuator.logging.pyctuator_logging import PyctuatorLogging
 from pyctuator.metrics.metrics_provider import Metric, MetricNames, MetricsProvider
+from pyctuator.threads.thread_dump_provider import ThreadDump, ThreadDumpProvider
 
 
 @dataclass
@@ -60,6 +61,7 @@ class PyctuatorImpl:
         self.health_providers: List[HealthProvider] = []
         self.environment_providers: List[EnvironmentProvider] = []
         self.logging = PyctuatorLogging()
+        self.thread_dump_provider = ThreadDumpProvider()
 
         # Determine the endpoint's URL path prefix and make sure it doesn't ends with a "/"
         self.pyctuator_endpoint_path_prefix = urlparse(pyctuator_endpoint_url).path
@@ -110,3 +112,6 @@ class PyctuatorImpl:
             if metric_name.startswith(provider.get_prefix()):
                 return provider.get_metric(metric_name)
         raise KeyError(f"Unknown metric {metric_name}")
+
+    def get_thread_dump(self) -> ThreadDump:
+        return self.thread_dump_provider.get_thread_dump()

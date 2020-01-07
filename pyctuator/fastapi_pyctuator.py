@@ -9,12 +9,14 @@ from pyctuator.logging.pyctuator_logging import LoggersData, LoggerLevels
 from pyctuator.metrics.metrics_provider import Metric, MetricNames
 from pyctuator.pyctuator_impl import PyctuatorImpl, AppInfo
 from pyctuator.pyctuator_router import PyctuatorRouter, EndpointsData
+from pyctuator.threads.thread_dump_provider import ThreadDump
 
 
 class FastApiLoggerItem(BaseModel):
     configuredLevel: Optional[str]
 
 
+# pylint: disable=too-many-locals
 class FastApiPyctuator(PyctuatorRouter):
 
     def __init__(
@@ -36,6 +38,8 @@ class FastApiPyctuator(PyctuatorRouter):
         @router.options(path_prefix + "/health", include_in_schema=False)
         @router.options(path_prefix + "/metrics", include_in_schema=False)
         @router.options(path_prefix + "/loggers", include_in_schema=False)
+        @router.options(path_prefix + "/dump", include_in_schema=False)
+        @router.options(path_prefix + "/threaddump", include_in_schema=False)
         # pylint: disable=unused-variable
         def options() -> None:
             """
@@ -87,5 +91,11 @@ class FastApiPyctuator(PyctuatorRouter):
         # pylint: disable=unused-variable
         def get_logger(logger_name: str) -> LoggerLevels:
             return pyctuator_impl.logging.get_logger(logger_name)
+
+        @router.get(path_prefix + "/dump", tags=["pyctuator"])
+        @router.get(path_prefix + "/threaddump", tags=["pyctuator"])
+        # pylint: disable=unused-variable
+        def get_thread_dump() -> ThreadDump:
+            return pyctuator_impl.get_thread_dump()
 
         app.include_router(router)

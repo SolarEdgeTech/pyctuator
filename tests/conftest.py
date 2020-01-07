@@ -31,6 +31,7 @@ class Endpoints:
     health: str
     metrics: str
     loggers: str
+    threads: str
 
 
 @dataclass
@@ -103,6 +104,7 @@ def endpoints(registration_tracker: RegistrationTrackerFixture) -> Endpoints:
         health=links["health"]["href"],
         metrics=links["metrics"]["href"],
         loggers=links["loggers"]["href"],
+        threads=links["threaddump"]["href"],
     )
 
 

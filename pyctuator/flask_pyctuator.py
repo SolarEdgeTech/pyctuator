@@ -68,4 +68,10 @@ class FlaskPyctuator(PyctuatorRouter):
         def get_logger(logger_name: str) -> Dict:
             return dataclasses.asdict(pyctuator_impl.logging.get_logger(logger_name))
 
+        @flask_blueprint.route(path_prefix + "/threaddump")
+        @flask_blueprint.route(path_prefix + "/dump")
+        # pylint: disable=unused-variable
+        def get_thread_dump() -> Dict:
+            return dataclasses.asdict(pyctuator_impl.get_thread_dump())
+
         app.register_blueprint(flask_blueprint)

@@ -12,6 +12,7 @@ class LinkHref:
 
 
 # mypy: ignore_errors
+# pylint: disable=too-many-instance-attributes
 @dataclass
 class EndpointsLinks:
     self: LinkHref
@@ -20,6 +21,8 @@ class EndpointsLinks:
     health: LinkHref
     metrics: LinkHref
     loggers: LinkHref
+    dump: LinkHref
+    threaddump: LinkHref
 
 
 @dataclass
@@ -45,4 +48,6 @@ class PyctuatorRouter(ABC):
             LinkHref(self.pyctuator_impl.pyctuator_endpoint_url + "/health", False),
             LinkHref(self.pyctuator_impl.pyctuator_endpoint_url + "/metrics", False),
             LinkHref(self.pyctuator_impl.pyctuator_endpoint_url + "/loggers", False),
+            LinkHref(self.pyctuator_impl.pyctuator_endpoint_url + "/dump", False),
+            LinkHref(self.pyctuator_impl.pyctuator_endpoint_url + "/threaddump", False),
         ))

@@ -222,9 +222,8 @@ def hello():
 Pyctuator(
     myFlaskApp,
     "Flask Pyctuator",
-    "Flask Pyctuator Example",
     "http://localhost:5000",
-    "http://localhost:5000/puctuator",
+    "http://localhost:5000/pyctuator",
     "http://localhost:8080/instances"
 )
 

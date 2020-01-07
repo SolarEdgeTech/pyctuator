@@ -50,7 +50,6 @@ def test_env_endpoint(endpoints: Endpoints) -> None:
     assert system_properties
     assert system_properties[0]["properties"][actual_key]["value"] == actual_value
 
-    # TODO should move to a dedicated test once info is implemented
     response = requests.get(endpoints.info)
     assert response.status_code == 200
     assert response.json()["app"] is not None
@@ -148,6 +147,24 @@ def test_recurring_registration(registration_tracker: RegistrationTrackerFixture
     assert registration_tracker.start_time == registration_tracker.registration.metadata["startup"]
     registration_start_time = datetime.fromisoformat(registration_tracker.start_time)
     assert registration_start_time > registration_tracker.test_start_time - timedelta(seconds=10)
+
+
+@pytest.mark.usefixtures("boot_admin_server", "pyctuator_server")
+@pytest.mark.mark_threads_endpoint
+def test_threads_endpoint(endpoints: Endpoints) -> None:
+    response = requests.get(endpoints.threads)
+    assert response.status_code == 200
+
+    threads = response.json()["threads"]
+    assert len(threads) > 5
+
+    main_thread_list = [t for t in threads if t["threadName"] == "MainThread"]
+    assert len(main_thread_list) == 1
+
+    stack = main_thread_list[0]["stackTrace"]
+    test_stack_entries = [s for s in stack if s["fileName"] == "test_pyctuator_e2e.py"]
+    current_test_stack_entry = [t for t in test_stack_entries if t["methodName"] == "test_threads_endpoint"]
+    assert len(current_test_stack_entry) == 1
 
 
 @pytest.mark.usefixtures("boot_admin_server", "pyctuator_server")
