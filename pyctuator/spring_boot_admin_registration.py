@@ -24,7 +24,7 @@ class BootAdminRegistrationHandler:
         self.application_name = application_name
         self.pyctuator_base_url = pyctuator_base_url
         self.start_time = start_time
-        self.service_url = service_url
+        self.service_url = service_url if service_url.endswith("/") else service_url + "/"
         self.registration_interval_sec = registration_interval_sec
 
         self.should_continue_registration_schedule: bool = False
