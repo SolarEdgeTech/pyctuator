@@ -144,7 +144,7 @@ class Pyctuator:
         from fastapi import FastAPI
         if isinstance(app, FastAPI):
             from pyctuator.fastapi_pyctuator import FastApiPyctuator
-            FastApiPyctuator(app, pyctuator_impl)
+            FastApiPyctuator(app, pyctuator_impl, False)
             return True
         return False
 

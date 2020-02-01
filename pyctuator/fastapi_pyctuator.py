@@ -28,26 +28,27 @@ class FastApiPyctuator(PyctuatorRouter):
             self,
             app: FastAPI,
             pyctuator_impl: PyctuatorImpl,
+            include_in_openapi_schema: bool = False,
     ) -> None:
         super().__init__(app, pyctuator_impl)
         router = APIRouter()
         self.fastapi_http_tracer = FastApiHttpTracer(pyctuator_impl.http_tracer)
 
-        @router.get("/", tags=["pyctuator"])
+        @router.get("/", include_in_schema=include_in_openapi_schema, tags=["pyctuator"])
         # pylint: disable=unused-variable
         def get_endpoints() -> EndpointsData:
             return self.get_endpoints_data()
 
-        @router.options("/env", include_in_schema=False)
-        @router.options("/info", include_in_schema=False)
-        @router.options("/health", include_in_schema=False)
-        @router.options("/metrics", include_in_schema=False)
-        @router.options("/loggers", include_in_schema=False)
-        @router.options("/dump", include_in_schema=False)
-        @router.options("/threaddump", include_in_schema=False)
-        @router.options("/logfile", include_in_schema=False)
-        @router.options("/trace", include_in_schema=False)
-        @router.options("/httptrace", include_in_schema=False)
+        @router.options("/env", include_in_schema=include_in_openapi_schema)
+        @router.options("/info", include_in_schema=include_in_openapi_schema)
+        @router.options("/health", include_in_schema=include_in_openapi_schema)
+        @router.options("/metrics", include_in_schema=include_in_openapi_schema)
+        @router.options("/loggers", include_in_schema=include_in_openapi_schema)
+        @router.options("/dump", include_in_schema=include_in_openapi_schema)
+        @router.options("/threaddump", include_in_schema=include_in_openapi_schema)
+        @router.options("/logfile", include_in_schema=include_in_openapi_schema)
+        @router.options("/trace", include_in_schema=include_in_openapi_schema)
+        @router.options("/httptrace", include_in_schema=include_in_openapi_schema)
         # pylint: disable=unused-variable
         def options() -> None:
             """
@@ -58,55 +59,55 @@ class FastApiPyctuator(PyctuatorRouter):
             documentation.
             """
 
-        @router.get("/env", tags=["pyctuator"])
+        @router.get("/env", include_in_schema=include_in_openapi_schema, tags=["pyctuator"])
         # pylint: disable=unused-variable
         def get_environment() -> EnvironmentData:
             return pyctuator_impl.get_environment()
 
-        @router.get("/info", tags=["pyctuator"])
+        @router.get("/info", include_in_schema=include_in_openapi_schema, tags=["pyctuator"])
         # pylint: disable=unused-variable
         def get_info() -> AppInfo:
             return pyctuator_impl.app_info
 
-        @router.get("/health", tags=["pyctuator"])
+        @router.get("/health", include_in_schema=include_in_openapi_schema, tags=["pyctuator"])
         # pylint: disable=unused-variable
         def get_health() -> HealthSummary:
             return pyctuator_impl.get_health()
 
-        @router.get("/metrics", tags=["pyctuator"])
+        @router.get("/metrics", include_in_schema=include_in_openapi_schema, tags=["pyctuator"])
         # pylint: disable=unused-variable
         def get_metric_names() -> MetricNames:
             return pyctuator_impl.get_metric_names()
 
-        @router.get("/metrics/{metric_name}", tags=["pyctuator"])
+        @router.get("/metrics/{metric_name}", include_in_schema=include_in_openapi_schema, tags=["pyctuator"])
         # pylint: disable=unused-variable
         def get_metric_measurement(metric_name: str) -> Metric:
             return pyctuator_impl.get_metric_measurement(metric_name)
 
         # Retrieving All Loggers
-        @router.get("/loggers", tags=["pyctuator"])
+        @router.get("/loggers", include_in_schema=include_in_openapi_schema, tags=["pyctuator"])
         # pylint: disable=unused-variable
         def get_loggers() -> LoggersData:
             return pyctuator_impl.logging.get_loggers()
 
-        @router.post("/loggers/{logger_name}", tags=["pyctuator"])
+        @router.post("/loggers/{logger_name}", include_in_schema=include_in_openapi_schema, tags=["pyctuator"])
         # pylint: disable=unused-variable
         def set_logger_level(item: FastApiLoggerItem, logger_name: str) -> Dict:
             pyctuator_impl.logging.set_logger_level(logger_name, item.configuredLevel)
             return {}
 
-        @router.get("/loggers/{logger_name}", tags=["pyctuator"])
+        @router.get("/loggers/{logger_name}", include_in_schema=include_in_openapi_schema, tags=["pyctuator"])
         # pylint: disable=unused-variable
         def get_logger(logger_name: str) -> LoggerLevels:
             return pyctuator_impl.logging.get_logger(logger_name)
 
-        @router.get("/dump", tags=["pyctuator"])
-        @router.get("/threaddump", tags=["pyctuator"])
+        @router.get("/dump", include_in_schema=include_in_openapi_schema, tags=["pyctuator"])
+        @router.get("/threaddump", include_in_schema=include_in_openapi_schema, tags=["pyctuator"])
         # pylint: disable=unused-variable
         def get_thread_dump() -> ThreadDump:
             return pyctuator_impl.get_thread_dump()
 
-        @router.get("/logfile", tags=["pyctuator"])
+        @router.get("/logfile", include_in_schema=include_in_openapi_schema, tags=["pyctuator"])
         # pylint: disable=unused-variable
         def get_logfile(range_header: str = Header(default=None,
                                                    alias="range")) -> Response:  # pylint: disable=redefined-builtin
@@ -126,8 +127,8 @@ class FastApiPyctuator(PyctuatorRouter):
 
             return my_res
 
-        @router.get("/trace", tags=["pyctuator"])
-        @router.get("/httptrace", tags=["pyctuator"])
+        @router.get("/trace", include_in_schema=include_in_openapi_schema, tags=["pyctuator"])
+        @router.get("/httptrace", include_in_schema=include_in_openapi_schema, tags=["pyctuator"])
         # pylint: disable=unused-variable
         def get_httptrace() -> Traces:
             return pyctuator_impl.http_tracer.get_httptrace()

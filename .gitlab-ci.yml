@@ -21,12 +21,15 @@ build:
 
     # Install the extra flask and fastapi modules required for the tests, then checkstyle and run the tests in "no psutil" env
     - poetry install --extras flask --extras fastapi --extras db --extras redis
-    - make check
     - make coverage
 
     # Install the extra psutil module and run the tests in "with psutil" env
     - poetry install --extras psutil
     - make test
+
+    # Perform linting after all dependencies have been installed!
+    - make check
+
   artifacts:
     paths:
       - htmlcov
