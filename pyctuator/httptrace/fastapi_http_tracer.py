@@ -23,7 +23,7 @@ class FastApiHttpTracer:
         return response
 
     def _create_headers_dictionary(self, headers: Headers) -> Mapping[str, List[str]]:
-        headers_dict = {key: [value] for (key, value) in headers.items()}
+        headers_dict = {key.title(): [value] for (key, value) in headers.items()}
         return headers_dict
 
     def _create_record(

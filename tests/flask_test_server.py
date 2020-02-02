@@ -44,7 +44,7 @@ class FlaskPyctuatorServer(PyctuatorServer):
         # pylint: disable=unused-variable
         def get_httptrace_test_url() -> Response:
             resp = Response()
-            resp.headers["header"] = str(request.headers.get('header'))
+            resp.headers["Resp-Data"] = str(request.headers.get('User-Data'))
             return resp
 
     def start(self) -> None:

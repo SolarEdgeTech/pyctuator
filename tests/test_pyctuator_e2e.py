@@ -227,6 +227,7 @@ def test_logfile_endpoint(endpoints: Endpoints) -> None:
     assert response.status_code == HTTPStatus.PARTIAL_CONTENT.value
 
 
+# mypy: ignore_errors
 @pytest.mark.usefixtures("boot_admin_server", "pyctuator_server")
 @pytest.mark.mark_traces_endpoint
 def test_traces_endpoint(endpoints: Endpoints) -> None:
@@ -235,6 +236,10 @@ def test_traces_endpoint(endpoints: Endpoints) -> None:
 
     # Create request with header
     user_header = "my header test"
-    response = requests.get(endpoints.root + "httptrace_test_url", headers={"header": user_header})
-    print("@@@ Test request header: " + str(response.headers.get('header')))
-    assert user_header == response.headers.get('header')
+    requests.get(endpoints.root + "httptrace_test_url", headers={"User-Data": user_header})
+    response = requests.get(endpoints.httptrace)
+    response_traces = response.json()["traces"]
+    trace = next(x for x in response_traces if x["request"]["uri"].endswith("httptrace_test_url"))
+    # Assert header appears on httptrace url
+    assert user_header == trace["response"]["headers"]["Resp-Data"][0]
+    assert int(response.headers.get("Content-Length")) > 0
