@@ -1,14 +1,29 @@
-import dataclasses
 import json
+from datetime import datetime, date
 from http import HTTPStatus
-from typing import Dict, Tuple
+from typing import Dict, Tuple, Any
 
-from flask import Flask, Blueprint, request
+from flask import Flask, Blueprint, request, jsonify
 from flask import Response, make_response
+from flask.json import JSONEncoder
 
 from pyctuator.httptrace.flask_http_tracer import FlaskHttpTracer
 from pyctuator.pyctuator_impl import PyctuatorImpl
 from pyctuator.pyctuator_router import PyctuatorRouter
+
+
+class CustomJSONEncoder(JSONEncoder):
+    # pylint: disable=method-hidden
+    def default(self, o: Any) -> Any:
+        try:
+            if isinstance(o, (datetime, date)):
+                return o.isoformat()
+            iterable = iter(o)
+        except TypeError:
+            pass
+        else:
+            return list(iterable)
+        return JSONEncoder.default(self, o)
 
 
 class FlaskPyctuator(PyctuatorRouter):
@@ -21,8 +36,10 @@ class FlaskPyctuator(PyctuatorRouter):
 
     ) -> None:
         super().__init__(app, pyctuator_impl)
+
         path_prefix: str = pyctuator_impl.pyctuator_endpoint_path_prefix
         flask_blueprint: Blueprint = Blueprint("flask_blueprint", "pyctuator", )
+        flask_blueprint.json_encoder = CustomJSONEncoder
         self.flask_http_tracer = FlaskHttpTracer(pyctuator_impl.http_tracer)
 
         @app.before_request
@@ -32,39 +49,39 @@ class FlaskPyctuator(PyctuatorRouter):
 
         @flask_blueprint.route("/")
         # pylint: disable=unused-variable
-        def get_endpoints() -> Dict:
-            return dataclasses.asdict(self.get_endpoints_data())
+        def get_endpoints() -> Any:
+            return jsonify(self.get_endpoints_data())
 
         @flask_blueprint.route("/env")
         # pylint: disable=unused-variable
-        def get_environment() -> Dict:
-            return dataclasses.asdict(pyctuator_impl.get_environment())
+        def get_environment() -> Any:
+            return jsonify(pyctuator_impl.get_environment())
 
         @flask_blueprint.route("/info")
         # pylint: disable=unused-variable
-        def get_info() -> Dict:
-            return dataclasses.asdict(pyctuator_impl.app_info)
+        def get_info() -> Any:
+            return jsonify(pyctuator_impl.app_info)
 
         @flask_blueprint.route("/health")
         # pylint: disable=unused-variable
-        def get_health() -> Dict:
-            return dataclasses.asdict(pyctuator_impl.get_health())
+        def get_health() -> Any:
+            return jsonify(pyctuator_impl.get_health())
 
         @flask_blueprint.route("/metrics")
         # pylint: disable=unused-variable
-        def get_metric_names() -> Dict:
-            return dataclasses.asdict(pyctuator_impl.get_metric_names())
+        def get_metric_names() -> Any:
+            return jsonify(pyctuator_impl.get_metric_names())
 
         @flask_blueprint.route("/metrics/<metric_name>")
         # pylint: disable=unused-variable
-        def get_metric_measurement(metric_name: str) -> Dict:
-            return dataclasses.asdict(pyctuator_impl.get_metric_measurement(metric_name))
+        def get_metric_measurement(metric_name: str) -> Any:
+            return jsonify(pyctuator_impl.get_metric_measurement(metric_name))
 
         # Retrieving All Loggers
         @flask_blueprint.route("/loggers")
         # pylint: disable=unused-variable
-        def get_loggers() -> Dict:
-            return dataclasses.asdict(pyctuator_impl.logging.get_loggers())
+        def get_loggers() -> Any:
+            return jsonify(pyctuator_impl.logging.get_loggers())
 
         @flask_blueprint.route("/loggers/<logger_name>", methods=['POST'])
         # pylint: disable=unused-variable
@@ -75,14 +92,14 @@ class FlaskPyctuator(PyctuatorRouter):
 
         @flask_blueprint.route("/loggers/<logger_name>")
         # pylint: disable=unused-variable
-        def get_logger(logger_name: str) -> Dict:
-            return dataclasses.asdict(pyctuator_impl.logging.get_logger(logger_name))
+        def get_logger(logger_name: str) -> Any:
+            return jsonify(pyctuator_impl.logging.get_logger(logger_name))
 
         @flask_blueprint.route("/threaddump")
         @flask_blueprint.route("/dump")
         # pylint: disable=unused-variable
-        def get_thread_dump() -> Dict:
-            return dataclasses.asdict(pyctuator_impl.get_thread_dump())
+        def get_thread_dump() -> Any:
+            return jsonify(pyctuator_impl.get_thread_dump())
 
         @flask_blueprint.route("/logfile")
         # pylint: disable=unused-variable
@@ -104,7 +121,7 @@ class FlaskPyctuator(PyctuatorRouter):
         @flask_blueprint.route("/trace")
         @flask_blueprint.route("/httptrace")
         # pylint: disable=unused-variable
-        def get_httptrace() -> Dict:
-            return dataclasses.asdict(pyctuator_impl.http_tracer.get_httptrace())
+        def get_httptrace() -> Any:
+            return jsonify(pyctuator_impl.http_tracer.get_httptrace())
 
         app.register_blueprint(flask_blueprint, url_prefix=path_prefix)

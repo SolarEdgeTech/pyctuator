@@ -240,6 +240,10 @@ def test_traces_endpoint(endpoints: Endpoints) -> None:
     response = requests.get(endpoints.httptrace)
     response_traces = response.json()["traces"]
     trace = next(x for x in response_traces if x["request"]["uri"].endswith("httptrace_test_url"))
+
     # Assert header appears on httptrace url
     assert user_header == trace["response"]["headers"]["Resp-Data"][0]
     assert int(response.headers.get("Content-Length")) > 0
+
+    # Assert timestamp is formatted in ISO format
+    datetime.fromisoformat(trace["timestamp"])
