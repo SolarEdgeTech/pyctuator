@@ -227,7 +227,7 @@ Pyctuator(
     "http://localhost:8080/instances"
 )
 
-myFlaskApp.run(debug=True, port=5000)
+myFlaskApp.run(debug=False, port=5000)
 
 ```
 ### FastAPI

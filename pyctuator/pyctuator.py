@@ -90,8 +90,10 @@ class Pyctuator:
         }
         for framework_name, framework_integration_function in framework_integrations.items():
             if self._is_framework_installed(framework_name):
+                logging.debug("Framework %s is installed, trying to integrate with it", framework_name)
                 success = framework_integration_function(app, self.pyctuator_impl)
                 if success:
+                    logging.debug("Integrated with framework %s", framework_name)
                     if registration_url is not None:
                         self.boot_admin_registration_handler = BootAdminRegistrationHandler(
                             registration_url,
