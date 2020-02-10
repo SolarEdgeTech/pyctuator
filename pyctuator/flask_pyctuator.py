@@ -13,6 +13,16 @@ from pyctuator.pyctuator_router import PyctuatorRouter
 
 
 class CustomJSONEncoder(JSONEncoder):
+    """ Override Flask's JSON encoding of datetime to assure ISO format is used.
+
+    By default, when Flask is rendering a response to JSON, it is formatting datetime, date and time according to
+    RFC-822 which is different from the ISO format used by SBA.
+
+    This encoder overrides the default datetime encoding and is only used by the Pyctuator blueprint so it shouldn't
+    interfere with whatever encoding users are using.
+
+    See https://stackoverflow.com/questions/43663552/keep-a-datetime-date-in-yyyy-mm-dd-format-when-using-flasks-jsonify
+    """
     # pylint: disable=method-hidden
     def default(self, o: Any) -> Any:
         try:
