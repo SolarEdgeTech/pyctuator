@@ -1,4 +1,6 @@
 import datetime
+import socket
+
 from flask import Flask
 import logging
 from pyctuator.pyctuator import Pyctuator
@@ -18,12 +20,15 @@ def hello():
     return "Hello World!"
 
 
+example_app_public_address = socket.gethostbyname(socket.gethostname())
+example_app_address_from_sba_container = "host.docker.internal"
+
 Pyctuator(
     myFlaskApp,
     "Flask Pyctuator",
-    "http://localhost:5000",
-    "http://localhost:5000/pyctuator",
-    "http://localhost:8080/instances",
+    f"http://{example_app_public_address}:5000",
+    f"http://{example_app_address_from_sba_container}:5000/pyctuator",
+    "http://localhost:8082/instances",
     app_description="Demonstrate Spring Boot Admin Integration with Flask",
     registration_interval_sec=100,
     logfile_max_size=10000,

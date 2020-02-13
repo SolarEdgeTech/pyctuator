@@ -1,6 +1,7 @@
 import datetime
 import logging
 import random
+import socket
 
 from fastapi import FastAPI
 from uvicorn import Server
@@ -25,12 +26,15 @@ def read_root():
     return "Hello World!"
 
 
+example_app_public_address = socket.gethostbyname(socket.gethostname())
+example_app_address_from_sba_container = "host.docker.internal"
+
 myPyc = Pyctuator(
     app,
     "Example FastAPI",
-    "http://localhost:8000",
-    "http://localhost:8000/pyctuator",
-    "http://localhost:8080/instances",
+    f"http://{example_app_public_address}:8000",
+    f"http://{example_app_address_from_sba_container}:8000/pyctuator",
+    "http://localhost:8082/instances",
     app_description=app.description,
     registration_interval_sec=1,
     logfile_max_size=10000,

@@ -205,6 +205,7 @@ Then calling on http://localhost:8080/pyctuator/env will return:
 }
 ```
 ## Examples
+The examples below show how to integrate Pyctuator with applications built using FastAPI and Flask.
 ### Flask
 ```python
 from flask import Flask
@@ -264,6 +265,26 @@ myFastAPIServer.run()
 
 ```
 
+### Full blown examples
+The `examples` folder contains full blown Python projects that are built using Poetry from https://python-poetry.org/.
+These examples assume you are running Spring Boot Admin in a docker container which is available from https://hub.docker.com/r/michayaak/spring-boot-admin.
+
+To start Spring Boot Admin version 2.2.2 issue the following command:
+```shell script
+docker run -p 8082:8082 michayaak/spring-boot-admin:2.2.2
+```
+The docker image tag represents the version of Spring Boot Admin, so if you need to use version `2.0.0`, issue the
+ following command instead: 
+```shell script
+docker run -p 8082:8082 michayaak/spring-boot-admin:2.0.0
+```
+
+Once Spring Boot Admin is running, you can run the examples as follow:
+```shell script
+cd examples/FastAPI
+poetry install
+poetry run python -m fastapi_example_app
+``` 
 
 ## Usage notes
 ### Using psutil for process/filesystem metrics
