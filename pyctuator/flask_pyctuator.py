@@ -23,6 +23,7 @@ class CustomJSONEncoder(JSONEncoder):
 
     See https://stackoverflow.com/questions/43663552/keep-a-datetime-date-in-yyyy-mm-dd-format-when-using-flasks-jsonify
     """
+
     # pylint: disable=method-hidden
     def default(self, o: Any) -> Any:
         try:
@@ -56,6 +57,12 @@ class FlaskPyctuator(PyctuatorRouter):
         # pylint: disable=unused-variable
         def http_tracer_callback() -> None:
             self.flask_http_tracer.record_httptrace_flask(request)
+
+        @flask_blueprint.after_request
+        # pylint: disable=unused-variable
+        def add_sba2_support(response: Response) -> Response:
+            response.headers["Content-Type"] = "application/vnd.spring-boot.actuator.v2"
+            return response
 
         @flask_blueprint.route("/")
         # pylint: disable=unused-variable
