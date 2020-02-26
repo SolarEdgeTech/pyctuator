@@ -7,6 +7,7 @@ cache:
 
 stages:
   - build
+  - deploy
 
 build:
   image: matanrubin/python-poetry:3.7
@@ -33,3 +34,17 @@ build:
   artifacts:
     paths:
       - htmlcov
+
+deploy:
+  image: matanrubin/python-poetry:3.7
+  stage: deploy
+  script:
+    # Instruct poetry to keep the .venv directory in the current working directory so gitlab would cache it
+    - poetry config virtualenvs.in-project true
+
+    # Ask poetry to install all required modules (skipping the "dev" and "extra" modules) than build
+    - poetry build
+    - poetry config repositories.sedg-oss-pypi ${PYPI_REPO}
+    - poetry publish --repository sedg-oss-pypi --username ${PYPI_USER} --password ${PYPI_PASSWORD}
+  only:
+    - master
