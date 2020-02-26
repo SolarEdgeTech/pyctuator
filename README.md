@@ -1,122 +1,197 @@
 # Pyctuator
 
-Pyctuator is a Python implementation of the Spring Actuator API for popular web frameworks,  
-which allows a web application written in Python to be managed and monitored by codecentric's
-[Spring Boot Admin](https://github.com/codecentric/spring-boot-admin).  
-Pyctuator implements a growing subset of the actuator API   
-(see https://docs.spring.io/spring-boot/docs/2.1.8.RELEASE/actuator-api/html/)  
-that allows monitoring Python applications using Spring Boot Admin.
+Pyctuator allows monitoring your Python microservice as if it were a Spring
+Boot application using 
+[Spring Boot Admin](https://github.com/codecentric/spring-boot-admin). 
+
+The supported web frameworks are **Flask** and **FastAPI**.
+
+Support for **Django** is planned as well.
+
+## Requirements
+Python 3.7+
+
+Pyctuator has zero hard dependencies.
+
+## Installing
+Install Pyctuator using pip: `pip3 install pyctuator`
 
 ## Why?
+Many Java shops use Spring Boot as their main web framework for developing
+microservices. 
+These organizations often use Spring Actuator together with Spring Boot Admin
+to monitor their microservices' status, gain access to applications'
+ state and configuration, manipulate log levels, etc.
+ 
+These organizations often have the occasional Python microservice, especially as
+Python Machine Learning and Data Science packages gain popularity. Setting up
+a proper monitoring tool for these microservices is a complex task, and might
+not be justified for a few Python microservices in a sea of Java microservices.
+
+This is where Pyctuator comes in. It allows you to easily integrate your Python
+microservices into your existing Spring Boot Admin deployment.
+
+## Main Features
+Pyctuator is a partial Python implementation of the 
+[Spring Actuator API](https://docs.spring.io/spring-boot/docs/2.1.8.RELEASE/actuator-api/html/)  . 
+
+It currently supports the following Actuator features:
+
+* **Application details**
+* **Metrics**
+    * Memory usage
+    * Disk usage 
+    * Easily add custom metrics
+* **Health monitors**
+    * Built in MySQL health monitor
+    * Built in Redis health monitor
+    * Easily add custom health monitors
+* **Environment**
+* **Loggers** - Easily change log levels during runtime
+* **Log file** - Tail the application's log file
+* **Thread dump** - See which threads are running
+* **HTTP traces** - Tail recent HTTP requests, including status codes and latency
 
 ## Quickstart
+The examples below show a minimal integration of **FastAPI** and **Flask** applications with **Pyctuator**.
 
-## Configuration
-### Application Info
-While Pyctuator only require to know the application's name, it is recommended that applications monitored by Spring 
-Boot Admin will show additional build and git details - this becomes handy when a service is scaled out with multiple 
-instances by showing the version of each instance.
-To do so, you can provide additional build and git info using methods of the Pyctuator object:
+After installing Flask/FastAPI and Pyctuator, start by launching a local Spring Boot Admin instance:
+
+```sh
+docker run --rm --name spring-boot-admin -p 8082:8082 michayaak/spring-boot-admin:2.2.2
+```
+
+Then go to `http://localhost:8082` to get to the web UI.
+
+### Flask
+The following is a complete example and should run as is:
+
 ```python
-pyctuator = Pyctuator(
+from flask import Flask
+from pyctuator.pyctuator import Pyctuator
+
+app_name = "Flask App with Pyctuator"
+app = Flask(app_name)
+
+
+@app.route("/")
+def hello():
+    return "Hello World!"
+
+
+Pyctuator(
     app,
-    "Pyctuator",
-    "http://my-micro-service:8000",
-    "http://my-micro-service:8000/pyctuator",
-    "http://spring-boot-admin:8082/instances",
-    app_description="An example application that is managed by Spring Boot Admin",
+    app_name,
+    "http://host.docker.internal:5000",
+    "http://host.docker.internal:5000/pyctuator",
+    "http://localhost:8082/instances"
 )
+
+app.run(debug=False, port=5000)
+```
+
+Once you run the application, it should automatically register with Spring Boot Admin and should be available in the UI at `http://localhost:8082`
+
+### FastAPI
+The following is a complete example and should run as is:
+
+```python
+from fastapi import FastAPI
+from uvicorn import Server
+
+from uvicorn.config import Config
+from pyctuator.pyctuator import Pyctuator
+
+
+app_name = "FastAPI App with Pyctuator"
+app = FastAPI(title=app_name)
+
+
+@app.get("/")
+def hello():
+    return "Hello World!"
+
+
+Pyctuator(
+    app,
+    "FastAPI Pyctuator",
+    "http://host.docker.internal:8000",
+    "http://host.docker.internal:8000/pyctuator",
+    "http://localhost:8080/instances"
+)
+
+Server(config=(Config(app=app, loop="asyncio"))).run()
+```
+
+
+Once you run the application, it should automatically register with Spring Boot Admin and should be available in the UI at `http://localhost:8082`
+
+## Advanced Configuration
+The following sections are intended for advanced users who want to configure advanced Pyctuator features.
+
+### Application Info
+While Pyctuator only needs to know the application's name, it is recommended that applications monitored by Spring 
+Boot Admin will show additional build and git details - this becomes handy when a service is scaled out to multiple instances by showing the version of each instance.
+To do so, you can provide additional build and git info using methods of the Pyctuator object:
+
+```python
+pyctuator = Pyctuator(...)  # arguments removed for brevity
 
 pyctuator.set_build_info(
     name="app",
     version="1.3.1",
     time=datetime.fromisoformat("2019-12-21T10:09:54.876091"),
 )
+
 pyctuator.set_git_info(
     commit="7d4fef3",
     time=datetime.fromisoformat("2019-12-24T14:18:32.123432"),
-    branch="origin/branch",
+    branch="origin/master",
 )
 ```
-This results with the following:
+
+Once you configure build and git info, you should see them in the Details tab of Spring Boot Admin:
+
 ![Pyctuator](/uploads/7194d2657ab769cda2a12e516d789da4/image.png)
 
 ### DB Health
-For services that using SQL database via SQLAlchemy, Pyctuator can easily monitor and expose the connection's health 
+For services that use SQL database via SQLAlchemy, Pyctuator can easily monitor and expose the connection's health 
 using the DbHealthProvider class as demonstrated below:
+
 ```python
-engine: Engine = create_engine("mysql+pymysql://root:root@localhost:3306", echo=True)
-pyctuator = Pyctuator(...)
+engine = create_engine("mysql+pymysql://root:root@localhost:3306")
+pyctuator = Pyctuator(...)  # arguments removed for brevity
 pyctuator.register_health_provider(DbHealthProvider(engine))
 ```
-When the DB is up and running, the health API returns:
-```json
-{
-  "status": "UP",
-  "details": {
-    "diskSpace": {
-      "status": "UP",
-      "details": {
-        "total": 506333229056,
-        "free": 332432617472,
-        "threshold": 104857600
-      }
-    },
-    "db": {
-      "status": "UP",
-      "details": {
-        "engine": "mysql",
-        "failure": null
-      }
-    }
-  }
-}
-```
-However, when the DB is offline (or any other failure), the health API will return:
-```json
-{
-  "status": "DOWN",
-  "details": {
-    "diskSpace": {
-      "status": "UP",
-      "details": {
-        "total": 506333229056,
-        "free": 332507475968,
-        "threshold": 104857600
-      }
-    },
-    "db": {
-      "status": "DOWN",
-      "details": {
-        "engine": "mysql",
-        "failure": "(pymysql.err.OperationalError) (2013, 'Lost connection to MySQL server during query')\n[SQL: SELECT 1577567795140]\n(Background on this error at: http://sqlalche.me/e/e3q8)"
-      }
-    }
-  }
-}
-``` 
+
+Once you configure the health provider, you should see DB health info in the Details tab of Spring Boot Admin:
+
+TODO insert image here
 
 ### Redis health
-If your service is using Redis, Pyctuator can monitor the connection to redis by simply initializing a 
-`RedisHealthProvider`:
+If your service is using Redis, Pyctuator can monitor the connection to Redis by simply initializing a `RedisHealthProvider`:
+
 ```python
 r = redis.Redis()
-pyctuator = Pyctuator(...)
+pyctuator = Pyctuator(...)  # arguments removed for brevity
 pyctuator.register_health_provider(RedisHealthProvider(r))
 ```
 
 ### Custom Environment
-Out of the box, Pyctuator is exposing python's environment variables to Spring Boot Admin. In addition, an application 
-may register an environment-provider which when called, returns a dictionary that may contain primitives and other 
-dictionaries, which is then exposed to Spring Boot Admin.
+Out of the box, Pyctuator exposes Python's environment variables to Spring Boot Admin.
 
-Since Spring Boot Admin doesn't support hierarchical environment (only a flat key/value mapping), the provided 
-environment is flattened as dot-delimited keys.
+In addition, an application may register an environment provider to provide additional configuration that should be exposed via Spring Boot Admin. 
 
-Also, Pyctuator tries to hide/scrub secrets from being exposed to Spring Boot Admin by replacing values that their 
-keys hit they are secrets (i.e. containing the words "secret", "password" and some forms of "key").
+When the environment provider is called it should return a dictionary describing the environment. The returned dictionary is exposed to Spring Boot Admin.
+
+Since Spring Boot Admin doesn't support hierarchical environment (only a flat key/value mapping), the provided environment is flattened as dot-delimited keys.
+
+Pyctuator tries to hide secrets from being exposed to Spring Boot Admin by replacing the values of "suspicious" keys with ***.
+
+Suspicious keys are keys that contain the words "secret", "password" and some forms of "key".
 
 For example, if an application's configuration looks like this:
+
 ```python
 config = {
     "a": "s1",
@@ -134,176 +209,64 @@ config = {
     }
 }
 ```
-And an environment provider was registered like this:
+
+An environment provider can be registered like so:
+
 ```python
-pyctuator.register_environment_provider("conf", lambda: conf)
+pyctuator.register_environment_provider("config", lambda: config)
 ```
-Then calling on http://localhost:8080/pyctuator/env will return:
-```JSON
-{
-  "activeProfiles": [],
-  "propertySources": [
-    {
-      "name": "systemEnvironment",
-      "properties": {
-        "COMPUTERNAME": {
-          "value": "SERVER-X",
-          "origin": null
-        },
-        "NUMBER_OF_PROCESSORS": {
-          "value": "8",
-          "origin": null
-        },
-        "OS": {
-          "value": "Windows_NT",
-          "origin": null
-        },
-        "PROMPT": {
-          "value": "(pyctuator-py3.7) $P$G",
-          "origin": null
-        },
-        "USERNAME": {
-          "value": "Joe",
-          "origin": null
-        },
-      }
-    },
-    {
-      "name": "conf",
-      "properties": {
-        "a": {
-          "value": "s1",
-          "origin": null
-        },
-        "b.secret": {
-          "value": "******",
-          "origin": null
-        },
-        "b.c": {
-          "value": 625,
-          "origin": null
-        },
-        "d.e": {
-          "value": true,
-          "origin": null
-        },
-        "d.f": {
-          "value": "hello",
-          "origin": null
-        },
-        "d.g.h": {
-          "value": 123,
-          "origin": null
-        },
-        "d.g.i": {
-          "value": "abcde",
-          "origin": null
-        }
-      }
-    }
-  ]
-}
-```
-## Examples
-The examples below show how to integrate Pyctuator with applications built using FastAPI and Flask.
-### Flask
+
+### Filesystem and Memory Metrics
+Pyctuator can provide filesystem and memory metrics.
+
+To enable these metrics, install [psutil](https://github.com/giampaolo/psutil)
+
+Note that the `psutil` dependency is **optional** and is only required if you want to enable filesystem and memory monitoring.
+
+### Loggers
+Pyctuator leverages Python's builtin `logging` framework and allows controlling log levels at runtime.
+ 
+Note that in order to control uvicorn's log level, you need to provide a logger object when instantiating it. For example:
+
+
 ```python
-from flask import Flask
-
-from pyctuator.pyctuator import Pyctuator
-
-myFlaskApp = Flask("ExampleFlaskApp")
-
-
-@myFlaskApp.route("/")
-def hello():
-    return "Hello World!"
-
-
-Pyctuator(
-    myFlaskApp,
-    "Flask Pyctuator",
-    "http://localhost:5000",
-    "http://localhost:5000/pyctuator",
-    "http://localhost:8080/instances"
-)
-
-myFlaskApp.run(debug=False, port=5000)
-
-```
-### FastAPI
-```python
-from fastapi import FastAPI
-from uvicorn import Server
-
-from uvicorn.config import Config
-from pyctuator.pyctuator import Pyctuator
-
-
-app = FastAPI(
-    title="FastAPI Example Server",
-    description="Demonstrate Spring Boot Admin Integration with FastAPI",
-    docs_url="/api",
-)
-
-
-@app.get("/")
-def read_root():
-    return "Hello World!"
-
-
-Pyctuator(
-    app,
-    "FastAPI Pyctuator",
-    "http://localhost:8000",
-    "http://localhost:8000/pyctuator",
-    "http://localhost:8080/instances"
-)
-
-myFastAPIServer = Server(config=(Config(app=app, loop="asyncio")))
-myFastAPIServer.run()
-
-```
-
-### Full blown examples
-The `examples` folder contains full blown Python projects that are built using Poetry from https://python-poetry.org/.
-These examples assume you are running Spring Boot Admin in a docker container which is available from https://hub.docker.com/r/michayaak/spring-boot-admin.
-
-To start Spring Boot Admin version 2.2.2 issue the following command:
-```shell script
-docker run -p 8082:8082 michayaak/spring-boot-admin:2.2.2
-```
-The docker image tag represents the version of Spring Boot Admin, so if you need to use version `2.0.0`, issue the
- following command instead: 
-```shell script
-docker run -p 8082:8082 michayaak/spring-boot-admin:2.0.0
-```
-
-Once Spring Boot Admin is running, you can run the examples as follow:
-```shell script
-cd examples/FastAPI
-poetry install
-poetry run python -m fastapi_example_app
-``` 
-
-## Usage notes
-### Using psutil for process/filesystem metrics
-In order for pyctuator to provide process/filesystem metrics, it is using the *optional* `psutil` library from:  
-https://github.com/giampaolo/psutil  
-(if the library isn't available in a system using the pyctuator, pyctuator will not provide such metrics). 
-### When using uvicorn
-* In order to control the log level of uvicorn, when instantiating, you need to provide a logger object.
-Start uvicorn with `logger` object, for example:   
-`myFastAPIServer = Server(
+myFastAPIServer = Server(
     config=Config(
         logger=logging.getLogger("uvi"), 
         app=app, 
         loop="asyncio"
     )
-)`
+)
+```
+
+## Full blown examples
+The `examples` folder contains full blown Python projects that are built using [Poetry](https://python-poetry.org/).
+
+These examples assume you are running Spring Boot Admin in a local docker container. A Spring Boot Admin Docker image is available [here](https://hub.docker.com/r/michayaak/spring-boot-admin).
+
+To start Spring Boot Admin version 2.2.2 issue the following command:
+
+```sh
+docker run -p 8082:8082 michayaak/spring-boot-admin:2.2.2
+```
+
+The docker image tag represents the version of Spring Boot Admin, so if you need to use version `2.0.0`, issue the
+ following command instead: 
+ 
+```sh
+docker run -p 8082:8082 michayaak/spring-boot-admin:2.0.0
+```
+
+Once Spring Boot Admin is running, you can run the examples as follow:
+
+```sh
+cd examples/FastAPI
+poetry install
+poetry run python -m fastapi_example_app
+``` 
 
 ## Contributing
-To set up a development environment, make sure you have Python 3.7 or newer installed, and execute `make bootstrap`.
+To set up a development environment, make sure you have Python 3.7 or newer installed, and run `make bootstrap`.
 
 Use `make check` to run static analysis tools.
 
