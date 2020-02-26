@@ -27,19 +27,20 @@ def read_root():
 
 
 example_app_public_address = socket.gethostbyname(socket.gethostname())
-example_app_address_from_sba_container = "host.docker.internal"
+example_app_address_as_seen_from_sba_container = "host.docker.internal"
+example_sba_address = "localhost"
 
-myPyc = Pyctuator(
+pyctuator = Pyctuator(
     app,
     "Example FastAPI",
     f"http://{example_app_public_address}:8000",
-    f"http://{example_app_address_from_sba_container}:8000/pyctuator",
-    "http://localhost:8082/instances",
+    f"http://{example_app_address_as_seen_from_sba_container}:8000/pyctuator",
+    f"http://{example_sba_address}:8082/instances",
     app_description=app.description,
     registration_interval_sec=1,
     logfile_max_size=10000,
     logfile_formatter="%(asctime)s  %(levelname)-5s %(process)d -- [%(threadName)s] %(module)s: %(message)s"
 )
 
-myFastAPIServer = Server(config=(Config(app=app, loop="asyncio", host="0.0.0.0")))
-myFastAPIServer.run()
+server = Server(config=(Config(app=app, loop="asyncio", host="0.0.0.0")))
+server.run()
