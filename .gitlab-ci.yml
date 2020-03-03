@@ -3,7 +3,7 @@ variables:
 
 cache:
   paths:
-    - .venv
+    - .poetry-cache
 
 stages:
   - build
@@ -15,6 +15,8 @@ build:
   script:
     # Instruct poetry to keep the .venv directory in the current working directory so gitlab would cache it
     - poetry config virtualenvs.in-project true
+    - poetry config cache-dir .poetry-cache
+    - poetry config virtualenvs.path .poetry-cache/venv
 
     # Ask poetry to install all required modules (skipping the "dev" and "extra" modules) than build
     - poetry install
