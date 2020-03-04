@@ -2,7 +2,7 @@ from abc import ABC
 from dataclasses import dataclass
 from typing import Any
 
-from pyctuator.pyctuator_impl import PyctuatorImpl
+from pyctuator.impl.pyctuator_impl import PyctuatorImpl
 
 
 @dataclass

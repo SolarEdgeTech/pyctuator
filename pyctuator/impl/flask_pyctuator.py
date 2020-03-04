@@ -8,8 +8,8 @@ from flask import Response, make_response
 from flask.json import JSONEncoder
 
 from pyctuator.httptrace.flask_http_tracer import FlaskHttpTracer
-from pyctuator.pyctuator_impl import PyctuatorImpl
-from pyctuator.pyctuator_router import PyctuatorRouter
+from pyctuator.impl.pyctuator_impl import PyctuatorImpl
+from pyctuator.impl.pyctuator_router import PyctuatorRouter
 
 
 class CustomJSONEncoder(JSONEncoder):

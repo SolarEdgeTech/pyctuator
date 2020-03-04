@@ -12,8 +12,8 @@ from pyctuator.httptrace.fastapi_http_tracer import FastApiHttpTracer
 from pyctuator.httptrace.http_tracer import Traces
 from pyctuator.logging.pyctuator_logging import LoggersData, LoggerLevels
 from pyctuator.metrics.metrics_provider import Metric, MetricNames
-from pyctuator.pyctuator_impl import PyctuatorImpl, AppInfo
-from pyctuator.pyctuator_router import PyctuatorRouter, EndpointsData
+from pyctuator.impl.pyctuator_impl import PyctuatorImpl, AppInfo
+from pyctuator.impl.pyctuator_router import PyctuatorRouter, EndpointsData
 from pyctuator.threads.thread_dump_provider import ThreadDump
 
 

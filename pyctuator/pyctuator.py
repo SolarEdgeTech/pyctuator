@@ -14,8 +14,8 @@ from pyctuator.health.diskspace_health_impl import DiskSpaceHealthProvider
 from pyctuator.health.health_provider import HealthProvider
 from pyctuator.metrics.memory_metrics_impl import MemoryMetricsProvider
 from pyctuator.metrics.thread_metrics_impl import ThreadMetricsProvider
-from pyctuator.pyctuator_impl import PyctuatorImpl, AppInfo, BuildInfo, GitInfo, GitCommitInfo, AppDetails
-from pyctuator.spring_boot_admin_registration import BootAdminRegistrationHandler
+from pyctuator.impl.pyctuator_impl import PyctuatorImpl, AppInfo, BuildInfo, GitInfo, GitCommitInfo, AppDetails
+from pyctuator.impl.spring_boot_admin_registration import BootAdminRegistrationHandler
 
 default_logfile_format = '%(asctime)s  %(levelname)-5s %(process)d -- [%(threadName)s] %(module)s: %(message)s'
 
@@ -145,7 +145,7 @@ class Pyctuator:
         """
         from fastapi import FastAPI
         if isinstance(app, FastAPI):
-            from pyctuator.fastapi_pyctuator import FastApiPyctuator
+            from pyctuator.impl.fastapi_pyctuator import FastApiPyctuator
             FastApiPyctuator(app, pyctuator_impl, False)
             return True
         return False
@@ -158,7 +158,7 @@ class Pyctuator:
         """
         from flask import Flask
         if isinstance(app, Flask):
-            from pyctuator.flask_pyctuator import FlaskPyctuator
+            from pyctuator.impl.flask_pyctuator import FlaskPyctuator
             FlaskPyctuator(app, pyctuator_impl)
             return True
         return False
