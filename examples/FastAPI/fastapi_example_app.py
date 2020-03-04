@@ -37,9 +37,6 @@ pyctuator = Pyctuator(
     f"http://{example_app_address_as_seen_from_sba_container}:8000/pyctuator",
     f"http://{example_sba_address}:8082/instances",
     app_description=app.description,
-    registration_interval_sec=1,
-    logfile_max_size=10000,
-    logfile_formatter="%(asctime)s  %(levelname)-5s %(process)d -- [%(threadName)s] %(module)s: %(message)s"
 )
 
 server = Server(config=(Config(app=app, loop="asyncio", host="0.0.0.0")))

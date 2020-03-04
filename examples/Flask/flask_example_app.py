@@ -32,9 +32,6 @@ Pyctuator(
     f"http://{example_app_address_as_seen_from_sba_container}:5000/pyctuator",
     f"http://{example_sba_address}:8082/instances",
     app_description="Demonstrate Spring Boot Admin Integration with Flask",
-    registration_interval_sec=100,
-    logfile_max_size=10000,
-    logfile_formatter="%(asctime)s  %(levelname)-5s %(process)d -- [%(threadName)s] %(module)s: %(message)s"
 )
 
 app.run(port=5000, host="0.0.0.0")
