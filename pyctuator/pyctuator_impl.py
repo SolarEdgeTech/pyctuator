@@ -67,6 +67,7 @@ class PyctuatorImpl:
         self.thread_dump_provider = ThreadDumpProvider()
         self.logfile = PyctuatorLogfile(max_size=logfile_max_size, formatter=logfile_formatter)
         self.http_tracer = HttpTracer()
+        self.sba_v2_content_type = "application/vnd.spring-boot.actuator.v2+json"
 
         # Determine the endpoint's URL path prefix and make sure it doesn't ends with a "/"
         self.pyctuator_endpoint_path_prefix = urlparse(pyctuator_endpoint_url).path

@@ -144,7 +144,8 @@ class FastApiPyctuator(PyctuatorRouter):
         # pylint: disable=unused-variable
         async def add_sba2_support(request: Request, call_next: Callable) -> Response:
             response: Response = await call_next(request)
-            response.headers["Content-Type"] = "application/vnd.spring-boot.actuator.v2"
+            if request.url.path.startswith(pyctuator_impl.pyctuator_endpoint_path_prefix):
+                response.headers["Content-Type"] = pyctuator_impl.sba_v2_content_type
             return response
 
         app.include_router(router, prefix=(pyctuator_impl.pyctuator_endpoint_path_prefix))

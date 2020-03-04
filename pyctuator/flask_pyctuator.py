@@ -61,7 +61,8 @@ class FlaskPyctuator(PyctuatorRouter):
         @flask_blueprint.after_request
         # pylint: disable=unused-variable
         def add_sba2_support(response: Response) -> Response:
-            response.headers["Content-Type"] = "application/vnd.spring-boot.actuator.v2"
+            if request.path.startswith(pyctuator_impl.pyctuator_endpoint_path_prefix):
+                response.headers["Content-Type"] = pyctuator_impl.sba_v2_content_type
             return response
 
         @flask_blueprint.route("/")
