@@ -1,4 +1,5 @@
 # pylint: disable=import-outside-toplevel
+import atexit
 import importlib.util
 import logging
 from datetime import datetime, timezone
@@ -33,7 +34,8 @@ class Pyctuator:
             registration_interval_sec: int = 10,
             free_disk_space_down_threshold_bytes: int = 1024 * 1024 * 100,
             logfile_max_size: int = 10000,
-            logfile_formatter: str = default_logfile_format
+            logfile_formatter: str = default_logfile_format,
+            auto_deregister: bool = True,
     ) -> None:
         """The entry point for integrating pyctuator with a web-frameworks such as FastAPI and Flask.
 
@@ -62,6 +64,7 @@ class Pyctuator:
          working directory) below which the built-in disk-space health-indicator will fail
         """
 
+        self.auto_deregister = auto_deregister
         start_time = datetime.now(timezone.utc)
 
         # Instantiate an instance of PyctuatorImpl which abstracts the state and logic of the pyctuator
@@ -103,6 +106,11 @@ class Pyctuator:
                             app_url,
                             registration_interval_sec,
                         )
+
+                        # Deregister from SBA on exit
+                        if self.auto_deregister:
+                            atexit.register(self.boot_admin_registration_handler.deregister_from_admin_server)
+
                         self.boot_admin_registration_handler.start()
                     return
 

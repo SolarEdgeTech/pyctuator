@@ -9,6 +9,7 @@ from http.client import HTTPConnection
 from typing import Optional
 
 
+# pylint: disable=too-many-instance-attributes
 class BootAdminRegistrationHandler:
 
     def __init__(
@@ -26,6 +27,7 @@ class BootAdminRegistrationHandler:
         self.start_time = start_time
         self.service_url = service_url if service_url.endswith("/") else service_url + "/"
         self.registration_interval_sec = registration_interval_sec
+        self.instance_id = None
 
         self.should_continue_registration_schedule: bool = False
 
@@ -69,6 +71,8 @@ class BootAdminRegistrationHandler:
 
             if response.status < 200 or response.status >= 300:
                 logging.warning("Failed registering with boot-admin, got %s - %s", response.status, response.read())
+            else:
+                self.instance_id = json.loads(response.read().decode('utf-8'))["id"]
 
         except Exception as e:  # pylint: disable=broad-except
             logging.warning("Failed registering with boot-admin, %s (%s)", e, type(e))
@@ -80,6 +84,32 @@ class BootAdminRegistrationHandler:
         # Schedule the next registration unless asked to abort
         if self.should_continue_registration_schedule:
             self._schedule_next_registration(self.registration_interval_sec)
+
+    def deregister_from_admin_server(self) -> None:
+        if self.instance_id is None:
+            return
+
+        deregistration_url = f"{self.registration_url}/{self.instance_id}"
+        logging.info("Deregistering from %s", deregistration_url)
+
+        conn: Optional[HTTPConnection] = None
+        try:
+            reg_url_split = urllib.parse.urlsplit(deregistration_url)
+            conn = http.client.HTTPConnection(reg_url_split.hostname, reg_url_split.port)
+            conn.request(
+                "DELETE",
+                reg_url_split.path)
+            response = conn.getresponse()
+
+            if response.status < 200 or response.status >= 300:
+                logging.warning("Failed deregistering from boot-admin, got %s - %s", response.status, response.read())
+
+        except Exception as e:  # pylint: disable=broad-except
+            logging.warning("Failed deregistering from boot-admin, %s (%s)", e, type(e))
+
+        finally:
+            if conn:
+                conn.close()
 
     def start(self) -> None:
         logging.info("Starting recurring registration of %s with %s",
