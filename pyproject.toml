@@ -8,6 +8,28 @@ authors = [
     "Yanay Reingewertz <yanay.reingewertz@solaredge.com>",
     "Matan Rubin <matan.rubin@solaredge.com>"
 ]
+maintainers = [
+    "Matan Rubin <matan.rubin@solaredge.com>",
+    "Michael Yakobi <michael.yakobi@solaredge.com>"
+]
+readme = "README.md"
+homepage = "https://github.com/SolarEdgeTech/pyctuator"
+repository = "https://github.com/SolarEdgeTech/pyctuator"
+keywords = ["spring boot admin", "actuator", "pyctuator", "fastapi", "flask"]
+
+# TODO add a license classifier (https://pypi.org/classifiers/)
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Web Environment",
+    "Framework :: Flask",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3.7",
+    "Topic :: Internet :: WWW/HTTP :: HTTP Servers",
+    "Topic :: Internet :: WWW/HTTP :: WSGI :: Application",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: System :: Monitoring",
+    "Typing :: Typed",
+]
 
 [tool.poetry.dependencies]
 python = "^3.7"
