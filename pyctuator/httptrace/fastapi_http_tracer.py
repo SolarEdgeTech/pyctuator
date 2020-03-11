@@ -1,3 +1,4 @@
+from collections import defaultdict
 from datetime import datetime
 from typing import Mapping, List, Callable
 
@@ -23,7 +24,9 @@ class FastApiHttpTracer:
         return response
 
     def _create_headers_dictionary(self, headers: Headers) -> Mapping[str, List[str]]:
-        headers_dict = {key.title(): [value] for (key, value) in headers.items()}
+        headers_dict: Mapping[str, List[str]] = defaultdict(list)
+        for (key, value) in headers.items():
+            headers_dict[key].append(value)
         return headers_dict
 
     def _create_record(
@@ -38,7 +41,7 @@ class FastApiHttpTracer:
             request_time,
             None,
             None,
-            TraceRequest(request.method, str(request.url), self._create_headers_dictionary(response.headers)),
+            TraceRequest(request.method, str(request.url), self._create_headers_dictionary(request.headers)),
             TraceResponse(response.status_code, self._create_headers_dictionary(response.headers)),
             int(response_delta_time.microseconds / 1000),
         )

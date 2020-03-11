@@ -1,3 +1,4 @@
+from collections import defaultdict
 from datetime import datetime
 from typing import Mapping, List
 
@@ -25,8 +26,10 @@ class FlaskHttpTracer:
             return response
 
     def create_headers_dictionary_flask(self, headers: Headers) -> Mapping[str, List[str]]:
-        headers_dict = {key: [value] for (key, value) in headers.items()}
-        return headers_dict
+        headers_dict: Mapping[str, List[str]] = defaultdict(list)
+        for (key, value) in headers.items():
+            headers_dict[key].append(value)
+        return dict(headers_dict)
 
     def create_record_flask(
             self,
@@ -40,7 +43,7 @@ class FlaskHttpTracer:
             request_time,
             None,
             None,
-            TraceRequest(request.method, str(request.url), self.create_headers_dictionary_flask(response.headers)),
+            TraceRequest(request.method, str(request.url), self.create_headers_dictionary_flask(request.headers)),
             TraceResponse(response.status_code, self.create_headers_dictionary_flask(response.headers)),
             int(response_delta_time.microseconds / 1000),
         )

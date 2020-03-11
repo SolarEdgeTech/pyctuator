@@ -40,7 +40,7 @@ class FastApiPyctuatorServer(PyctuatorServer):
         @self.app.get("/httptrace_test_url")
         # pylint: disable=unused-variable
         def get_httptrace_test_url(request: Request) -> Response:
-            return Response(headers={"Resp-Data": str(request.headers.get("User-Data"))}, content="my content")
+            return Response(headers={"resp-data": str(request.headers.get("User-Data"))}, content="my content")
 
     def start(self) -> None:
         self.thread.start()

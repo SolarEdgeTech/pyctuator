@@ -227,7 +227,6 @@ def test_logfile_endpoint(endpoints: Endpoints) -> None:
     assert response.status_code == HTTPStatus.PARTIAL_CONTENT.value
 
 
-# mypy: ignore_errors
 @pytest.mark.usefixtures("boot_admin_server", "pyctuator_server")
 @pytest.mark.mark_traces_endpoint
 def test_traces_endpoint(endpoints: Endpoints) -> None:
@@ -242,8 +241,8 @@ def test_traces_endpoint(endpoints: Endpoints) -> None:
     trace = next(x for x in response_traces if x["request"]["uri"].endswith("httptrace_test_url"))
 
     # Assert header appears on httptrace url
-    assert user_header == trace["response"]["headers"]["Resp-Data"][0]
-    assert int(response.headers.get("Content-Length")) > 0
+    assert user_header == trace["response"]["headers"]["resp-data"][0]
+    assert int(response.headers.get("Content-Length", -1)) > 0
 
     # Assert timestamp is formatted in ISO format
     datetime.fromisoformat(trace["timestamp"])
