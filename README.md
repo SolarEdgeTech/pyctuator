@@ -155,7 +155,7 @@ pyctuator.set_git_info(
 
 Once you configure build and git info, you should see them in the Details tab of Spring Boot Admin:
 
-![Pyctuator](/uploads/7194d2657ab769cda2a12e516d789da4/image.png)
+![Detailed Build Info](examples/images/Main_Details_BuildInfo.png)
 
 ### DB Health
 For services that use SQL database via SQLAlchemy, Pyctuator can easily monitor and expose the connection's health 
@@ -245,28 +245,18 @@ myFastAPIServer = Server(
 ## Full blown examples
 The `examples` folder contains full blown Python projects that are built using [Poetry](https://python-poetry.org/).
 
-These examples assume you are running Spring Boot Admin in a local docker container. A Spring Boot Admin Docker image is available [here](https://hub.docker.com/r/michayaak/spring-boot-admin).
+To run these examples, you'll need to have Spring Boot Admin running in a local docker container. A Spring Boot Admin Docker image is available [here](https://hub.docker.com/r/michayaak/spring-boot-admin).
 
-To start Spring Boot Admin version 2.2.2 issue the following command:
-
+Unless the example includes a docker-compose file, you'll need to start Spring Boot Admin using docker directly:
 ```sh
 docker run -p 8082:8082 michayaak/spring-boot-admin:2.2.2
 ```
+(the docker image's tag represents the version of Spring Boot Admin, so if you need to use version `2.0.0`, use `michayaak/spring-boot-admin:2.0.0` instead).
 
-The docker image tag represents the version of Spring Boot Admin, so if you need to use version `2.0.0`, issue the
- following command instead: 
- 
-```sh
-docker run -p 8082:8082 michayaak/spring-boot-admin:2.0.0
-```
-
-Once Spring Boot Admin is running, you can run the examples as follow:
-
-```sh
-cd examples/FastAPI
-poetry install
-poetry run python -m fastapi_example_app
-``` 
+The examples include
+* [FastAPI Example](examples/FastAPI/README.md) - demonstrates integrating Pyctuator with the FastAPI web framework.
+* [Flask Example](examples/Flask/README.md) - demonstrates integrating Pyctuator with the Flask web framework.
+* [Advanced Example](examples/Advanced/README.md) - demonstrates configuring and using all the advanced features of Pyctuator.
 
 ## Contributing
 To set up a development environment, make sure you have Python 3.7 or newer installed, and run `make bootstrap`.
@@ -274,8 +264,3 @@ To set up a development environment, make sure you have Python 3.7 or newer inst
 Use `make check` to run static analysis tools.
 
 Use `make test` to run tests.
-
-### Design document
-![Pyctuator](/uploads/8183be2327a2703be14a628d484b8a4b/Pyctuator.JPG)
-
-Original file is available [here](https://drive.google.com/file/d/1e7OjuN_CmYkqcpvR32Ym-Uf5EoWfHyan/view?usp=sharing).
