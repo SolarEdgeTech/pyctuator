@@ -8,6 +8,9 @@ The supported web frameworks are **Flask** and **FastAPI**.
 
 Support for **Django** is planned as well.
 
+The following video shows Spring Boot Admin to monitoring and controlling an instance of the [Advanced example](examples/Advanced/README.md):
+![Pyctuator Example](examples/images/Pyctuator_Screencast.gif)
+
 ## Requirements
 Python 3.7+
 

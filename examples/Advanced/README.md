@@ -23,7 +23,7 @@ The example application, available from http://localhost:8000 exposes example AP
 Connect to Spring Boot Admin using http://localhost:8082.
  
 ## Insights Details
-![Insights Details](images/Insights_Details.png)
+![Insights Details](../images/Advanced_Insights_Details.png)
 1. Monitor disk space (requires [psutil](https://pypi.org/project/psutil/)):
 2. Monitor connection to the DB (requies [sqlalchemy](https://pypi.org/project/SQLAlchemy/) and drivers specific to the DB being used)
 3. Monitor Redis client (requires [redis](https://pypi.org/project/redis/))
@@ -32,14 +32,14 @@ Connect to Spring Boot Admin using http://localhost:8082.
 
 ## Insights Metrics
 If [psutil](https://pypi.org/project/psutil/) is installed, Pyctuator provides various process metrics in the "Metrics" tab:
-![Insights Metrics](images/Insights_Metrics.png)
+![Insights Metrics](../images/Advanced_Insights_Metrics.png)
 
 ## Insights Environment
 Pyctuator automatically exposes all environment variables, after scrubbing secrets, via the "Environment" tab under "systemEnvironment":
-![Insights Environment System Variables](images/Insights_Environment_systemEnvironment.png)
+![Insights Environment System Variables](../images/Advanced_Insights_Environment_systemEnvironment.png)
 
 Additionally, Pyctuator can be configured to expose application-specific configuration via SBA (after scrubbing commonly identified secrets):
-![Insights Environment App Config](images/Insights_Environment_conf.png)
+![Insights Environment App Config](../images/Advanced_Insights_Environment_conf.png)
 Note that SBA only support flattened configuration hierarchy, which is automatically handled by Pyctuator.
 
 # Further customization
@@ -48,10 +48,10 @@ Using Pyctuator, it is possible to have SBA monitor application-specific health 
 Health status may include multiple checks and may also include details on failures or the apps health.
 
 To demonstrate this, the example application exposes additional API for setting the health, http://localhost:8000/health - posting a JSON formatted `pyctuator.health_provider.HealthDetails` to set the current health status.
-![Insights Details custom_health_up](images/Insights_Details_custom_health_up.png)
+![Insights Details custom_health_up](../images/Advanced_Insights_Details_custom_health_up.png)
 
 For example, the call bellow will make the application report its down.
 ```shell
 curl -X POST localhost:8000/health -d '{"status": "DOWN", "details": {"backend_connectivity": "Down", "available_resources": 41}}'
 ```
-![Insights Details custom_health_down](images/Insights_Details_custom_health_down.png)
+![Insights Details custom_health_down](../images/Advanced_Insights_Details_custom_health_down.png)
