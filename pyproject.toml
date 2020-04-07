@@ -17,7 +17,6 @@ homepage = "https://github.com/SolarEdgeTech/pyctuator"
 repository = "https://github.com/SolarEdgeTech/pyctuator"
 keywords = ["spring boot admin", "actuator", "pyctuator", "fastapi", "flask"]
 
-# TODO add a license classifier (https://pypi.org/classifiers/)
 classifiers = [
     "Development Status :: 4 - Beta",
     "Environment :: Web Environment",
@@ -29,6 +28,7 @@ classifiers = [
     "Topic :: Software Development :: Libraries :: Python Modules",
     "Topic :: System :: Monitoring",
     "Typing :: Typed",
+    "License :: OSI Approved :: Apache Software License",
 ]
 
 [tool.poetry.dependencies]

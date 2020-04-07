@@ -169,7 +169,7 @@ pyctuator.register_health_provider(DbHealthProvider(engine))
 
 Once you configure the health provider, you should see DB health info in the Details tab of Spring Boot Admin:
 
-TODO insert image here
+![DB Health](examples/images/Main_DB_Health.png)
 
 ### Redis health
 If your service is using Redis, Pyctuator can monitor the connection to Redis by simply initializing a `RedisHealthProvider`:
