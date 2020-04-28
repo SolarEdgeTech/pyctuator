@@ -5,7 +5,7 @@ name: Python package w/ make
 
 on:
   push:
-    branches: [ master ]
+#    branches: [ master ]   ## TODO-YR: remove (debug)
   pull_request:
     branches: [ master ]
 
@@ -17,6 +17,15 @@ jobs:
 
     steps:
        - run: python --version      # verify we run on the correct image
+       - run: pwd                   # find out why I can't run make
+       - uses: actions/checkout@v1.0.0
+       - run: ls -la
+       - run: cat Makefile
+         continue-on-error: true
+       - run: cd ..
+       - run: ls -la
+       - run: cat Makefile
+         continue-on-error: true
        - run: make bootstrap
        - run: poetry update -vvv
        - run: poetry build -vvv
