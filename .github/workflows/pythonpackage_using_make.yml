@@ -1,0 +1,45 @@
+# This workflow will install Python dependencies, run tests and lint with a variety of Python versions
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
+
+name: Python package
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  run_image:
+    runs-on: [ubuntu-18.04]
+    container:
+      image: matanrubin/python-poetry:3.7
+
+    steps:
+       - run: python --version      # verify we run on the correct image
+       #- run: pwd
+       #- run: mkdir projects
+         #continue-on-error: true
+       #- run: cd projects
+         #continue-on-error: true
+       - uses: actions/checkout@v1.0.0
+         #continue-on-error: true
+       # - run: ls -R
+         #continue-on-error: true
+       - run: make bootstrap
+         #continue-on-error: true
+       - run: poetry update -vvv
+         #continue-on-error: true
+       - run: poetry build -vvv
+         #continue-on-error: true
+       - run: make package
+         #continue-on-error: true
+       - run: poetry install --extras flask --extras fastapi --extras db --extras redis
+       - run: make coverage
+         # Install the extra psutil module and run the tests in "with psutil" env
+       - run: poetry install --extras psutil
+       - run: make test
+         # Perform linting after all dependencies have been installed!
+       - run: make check
+
+
