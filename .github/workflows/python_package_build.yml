@@ -1,0 +1,43 @@
+# This workflow will install dependencies, build Pyctuator, run tests (+coverage) and lint
+
+name: build
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  run_image:
+    runs-on: [ubuntu-18.04]
+    container:
+      image: matanrubin/python-poetry:3.7
+
+    steps:
+      - uses: actions/checkout@v2
+      - run: cd ..
+      - run: make bootstrap
+      - run: poetry update -vvv
+      - run: poetry build -vvv
+      - run: make package
+      - run: poetry install --extras flask --extras fastapi --extras db --extras redis
+      - run: make coverage
+      - uses: actions/upload-artifact@v2
+        with:
+          name: htmlcov.zip
+          path: htmlcov/
+      # - run: poetry run pytest --cov=./ --cov-report xml:./cov.xml
+      - run: ls -la
+      - uses: codecov/codecov-action@v1
+        #with:
+          #token: ${{ secrets.CODECOV_TOKEN }} # not required for public repos
+          #file: ./coverage.xml # optional
+          #flags: unittests # optional
+          #name: codecov-umbrella # optional
+          #fail_ci_if_error: true # optional (default = false)      - uses: actions/upload-artifact@v2
+
+      # Install the extra psutil module and run the tests in "with psutil" env
+      - run: poetry install --extras psutil
+      - run: make test
+
+      # Perform linting after all dependencies have been installed!
+      - run: make check

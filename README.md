@@ -1,7 +1,10 @@
+![build](https://github.com/yanoom/pyctuator/workflows/build/badge.svg)
+![codecov](https://codecov.io/gh/yanoom/pyctuator/branch/master/graph/badge.svg)
+
 # Pyctuator
 
-Pyctuator allows monitoring your Python microservice as if it were a Spring
-Boot application using 
+Monitoring your Python microservices as if they were Spring
+Boot applications using 
 [Spring Boot Admin](https://github.com/codecentric/spring-boot-admin). 
 
 The supported web frameworks are **Flask** and **FastAPI**.

@@ -19,7 +19,7 @@ test:
 	poetry run pytest --log-cli-level=4 --tb=no -v tests
 
 coverage:
-	poetry run pytest --cov-report html --cov-report term --cov=pyctuator --log-cli-level=4 --tb=no -v tests
+	poetry run pytest --cov-report xml:./cov.xml --cov-report html --cov-report term --cov=pyctuator --log-cli-level=4 --tb=no -v tests
 
 pylint:
 	poetry run pylint --exit-zero pyctuator tests
