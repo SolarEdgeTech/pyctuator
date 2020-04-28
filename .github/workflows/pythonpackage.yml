@@ -19,18 +19,18 @@ jobs:
        - run: python --version      # verify we run on the correct image
        - run: pwd
        - run: mkdir projects
-         continue-on-error: true
+         #continue-on-error: true
        - run: cd projects
-         continue-on-error: true
+         #continue-on-error: true
        - uses: actions/checkout@v1.0.0
-         continue-on-error: true
+         #continue-on-error: true
        - run: ls -R
-         continue-on-error: true
+         #continue-on-error: true
        - run: poetry install -vvv
-         continue-on-error: true
+         #continue-on-error: true
        - run: poetry update -vvv
-         continue-on-error: true
+         #continue-on-error: true
        - run: poetry build -vvv
-         continue-on-error: true
+         #continue-on-error: true
        - run: poetry run pytest -vvv
-         continue-on-error: true        
+         #continue-on-error: true        
