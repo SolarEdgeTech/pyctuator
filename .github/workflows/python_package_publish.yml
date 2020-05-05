@@ -1,0 +1,21 @@
+# This workflow will build Pyctuator, and publish it to pypi.org
+
+name: publish
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  run_image:
+    runs-on: [ubuntu-18.04]
+    container:
+      image: matanrubin/python-poetry:3.7
+
+    steps:
+      - uses: actions/checkout@v2
+      - run: cd ..
+      - run: make bootstrap
+      - run: poetry update -vvv
+      - run: poetry build -vvv
+      - run: poetry publish --username __token__ --password ${{ secrets.PYPI_TOKEN }}
