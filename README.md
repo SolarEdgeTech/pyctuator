@@ -1,5 +1,6 @@
-![build](https://github.com/SolarEdgeTech/pyctuator/workflows/build/badge.svg)
-![codecov](https://codecov.io/gh/SolarEdgeTech/pyctuator/branch/master/graph/badge.svg)
+[![PyPI](https://img.shields.io/pypi/v/pyctuator?color=green&style=plastic)](https://pypi.org/project/pyctuator/)
+[![build](https://github.com/SolarEdgeTech/pyctuator/workflows/build/badge.svg)](https://github.com/SolarEdgeTech/pyctuator/)
+[![Codecov](https://img.shields.io/codecov/c/github/SolarEdgeTech/pyctuator?style=plastic)](https://codecov.io/gh/SolarEdgeTech/pyctuator)
 
 # Pyctuator
 
