@@ -14,7 +14,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      - run: cd ..
       - run: make bootstrap
       - run: poetry update -vvv
       - run: poetry build -vvv
