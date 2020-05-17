@@ -4,16 +4,16 @@
 
 # Pyctuator
 
-Monitoring your Python microservices as if they were Spring
-Boot applications using 
+Monitor Python web apps using 
 [Spring Boot Admin](https://github.com/codecentric/spring-boot-admin). 
 
-The supported web frameworks are **Flask** and **FastAPI**.
+Pyctuator supports **Flask** and **FastAPI**. **Django** support is planned as well.
 
-Support for **Django** is planned as well.
-
-The following video shows Spring Boot Admin to monitoring and controlling an instance of the [Advanced example](examples/Advanced/README.md):
+The following video shows a FastAPI web app being monitored and controled using Spring Boot Admin.
+ 
 ![Pyctuator Example](examples/images/Pyctuator_Screencast.gif)
+
+The complete example can be found in [Advanced example](examples/Advanced/README.md).
 
 ## Requirements
 Python 3.7+
@@ -30,10 +30,13 @@ These organizations often use Spring Actuator together with Spring Boot Admin
 to monitor their microservices' status, gain access to applications'
  state and configuration, manipulate log levels, etc.
  
-These organizations often have the occasional Python microservice, especially as
-Python Machine Learning and Data Science packages gain popularity. Setting up
-a proper monitoring tool for these microservices is a complex task, and might
-not be justified for a few Python microservices in a sea of Java microservices.
+While Spring Boot is suitable for many use-cases, it is very common for organizations 
+to also have a couple of Python microservices, as Python is often more suitable for 
+some types of applications. The most common examples are Data Science and Machine Learning
+applications.
+
+Setting up a proper monitoring tool for these microservices is a complex task, and might
+not be justified for just a few Python microservices in a sea of Java microservices.
 
 This is where Pyctuator comes in. It allows you to easily integrate your Python
 microservices into your existing Spring Boot Admin deployment.
@@ -48,11 +51,11 @@ It currently supports the following Actuator features:
 * **Metrics**
     * Memory usage
     * Disk usage 
-    * Easily add custom metrics
+    * Custom metrics
 * **Health monitors**
     * Built in MySQL health monitor
     * Built in Redis health monitor
-    * Easily add custom health monitors
+    * Custom health monitors
 * **Environment**
 * **Loggers** - Easily change log levels during runtime
 * **Log file** - Tail the application's log file
@@ -71,7 +74,7 @@ docker run --rm --name spring-boot-admin -p 8082:8082 michayaak/spring-boot-admi
 Then go to `http://localhost:8082` to get to the web UI.
 
 ### Flask
-The following is a complete example and should run as is:
+The following example is complete and should run as is.
 
 ```python
 from flask import Flask
@@ -97,10 +100,12 @@ Pyctuator(
 app.run(debug=False, port=5000)
 ```
 
-Once you run the application, it should automatically register with Spring Boot Admin and should be available in the UI at `http://localhost:8082`
+The application will automatically register with Spring Boot Admin upon start up.
+
+Log in to the Spring Boot Admin UI at `http://localhost:8082` to interact with the application. 
 
 ### FastAPI
-The following is a complete example and should run as is:
+The following example is complete and should run as is.
 
 ```python
 from fastapi import FastAPI
@@ -130,15 +135,17 @@ Pyctuator(
 Server(config=(Config(app=app, loop="asyncio"))).run()
 ```
 
+The application will automatically register with Spring Boot Admin upon start up.
 
-Once you run the application, it should automatically register with Spring Boot Admin and should be available in the UI at `http://localhost:8082`
+Log in to the Spring Boot Admin UI at `http://localhost:8082` to interact with the application. 
 
 ## Advanced Configuration
 The following sections are intended for advanced users who want to configure advanced Pyctuator features.
 
 ### Application Info
-While Pyctuator only needs to know the application's name, it is recommended that applications monitored by Spring 
-Boot Admin will show additional build and git details - this becomes handy when a service is scaled out to multiple instances by showing the version of each instance.
+While Pyctuator only needs to know the application's name, we recommend that applications monitored by Spring 
+Boot Admin will show additional build and git details. 
+This becomes handy when scaling out a service to multiple instances by showing the version of each instance.
 To do so, you can provide additional build and git info using methods of the Pyctuator object:
 
 ```python
