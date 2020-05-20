@@ -241,8 +241,6 @@ Note that the `psutil` dependency is **optional** and is only required if you wa
 Pyctuator leverages Python's builtin `logging` framework and allows controlling log levels at runtime.
  
 Note that in order to control uvicorn's log level, you need to provide a logger object when instantiating it. For example:
-
-
 ```python
 myFastAPIServer = Server(
     config=Config(
@@ -252,6 +250,22 @@ myFastAPIServer = Server(
     )
 )
 ```
+
+### Spring Boot Admin Using Basic Authentication
+Pyctuator supports registration with Spring Boot Admin that requires basic authentications. The credentials are provided when initializing the Pyctuator instance as follows:
+```python
+# NOTE: Never include secrets in your code !!!
+auth = Auth(os.getenv("sba-username"), os.getenv("sba-password"))
+
+Pyctuator(
+    app,
+    "Flask Pyctuator",
+    "http://localhost:5000",
+    f"http://localhost:5000/pyctuator",
+    registration_url=f"http://spring-boot-admin:8082/instances",
+    registration_auth=auth,
+)
+``` 
 
 ## Full blown examples
 The `examples` folder contains full blown Python projects that are built using [Poetry](https://python-poetry.org/).

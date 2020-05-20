@@ -9,6 +9,7 @@ from typing import Any, Optional, Dict, Callable
 # For example, if the webapp is a Flask webapp, we do not want to import FastAPI, and vice versa.
 # To do that, all imports are in conditional branches after detecting which frameworks are installed.
 # DO NOT add any web-framework-dependent imports to the global scope.
+from pyctuator.auth import Auth
 from pyctuator.environment.custom_environment_provider import CustomEnvironmentProvider
 from pyctuator.environment.os_env_variables_impl import OsEnvironmentVariableProvider
 from pyctuator.health.diskspace_health_impl import DiskSpaceHealthProvider
@@ -30,6 +31,7 @@ class Pyctuator:
             app_url: str,
             pyctuator_endpoint_url: str,
             registration_url: Optional[str],
+            registration_auth: Optional[Auth] = None,
             app_description: Optional[str] = None,
             registration_interval_sec: int = 10,
             free_disk_space_down_threshold_bytes: int = 1024 * 1024 * 100,
@@ -59,6 +61,7 @@ class Pyctuator:
         registering the application with spring-boot-admin, must be accessible from spring-boot-admin server (i.e. don't
         use http://localhost:8080/... unless spring-boot-admin is running on the same host as the monitored application)
         :param registration_url: the spring-boot-admin endpoint to which registration requests must be posted
+        :param registration_auth: optional authentication details to use when registering with spring-boot-admin
         :param registration_interval_sec: how often pyctuator will renew its registration with spring-boot-admin
         :param free_disk_space_down_threshold_bytes: amount of free space in bytes in "./" (the application's current
          working directory) below which the built-in disk-space health-indicator will fail
@@ -100,6 +103,7 @@ class Pyctuator:
                     if registration_url is not None:
                         self.boot_admin_registration_handler = BootAdminRegistrationHandler(
                             registration_url,
+                            registration_auth,
                             app_name,
                             self.pyctuator_impl.pyctuator_endpoint_url,
                             start_time,

@@ -3,10 +3,13 @@ import json
 import logging
 import threading
 import urllib.parse
+from base64 import b64encode
 from datetime import datetime
 
 from http.client import HTTPConnection
-from typing import Optional
+from typing import Optional, Dict
+
+from pyctuator.auth import Auth, BasicAuth
 
 
 # pylint: disable=too-many-instance-attributes
@@ -15,6 +18,7 @@ class BootAdminRegistrationHandler:
     def __init__(
             self,
             registration_url: str,
+            registration_auth: Optional[Auth],
             application_name: str,
             pyctuator_base_url: str,
             start_time: datetime,
@@ -22,6 +26,7 @@ class BootAdminRegistrationHandler:
             registration_interval_sec: int,
     ) -> None:
         self.registration_url = registration_url
+        self.registration_auth = registration_auth
         self.application_name = application_name
         self.pyctuator_base_url = pyctuator_base_url
         self.start_time = start_time
@@ -56,17 +61,22 @@ class BootAdminRegistrationHandler:
             "metadata": {"startup": self.start_time.isoformat()}
         }
 
-        logging.debug("Trying to post registration data to %s: %s", self.registration_url, registration_data)
+        logging.debug("Trying to post registration data to %s: %s",
+                      self.registration_url, registration_data)
 
         conn: Optional[HTTPConnection] = None
         try:
+            headers = {"Content-type": "application/json"}
+            self.authenticate(headers)
+
             reg_url_split = urllib.parse.urlsplit(self.registration_url)
             conn = http.client.HTTPConnection(reg_url_split.hostname, reg_url_split.port)
             conn.request(
                 "POST",
                 reg_url_split.path,
                 body=json.dumps(registration_data),
-                headers={"Content-type": "application/json"})
+                headers=headers,
+            )
             response = conn.getresponse()
 
             if response.status < 200 or response.status >= 300:
@@ -89,6 +99,9 @@ class BootAdminRegistrationHandler:
         if self.instance_id is None:
             return
 
+        headers = {}
+        self.authenticate(headers)
+
         deregistration_url = f"{self.registration_url}/{self.instance_id}"
         logging.info("Deregistering from %s", deregistration_url)
 
@@ -98,7 +111,9 @@ class BootAdminRegistrationHandler:
             conn = http.client.HTTPConnection(reg_url_split.hostname, reg_url_split.port)
             conn.request(
                 "DELETE",
-                reg_url_split.path)
+                reg_url_split.path,
+                headers=headers,
+            )
             response = conn.getresponse()
 
             if response.status < 200 or response.status >= 300:
@@ -110,6 +125,13 @@ class BootAdminRegistrationHandler:
         finally:
             if conn:
                 conn.close()
+
+    def authenticate(self, headers: Dict) -> None:
+        if isinstance(self.registration_auth, BasicAuth):
+            password = self.registration_auth.password if self.registration_auth.password else ""
+            authorization_string = self.registration_auth.username + ":" + password
+            encoded_authorization: str = b64encode(bytes(authorization_string, "utf-8")).decode("ascii")
+            headers["Authorization"] = f"Basic {encoded_authorization}"
 
     def start(self) -> None:
         logging.info("Starting recurring registration of %s with %s",
