@@ -255,7 +255,7 @@ myFastAPIServer = Server(
 Pyctuator supports registration with Spring Boot Admin that requires basic authentications. The credentials are provided when initializing the Pyctuator instance as follows:
 ```python
 # NOTE: Never include secrets in your code !!!
-auth = Auth(os.getenv("sba-username"), os.getenv("sba-password"))
+auth = BasicAuth(os.getenv("sba-username"), os.getenv("sba-password"))
 
 Pyctuator(
     app,
