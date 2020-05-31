@@ -50,7 +50,7 @@ app_config = {
         "pyctuator_endpoint": f"http://host.docker.internal:8000/pyctuator",
 
         # Spring Boot Admin registration URL
-        "sba_registration_endpoint": f"http://localhost:8082/instances",
+        "sba_registration_endpoint": f"http://localhost:8080/instances",
     }
 }
 

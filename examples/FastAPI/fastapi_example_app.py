@@ -35,7 +35,7 @@ pyctuator = Pyctuator(
     "Example FastAPI",
     f"http://{example_app_public_address}:8000",
     f"http://{example_app_address_as_seen_from_sba_container}:8000/pyctuator",
-    f"http://{example_sba_address}:8082/instances",
+    f"http://{example_sba_address}:8080/instances",
     app_description=app.description,
 )
 

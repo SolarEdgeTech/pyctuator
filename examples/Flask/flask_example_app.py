@@ -30,7 +30,7 @@ Pyctuator(
     "Flask Pyctuator",
     f"http://{example_app_public_address}:5000",
     f"http://{example_app_address_as_seen_from_sba_container}:5000/pyctuator",
-    f"http://{example_sba_address}:8082/instances",
+    f"http://{example_sba_address}:8080/instances",
     app_description="Demonstrate Spring Boot Admin Integration with Flask",
 )
 
