@@ -1,7 +1,6 @@
 import datetime
 import logging
 import random
-import socket
 
 from fastapi import FastAPI
 from uvicorn import Server
@@ -26,18 +25,26 @@ def read_root():
     return "Hello World!"
 
 
-example_app_public_address = socket.gethostbyname(socket.gethostname())
-example_app_address_as_seen_from_sba_container = "host.docker.internal"
+example_app_address = "host.docker.internal"
 example_sba_address = "localhost"
 
 pyctuator = Pyctuator(
     app,
     "Example FastAPI",
-    f"http://{example_app_public_address}:8000",
-    f"http://{example_app_address_as_seen_from_sba_container}:8000/pyctuator",
-    f"http://{example_sba_address}:8080/instances",
+    app_url=f"http://{example_app_address}:8000",
+    pyctuator_endpoint_url=f"http://{example_app_address}:8000/pyctuator",
+    registration_url=f"http://{example_sba_address}:8080/instances",
     app_description=app.description,
 )
 
-server = Server(config=(Config(app=app, loop="asyncio", host="0.0.0.0")))
+# Keep the console clear - configure uvicorn (FastAPI's WSGI web app) not to log the detail of every incoming request
+uvicorn_logger = logging.getLogger("uvicorn")
+uvicorn_logger.setLevel(logging.WARNING)
+
+server = Server(config=(Config(
+    app=app,
+    loop="asyncio",
+    host="0.0.0.0",
+    logger=uvicorn_logger,
+)))
 server.run()
