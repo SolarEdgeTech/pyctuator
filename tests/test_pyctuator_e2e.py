@@ -4,16 +4,17 @@ import logging
 import os
 import random
 import time
-from dataclasses import dataclass
+from dataclasses import dataclass, asdict, fields
 from datetime import datetime, timedelta
 from http import HTTPStatus
-from typing import Generator
+from typing import Generator, List
 
 import pytest
 import requests
 from _pytest.monkeypatch import MonkeyPatch
 from requests import Response
 
+from pyctuator.impl import SBA_V2_CONTENT_TYPE
 from tests.conftest import Endpoints, PyctuatorServer, RegistrationRequest, RegistrationTrackerFixture
 from tests.fast_api_test_server import FastApiPyctuatorServer
 from tests.flask_test_server import FlaskPyctuatorServer
@@ -30,6 +31,42 @@ def pyctuator_server(request) -> Generator:  # type: ignore
 
     # Once the module is done, stop the pyctuator-server
     pyctuator_server.stop()
+
+
+@pytest.mark.usefixtures("boot_admin_server", "pyctuator_server")
+@pytest.mark.mark_self_endpoint
+def test_response_content_type(endpoints: Endpoints, registration_tracker: RegistrationTrackerFixture) -> None:
+    # Issue requests to all actuator endpoints and verify the correct content-type is returned
+    actuator_endpoint_names = [field.name for field in fields(Endpoints) if field.name != "root"]
+    for actuator_endpoint in actuator_endpoint_names:
+        actuator_endpoint_url = asdict(endpoints)[actuator_endpoint]
+        logging.info("Testing content type of %s (%s)", actuator_endpoint, actuator_endpoint_url)
+        response = requests.get(actuator_endpoint_url)
+        assert response.status_code == HTTPStatus.OK.value
+        assert response.headers.get("Content-Type", response.headers.get("content-type")) == SBA_V2_CONTENT_TYPE
+
+    # Issue requests to non-actuator endpoints and verify the correct content-type is returned
+    assert registration_tracker.registration
+    for non_actuator_endpoint_url in ["/", "/httptrace_test_url"]:
+        non_actuator_endpoint_url = registration_tracker.registration.serviceUrl[:-1] + non_actuator_endpoint_url
+        response = requests.get(non_actuator_endpoint_url)
+        content_type = response.headers.get("Content-Type", response.headers.get("content-type"))
+        logging.info("Testing content type, %s from request %s", content_type, non_actuator_endpoint_url)
+        assert not content_type or content_type.find(SBA_V2_CONTENT_TYPE) == -1
+
+    # Finally, verify the  content-type headers presented by the httptraces are correct
+    traces = requests.get(endpoints.httptrace).json()["traces"]
+    for trace in traces:
+        request_uri = trace["request"]["uri"]
+        response_headers = trace["response"]["headers"]
+        content_type_header: List[str] = response_headers.get("content-type", response_headers.get("Content-Type", []))
+
+        logging.info("Testing httptraces content-type header for request %s, got %s", request_uri, content_type_header)
+
+        if request_uri.find("/pyctuator") > 0:
+            assert any(SBA_V2_CONTENT_TYPE in ct for ct in content_type_header)
+        else:
+            assert all(SBA_V2_CONTENT_TYPE not in ct for ct in content_type_header)
 
 
 @pytest.mark.usefixtures("boot_admin_server", "pyctuator_server")
