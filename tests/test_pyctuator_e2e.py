@@ -215,13 +215,13 @@ def test_logfile_endpoint(endpoints: Endpoints) -> None:
     thirsty_str = "These pretzels are making me thirsty"
     response: Response = requests.get(
         endpoints.root + "logfile_test_repeater",
-        params={"repeated_string": "thirsty_str"}
+        params={"repeated_string": thirsty_str}
     )
     assert response.status_code == HTTPStatus.OK.value
 
     response = requests.get(endpoints.logfile)
     assert response.status_code == HTTPStatus.OK.value
-    assert response.text.find(thirsty_str)
+    assert response.text.find(thirsty_str) >= 0
 
     response = requests.get(endpoints.logfile, headers={"Range": "bytes=-307200"})  # Immitate SBA's 1st request
     assert response.status_code == HTTPStatus.PARTIAL_CONTENT.value
