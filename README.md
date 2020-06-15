@@ -68,10 +68,10 @@ The examples below show a minimal integration of **FastAPI** and **Flask** appli
 After installing Flask/FastAPI and Pyctuator, start by launching a local Spring Boot Admin instance:
 
 ```sh
-docker run --rm --name spring-boot-admin -p 8082:8082 michayaak/spring-boot-admin:2.2.2
+docker run --rm --name spring-boot-admin -p 8080:8080 michayaak/spring-boot-admin:2.2.3-1
 ```
 
-Then go to `http://localhost:8082` to get to the web UI.
+Then go to `http://localhost:8080` to get to the web UI.
 
 ### Flask
 The following example is complete and should run as is.
@@ -92,9 +92,9 @@ def hello():
 Pyctuator(
     app,
     app_name,
-    "http://host.docker.internal:5000",
-    "http://host.docker.internal:5000/pyctuator",
-    "http://localhost:8082/instances"
+    app_url="http://host.docker.internal:5000",
+    pyctuator_endpoint_url="http://host.docker.internal:5000/pyctuator",
+    registration_url="http://localhost:8080/instances"
 )
 
 app.run(debug=False, port=5000)
@@ -102,7 +102,7 @@ app.run(debug=False, port=5000)
 
 The application will automatically register with Spring Boot Admin upon start up.
 
-Log in to the Spring Boot Admin UI at `http://localhost:8082` to interact with the application. 
+Log in to the Spring Boot Admin UI at `http://localhost:8080` to interact with the application. 
 
 ### FastAPI
 The following example is complete and should run as is.
@@ -127,9 +127,9 @@ def hello():
 Pyctuator(
     app,
     "FastAPI Pyctuator",
-    "http://host.docker.internal:8000",
-    "http://host.docker.internal:8000/pyctuator",
-    "http://localhost:8080/instances"
+    app_url="http://host.docker.internal:8000",
+    pyctuator_endpoint_url="http://host.docker.internal:8000/pyctuator",
+    registration_url="http://localhost:8080/instances"
 )
 
 Server(config=(Config(app=app, loop="asyncio"))).run()
@@ -137,7 +137,12 @@ Server(config=(Config(app=app, loop="asyncio"))).run()
 
 The application will automatically register with Spring Boot Admin upon start up.
 
-Log in to the Spring Boot Admin UI at `http://localhost:8082` to interact with the application. 
+Log in to the Spring Boot Admin UI at `http://localhost:8080` to interact with the application. 
+
+### Registration Notes
+When registering a service in Spring Boot Admin, note that:
+* **Docker** - If the Spring Boot Admin is running in a container while the managed service is running in the docker-host directly, the `app_url` and `pyctuator_endpoint_url` should use `host.docker.internal` as the url's host so Spring Boot Admin will be able to connect to the monitored service.
+* **Http Traces** - In order for the "Http Traces" tab to be able to hide requests sent by Spring Boot Admin to the Pyctuator endpoint, `pyctuator_endpoint_url` must be using the same host and port as `app_url`.
 
 ## Advanced Configuration
 The following sections are intended for advanced users who want to configure advanced Pyctuator features.
@@ -260,9 +265,9 @@ auth = BasicAuth(os.getenv("sba-username"), os.getenv("sba-password"))
 Pyctuator(
     app,
     "Flask Pyctuator",
-    "http://localhost:5000",
-    f"http://localhost:5000/pyctuator",
-    registration_url=f"http://spring-boot-admin:8082/instances",
+    app_url="http://localhost:5000",
+    pyctuator_endpoint_url=f"http://localhost:5000/pyctuator",
+    registration_url=f"http://spring-boot-admin:8080/instances",
     registration_auth=auth,
 )
 ``` 
@@ -274,9 +279,9 @@ To run these examples, you'll need to have Spring Boot Admin running in a local 
 
 Unless the example includes a docker-compose file, you'll need to start Spring Boot Admin using docker directly:
 ```sh
-docker run -p 8082:8082 michayaak/spring-boot-admin:2.2.2
+docker run -p 8080:8080 michayaak/spring-boot-admin:2.2.3-1
 ```
-(the docker image's tag represents the version of Spring Boot Admin, so if you need to use version `2.0.0`, use `michayaak/spring-boot-admin:2.0.0` instead).
+(the docker image's tag represents the version of Spring Boot Admin, so if you need to use version `2.0.0`, use `michayaak/spring-boot-admin:2.0.0` instead, note it accepts connections on port 8082).
 
 The examples include
 * [FastAPI Example](examples/FastAPI/README.md) - demonstrates integrating Pyctuator with the FastAPI web framework.

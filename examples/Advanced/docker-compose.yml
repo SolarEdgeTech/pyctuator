@@ -13,4 +13,4 @@ services:
   sba:
     image: michayaak/spring-boot-admin:2.2.2
     ports:
-      - 8082:8082
+      - 8080:8080

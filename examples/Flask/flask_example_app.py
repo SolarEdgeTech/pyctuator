@@ -1,13 +1,15 @@
 import datetime
 import logging
 import random
-import socket
 
 from flask import Flask
 
 from pyctuator.pyctuator import Pyctuator
 
 logging.basicConfig(level=logging.INFO)
+
+# Keep the console clear - configure werkzeug (flask's WSGI web app) not to log the detail of every incoming request
+logging.getLogger("werkzeug").setLevel(logging.WARNING)
 
 my_logger = logging.getLogger("example")
 
@@ -21,16 +23,15 @@ def hello():
     return "Hello World!"
 
 
-example_app_public_address = socket.gethostbyname(socket.gethostname())
-example_app_address_as_seen_from_sba_container = "host.docker.internal"
+example_app_address = "host.docker.internal"
 example_sba_address = "localhost"
 
 Pyctuator(
     app,
     "Flask Pyctuator",
-    f"http://{example_app_public_address}:5000",
-    f"http://{example_app_address_as_seen_from_sba_container}:5000/pyctuator",
-    f"http://{example_sba_address}:8082/instances",
+    app_url=f"http://{example_app_address}:5000",
+    pyctuator_endpoint_url=f"http://{example_app_address}:5000/pyctuator",
+    registration_url=f"http://{example_sba_address}:8080/instances",
     app_description="Demonstrate Spring Boot Admin Integration with Flask",
 )
 
