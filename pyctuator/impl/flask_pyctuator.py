@@ -120,7 +120,7 @@ class FlaskPyctuator(PyctuatorRouter):
             range_header: str = request.headers.environ.get('HTTP_RANGE')
             if not range_header:
                 response: Response = make_response(pyctuator_impl.logfile.log_messages.get_range())
-                return response, HTTPStatus.OK.value
+                return response, HTTPStatus.OK
 
             str_res, start, end = pyctuator_impl.logfile.get_logfile(range_header)
 
@@ -129,7 +129,7 @@ class FlaskPyctuator(PyctuatorRouter):
             resp.headers["Accept-Ranges"] = "bytes"
             resp.headers["Content-Range"] = f"bytes {start}-{end}/{end}"
 
-            return resp, HTTPStatus.PARTIAL_CONTENT.value
+            return resp, HTTPStatus.PARTIAL_CONTENT
 
         @flask_blueprint.route("/trace")
         @flask_blueprint.route("/httptrace")
@@ -150,13 +150,12 @@ class FlaskPyctuator(PyctuatorRouter):
             request_time: datetime,
             response_time: datetime,
     ) -> None:
-        response_delta_time = response_time - request_time
         new_record = TraceRecord(
             request_time,
             None,
             None,
             TraceRequest(request.method, str(request.url), self._create_headers_dictionary_flask(request.headers)),
             TraceResponse(response.status_code, self._create_headers_dictionary_flask(response.headers)),
-            int(response_delta_time.microseconds / 1000),
+            int((response_time.timestamp() - request_time.timestamp()) * 1000),
         )
         self.pyctuator_impl.http_tracer.add_record(record=new_record)

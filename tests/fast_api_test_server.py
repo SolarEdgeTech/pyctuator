@@ -1,6 +1,7 @@
 import logging
 import threading
 import time
+from typing import Optional
 
 from fastapi import FastAPI
 from starlette.requests import Request
@@ -39,7 +40,13 @@ class FastApiPyctuatorServer(PyctuatorServer):
 
         @self.app.get("/httptrace_test_url")
         # pylint: disable=unused-variable
-        def get_httptrace_test_url(request: Request) -> Response:
+        def get_httptrace_test_url(request: Request, sleep_sec: Optional[int]) -> Response:
+            # Sleep if requested to sleep - used for asserting httptraces timing
+            if sleep_sec:
+                logging.info("Sleeping %s seconds before replying", sleep_sec)
+                time.sleep(sleep_sec)
+
+            # Echo 'User-Data' header as 'resp-data' - used for asserting headers are captured properly
             return Response(headers={"resp-data": str(request.headers.get("User-Data"))}, content="my content")
 
     def start(self) -> None:

@@ -36,15 +36,22 @@ class FlaskPyctuatorServer(PyctuatorServer):
         @self.app.route("/logfile_test_repeater")
         # pylint: disable=unused-variable
         def logfile_test_repeater() -> str:
-            repeated_string: str = str(request.args.get('repeated_string'))
+            repeated_string: str = str(request.args.get("repeated_string"))
             logging.error(repeated_string)
             return repeated_string
 
         @self.app.route("/httptrace_test_url", methods=["GET"])
         # pylint: disable=unused-variable
         def get_httptrace_test_url() -> Response:
+            # Sleep if requested to sleep - used for asserting httptraces timing
+            sleep_sec = request.args.get("sleep_sec")
+            if sleep_sec:
+                logging.info("Sleeping %s seconds before replying", sleep_sec)
+                time.sleep(int(sleep_sec))
+
+            # Echo 'User-Data' header as 'resp-data' - used for asserting headers are captured properly
             resp = Response()
-            resp.headers["resp-data"] = str(request.headers.get('User-Data'))
+            resp.headers["resp-data"] = str(request.headers.get("User-Data"))
             return resp
 
     def start(self) -> None:
