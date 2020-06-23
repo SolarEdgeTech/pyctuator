@@ -159,13 +159,12 @@ class FastApiPyctuator(PyctuatorRouter):
             request_time: datetime,
             response_time: datetime,
     ) -> TraceRecord:
-        response_delta_time = response_time - request_time
         new_record: TraceRecord = TraceRecord(
             request_time,
             None,
             None,
             TraceRequest(request.method, str(request.url), self._create_headers_dictionary(request.headers)),
             TraceResponse(response.status_code, self._create_headers_dictionary(response.headers)),
-            int(response_delta_time.microseconds / 1000),
+            int((response_time.timestamp() - request_time.timestamp()) * 1000),
         )
         return new_record

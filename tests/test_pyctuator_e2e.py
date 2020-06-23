@@ -42,7 +42,7 @@ def test_response_content_type(endpoints: Endpoints, registration_tracker: Regis
         actuator_endpoint_url = asdict(endpoints)[actuator_endpoint]
         logging.info("Testing content type of %s (%s)", actuator_endpoint, actuator_endpoint_url)
         response = requests.get(actuator_endpoint_url)
-        assert response.status_code == HTTPStatus.OK.value
+        assert response.status_code == HTTPStatus.OK
         assert response.headers.get("Content-Type", response.headers.get("content-type")) == SBA_V2_CONTENT_TYPE
 
     # Issue requests to non-actuator endpoints and verify the correct content-type is returned
@@ -73,7 +73,7 @@ def test_response_content_type(endpoints: Endpoints, registration_tracker: Regis
 @pytest.mark.mark_self_endpoint
 def test_self_endpoint(endpoints: Endpoints) -> None:
     response = requests.get(endpoints.pyctuator)
-    assert response.status_code == HTTPStatus.OK.value
+    assert response.status_code == HTTPStatus.OK
     assert response.json()["_links"] is not None
 
 
@@ -82,7 +82,7 @@ def test_self_endpoint(endpoints: Endpoints) -> None:
 def test_env_endpoint(endpoints: Endpoints) -> None:
     actual_key, actual_value = list(os.environ.items())[3]
     response = requests.get(endpoints.env)
-    assert response.status_code == HTTPStatus.OK.value
+    assert response.status_code == HTTPStatus.OK
     property_sources = response.json()["propertySources"]
     assert property_sources
     system_properties = [source for source in property_sources if source["name"] == "systemEnvironment"]
@@ -90,7 +90,7 @@ def test_env_endpoint(endpoints: Endpoints) -> None:
     assert system_properties[0]["properties"][actual_key]["value"] == actual_value
 
     response = requests.get(endpoints.info)
-    assert response.status_code == HTTPStatus.OK.value
+    assert response.status_code == HTTPStatus.OK
     assert response.json()["app"] is not None
 
 
@@ -102,7 +102,7 @@ def test_health_endpoint_with_psutil(endpoints: Endpoints, monkeypatch: MonkeyPa
 
     # Verify that the diskSpace health check is returning some reasonable values
     response = requests.get(endpoints.health)
-    assert response.status_code == HTTPStatus.OK.value
+    assert response.status_code == HTTPStatus.OK
     assert response.json()["status"] == "UP"
     disk_space_health = response.json()["details"]["diskSpace"]
     assert disk_space_health["status"] == "UP"
@@ -120,7 +120,7 @@ def test_health_endpoint_with_psutil(endpoints: Endpoints, monkeypatch: MonkeyPa
 
     monkeypatch.setattr(psutil, "disk_usage", mock_disk_usage)
     response = requests.get(endpoints.health)
-    assert response.status_code == HTTPStatus.OK.value
+    assert response.status_code == HTTPStatus.OK
     assert response.json()["status"] == "DOWN"
     disk_space_health = response.json()["details"]["diskSpace"]
     assert disk_space_health["status"] == "DOWN"
@@ -137,7 +137,7 @@ def test_diskspace_no_psutil(endpoints: Endpoints) -> None:
 
     # Verify that the diskSpace health check is returning some reasonable values
     response = requests.get(endpoints.health)
-    assert response.status_code == HTTPStatus.OK.value
+    assert response.status_code == HTTPStatus.OK
     assert response.json()["status"] == "UP"
     assert "diskSpace" not in response.json()["details"]
 
@@ -149,20 +149,20 @@ def test_metrics_endpoint(endpoints: Endpoints) -> None:
     pytest.importorskip("psutil")
 
     response = requests.get(endpoints.metrics)
-    assert response.status_code == HTTPStatus.OK.value
+    assert response.status_code == HTTPStatus.OK
     metric_names = response.json()["names"]
     assert "memory.rss" in metric_names
     assert "thread.count" in metric_names
 
     response = requests.get(f"{endpoints.metrics}/memory.rss")
-    assert response.status_code == HTTPStatus.OK.value
+    assert response.status_code == HTTPStatus.OK
     metric_json = response.json()
     assert metric_json["name"] == "memory.rss"
     assert metric_json["measurements"][0]["statistic"] == "VALUE"
     assert metric_json["measurements"][0]["value"] > 10000
 
     response = requests.get(f"{endpoints.metrics}/thread.count")
-    assert response.status_code == HTTPStatus.OK.value
+    assert response.status_code == HTTPStatus.OK
     metric_json = response.json()
     assert metric_json["name"] == "thread.count"
     assert metric_json["measurements"][0]["statistic"] == "COUNT"
@@ -210,7 +210,7 @@ def test_threads_endpoint(endpoints: Endpoints) -> None:
 @pytest.mark.mark_loggers_endpoint
 def test_loggers_endpoint(endpoints: Endpoints) -> None:
     response = requests.get(endpoints.loggers)
-    assert response.status_code == HTTPStatus.OK.value
+    assert response.status_code == HTTPStatus.OK
 
     # levels section
     loggers_levels = response.json()["levels"]
@@ -226,7 +226,7 @@ def test_loggers_endpoint(endpoints: Endpoints) -> None:
         assert hasattr(logger_obj, "level")
         # Individual Get logger route
         response = requests.get(f"{endpoints.loggers}/{logger}")
-        assert response.status_code == HTTPStatus.OK.value
+        assert response.status_code == HTTPStatus.OK
         assert "configuredLevel" in json.loads(response.content)
         assert "effectiveLevel" in json.loads(response.content)
         # Set logger level
@@ -240,7 +240,7 @@ def test_loggers_endpoint(endpoints: Endpoints) -> None:
 
         response = requests.post(f"{endpoints.loggers}/{logger}",
                                  data=post_data)
-        assert response.status_code == HTTPStatus.OK.value
+        assert response.status_code == HTTPStatus.OK
         # Perform get logger level to Validate set logger level succeeded
         response = requests.get(f"{endpoints.loggers}/{logger}")
         assert json.loads(response.content)["configuredLevel"] == random_log_level
@@ -254,14 +254,14 @@ def test_logfile_endpoint(endpoints: Endpoints) -> None:
         endpoints.root + "logfile_test_repeater",
         params={"repeated_string": thirsty_str}
     )
-    assert response.status_code == HTTPStatus.OK.value
+    assert response.status_code == HTTPStatus.OK
 
     response = requests.get(endpoints.logfile)
-    assert response.status_code == HTTPStatus.OK.value
+    assert response.status_code == HTTPStatus.OK
     assert response.text.find(thirsty_str) >= 0
 
     response = requests.get(endpoints.logfile, headers={"Range": "bytes=-307200"})  # Immitate SBA's 1st request
-    assert response.status_code == HTTPStatus.PARTIAL_CONTENT.value
+    assert response.status_code == HTTPStatus.PARTIAL_CONTENT
 
 
 @pytest.mark.usefixtures("boot_admin_server", "pyctuator_server")
@@ -270,9 +270,11 @@ def test_traces_endpoint(endpoints: Endpoints) -> None:
     response = requests.get(endpoints.httptrace)
     assert response.status_code == 200
 
-    # Create request with header
+    # Create a request with header
     user_header = "my header test"
     requests.get(endpoints.root + "httptrace_test_url", headers={"User-Data": user_header})
+
+    # Get the captured httptraces
     response = requests.get(endpoints.httptrace)
     response_traces = response.json()["traces"]
     trace = next(x for x in response_traces if x["request"]["uri"].endswith("httptrace_test_url"))
@@ -283,3 +285,13 @@ def test_traces_endpoint(endpoints: Endpoints) -> None:
 
     # Assert timestamp is formatted in ISO format
     datetime.fromisoformat(trace["timestamp"])
+
+    # Assert that the "time taken" (i.e. the time the server spent processing the request) is less than 100ms
+    assert int(trace["timeTaken"]) < 100
+
+    # Issue the same request asking the server to sleep for a sec, than assert request timing is at least 1s
+    requests.get(endpoints.root + "httptrace_test_url", params={"sleep_sec": 1}, headers={"User-Data": user_header})
+    response = requests.get(endpoints.httptrace)
+    response_traces = response.json()["traces"]
+    trace = next(x for x in response_traces if "httptrace_test_url?sleep_sec" in x["request"]["uri"])
+    assert int(trace["timeTaken"]) > 1000
