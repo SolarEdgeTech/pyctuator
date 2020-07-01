@@ -1,4 +1,4 @@
-# FastAPI example
+# Flask example
 This example demonstrates the integration with the [Flask](https://flask.palletsprojects.com/) web-framework.
 
 ## Running the example
@@ -19,4 +19,4 @@ This example demonstrates the integration with the [Flask](https://flask.pallets
 * Note that when Flask debugging is enabled, Pyctuator and Flask are initialized twice because Flask reloads the script. This causes Pyctuator to register twice thus the `startup` time alternates between the time these instances started.
     ```Python
     app.run(port=5000, host="0.0.0.0", debug=True)
-    ``` 
+    ```
