@@ -15,7 +15,7 @@ maintainers = [
 readme = "README.md"
 homepage = "https://github.com/SolarEdgeTech/pyctuator"
 repository = "https://github.com/SolarEdgeTech/pyctuator"
-keywords = ["spring boot admin", "actuator", "pyctuator", "fastapi", "flask"]
+keywords = ["spring boot admin", "actuator", "pyctuator", "fastapi", "flask", "aiohttp"]
 
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -41,6 +41,7 @@ sqlalchemy = {version = "^1.3", optional = true}
 PyMySQL = {version = "^0.9.3", optional = true}
 cryptography = {version = "^2.8", optional = true}
 redis = {version = "^3.3", optional = true}
+aiohttp = {version = "^3.6.2", optional = true}
 
 [tool.poetry.dev-dependencies]
 requests = "^2.22"
@@ -54,6 +55,7 @@ autopep8 = "^1.4"
 psutil = ["psutil"]
 fastapi = ["fastapi", "uvicorn"]
 flask = ["flask"]
+aiohttp = ["aiohttp"]
 db = ["sqlalchemy", "PyMySQL", "cryptography"]
 redis = ["redis"]
 
