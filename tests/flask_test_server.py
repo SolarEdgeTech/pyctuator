@@ -55,16 +55,20 @@ class FlaskPyctuatorServer(PyctuatorServer):
             return resp
 
     def start(self) -> None:
+        logging.info("Starting Flask server")
         self.thread.start()
         while True:
             time.sleep(0.5)
             try:
                 requests.get("http://localhost:5000/pyctuator")
+                logging.info("Flask server started")
                 return
             except requests.exceptions.RequestException:  # Catches all exceptions that Requests raises!
                 pass
 
     def stop(self) -> None:
+        logging.info("Stopping Flask server")
         self.pyctuator.stop()
         requests.post("http://localhost:5000/shutdown")
         self.thread.join()
+        logging.info("Flask server is shutdown")

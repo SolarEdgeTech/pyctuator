@@ -16,10 +16,10 @@ bootstrap:
 check: pylint mypy
 
 test:
-	poetry run pytest --log-cli-level=4 --tb=no -v tests
+	poetry run pytest --log-cli-level=4 -vv tests
 
 coverage:
-	poetry run pytest --cov-report xml:./coverage.xml --cov-report html --cov-report term --cov=pyctuator --log-cli-level=4 --tb=no -v tests
+	poetry run pytest --cov-report xml:./coverage.xml --cov-report html --cov-report term --cov=pyctuator --log-cli-level=4 -vv tests
 
 pylint:
 	poetry run pylint --exit-zero pyctuator tests

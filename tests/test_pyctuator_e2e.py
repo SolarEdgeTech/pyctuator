@@ -15,12 +15,17 @@ from _pytest.monkeypatch import MonkeyPatch
 from requests import Response
 
 from pyctuator.impl import SBA_V2_CONTENT_TYPE
+from tests.aiohttp_test_server import AiohttpPyctuatorServer
 from tests.conftest import Endpoints, PyctuatorServer, RegistrationRequest, RegistrationTrackerFixture
 from tests.fast_api_test_server import FastApiPyctuatorServer
 from tests.flask_test_server import FlaskPyctuatorServer
 
 
-@pytest.fixture(params=[FastApiPyctuatorServer, FlaskPyctuatorServer], ids=["FastAPI", "Flask"])
+# mypy: ignore_errors
+@pytest.fixture(
+    params=[FastApiPyctuatorServer, FlaskPyctuatorServer, AiohttpPyctuatorServer],
+    ids=["FastAPI", "Flask", "aiohttp"]
+)
 def pyctuator_server(request) -> Generator:  # type: ignore
     # Start a the web-server in which the pyctuator is integrated
     pyctuator_server: PyctuatorServer = request.param()
@@ -166,7 +171,7 @@ def test_metrics_endpoint(endpoints: Endpoints) -> None:
     metric_json = response.json()
     assert metric_json["name"] == "thread.count"
     assert metric_json["measurements"][0]["statistic"] == "COUNT"
-    assert metric_json["measurements"][0]["value"] > 8
+    assert metric_json["measurements"][0]["value"] > 5
 
 
 @pytest.mark.usefixtures("boot_admin_server", "pyctuator_server")
