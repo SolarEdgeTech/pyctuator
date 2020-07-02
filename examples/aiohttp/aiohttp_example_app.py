@@ -13,7 +13,7 @@ routes = web.RouteTableDef()
 
 
 @routes.get('/')
-def home(request):
+def home(request: web.Request) -> web.Response:
     my_logger.debug(f"{datetime.datetime.now()} - {str(random.randint(0, 100))}")
     print("Printing to STDOUT")
     return web.Response(text="Hello World!")

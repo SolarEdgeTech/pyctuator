@@ -7,16 +7,15 @@ from http import HTTPStatus
 from typing import Any, Callable, List, Mapping, Optional
 
 from aiohttp import web
-from multidict import CIMultiDict
+from multidict import CIMultiDictProxy
 
-from pyctuator.impl.pyctuator_impl import PyctuatorImpl
-from pyctuator.impl.pyctuator_router import PyctuatorRouter
 from pyctuator.httptrace import TraceRecord, TraceRequest, TraceResponse
 from pyctuator.impl import SBA_V2_CONTENT_TYPE
+from pyctuator.impl.pyctuator_impl import PyctuatorImpl
+from pyctuator.impl.pyctuator_router import PyctuatorRouter
 
 
-# pylint: disable=too-many-locals
-# pylint: disable=unused-argument
+# pylint: disable=too-many-locals,unused-argument
 class AioHttpPyctuator(PyctuatorRouter):
     def __init__(self, app: web.Application, pyctuator_impl: PyctuatorImpl) -> None:
         super().__init__(app, pyctuator_impl)
@@ -88,14 +87,13 @@ class AioHttpPyctuator(PyctuatorRouter):
             )
 
         async def get_logfile(request: web.Request) -> web.Response:
-            range_header = request.headers["range"]
-            if not request.http_range:
+            range_header = request.headers.get("range")
+            if not range_header:
                 return web.Response(
                     body=f"{pyctuator_impl.logfile.log_messages.get_range()}"
                 )
-            str_res, start, end = pyctuator_impl.logfile.get_logfile(
-                range_header
-            )
+
+            str_res, start, end = pyctuator_impl.logfile.get_logfile(range_header)
             response = web.Response(
                 status=HTTPStatus.PARTIAL_CONTENT.value,
                 body=str_res,
@@ -167,13 +165,19 @@ class AioHttpPyctuator(PyctuatorRouter):
             return str(value)
         return None
 
-    def _create_headers_dictionary(self, headers: CIMultiDict) -> Mapping[str, List[str]]:
+    def _create_headers_dictionary(self, headers: CIMultiDictProxy[str]) -> Mapping[str, List[str]]:
         headers_dict: Mapping[str, List[str]] = defaultdict(list)
         for (key, value) in headers.items():
             headers_dict[key].append(value)
         return dict(headers_dict)
 
-    def _create_record(self, request: web.Request, response: web.Response, request_time: datetime, response_time: datetime) -> TraceRecord:
+    def _create_record(
+            self,
+            request: web.Request,
+            response: web.Response,
+            request_time: datetime,
+            response_time: datetime
+    ) -> TraceRecord:
         new_record: TraceRecord = TraceRecord(
             request_time,
             None,
@@ -185,7 +189,7 @@ class AioHttpPyctuator(PyctuatorRouter):
             ),
             TraceResponse(
                 response.status,
-                self._create_headers_dictionary(response.headers)
+                self._create_headers_dictionary(CIMultiDictProxy(response.headers))
             ),
             int((response_time.timestamp() - request_time.timestamp()) * 1000),
         )
