@@ -15,7 +15,7 @@ maintainers = [
 readme = "README.md"
 homepage = "https://github.com/SolarEdgeTech/pyctuator"
 repository = "https://github.com/SolarEdgeTech/pyctuator"
-keywords = ["spring boot admin", "actuator", "pyctuator", "fastapi", "flask"]
+keywords = ["spring boot admin", "actuator", "pyctuator", "fastapi", "flask", "aiohttp"]
 
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -55,6 +55,7 @@ autopep8 = "^1.4"
 psutil = ["psutil"]
 fastapi = ["fastapi", "uvicorn"]
 flask = ["flask"]
+aiohttp = ["aiohttp"]
 db = ["sqlalchemy", "PyMySQL", "cryptography"]
 redis = ["redis"]
 

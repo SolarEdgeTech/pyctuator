@@ -17,7 +17,7 @@ jobs:
       - run: make bootstrap
       - run: poetry update -vvv
       - run: poetry build -vvv
-      - run: poetry install --extras flask --extras fastapi --extras db --extras redis
+      - run: poetry install --extras flask --extras fastapi --extras aiohttp --extras db --extras redis
       - run: make coverage
       - uses: actions/upload-artifact@v2
         with:

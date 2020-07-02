@@ -16,6 +16,7 @@ from pyctuator.impl import SBA_V2_CONTENT_TYPE
 
 
 # pylint: disable=too-many-locals
+# pylint: disable=unused-argument
 class AioHttpPyctuator(PyctuatorRouter):
     def __init__(self, app: web.Application, pyctuator_impl: PyctuatorImpl) -> None:
         super().__init__(app, pyctuator_impl)
