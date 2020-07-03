@@ -15,12 +15,16 @@ from _pytest.monkeypatch import MonkeyPatch
 from requests import Response
 
 from pyctuator.impl import SBA_V2_CONTENT_TYPE
+from tests.aiohttp_test_server import AiohttpPyctuatorServer
 from tests.conftest import Endpoints, PyctuatorServer, RegistrationRequest, RegistrationTrackerFixture
 from tests.fast_api_test_server import FastApiPyctuatorServer
 from tests.flask_test_server import FlaskPyctuatorServer
 
 
-@pytest.fixture(params=[FastApiPyctuatorServer, FlaskPyctuatorServer], ids=["FastAPI", "Flask"])
+@pytest.fixture(
+    params=[FastApiPyctuatorServer, FlaskPyctuatorServer, AiohttpPyctuatorServer],
+    ids=["FastAPI", "Flask", "aiohttp"],
+)
 def pyctuator_server(request) -> Generator:  # type: ignore
     # Start a the web-server in which the pyctuator is integrated
     pyctuator_server: PyctuatorServer = request.param()
