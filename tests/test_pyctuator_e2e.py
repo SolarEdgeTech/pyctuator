@@ -21,9 +21,10 @@ from tests.fast_api_test_server import FastApiPyctuatorServer
 from tests.flask_test_server import FlaskPyctuatorServer
 
 
+# mypy: ignore_errors
 @pytest.fixture(
     params=[FastApiPyctuatorServer, FlaskPyctuatorServer, AiohttpPyctuatorServer],
-    ids=["FastAPI", "Flask", "aiohttp"],
+    ids=["FastAPI", "Flask", "aiohttp"]
 )
 def pyctuator_server(request) -> Generator:  # type: ignore
     # Start a the web-server in which the pyctuator is integrated

@@ -4,7 +4,7 @@ import time
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from datetime import datetime, timezone
-from typing import Generator, Optional
+from typing import Generator, Optional, Dict
 
 import pytest
 import requests
@@ -66,12 +66,14 @@ def boot_admin_server(registration_tracker: RegistrationTrackerFixture) -> Gener
 
     # pylint: disable=unused-argument,unused-variable
     @boot_admin_app.post("/register", tags=["admin-server"])
-    def register(request: Request, registration: RegistrationRequest) -> None:
-        logging.debug("Got registration post %s - %s", registration, registration_tracker)
+    def register(request: Request, registration: RegistrationRequest) -> Dict[str, str]:
+        logging.debug("Got registration post %s, %d registrations since %s",
+                      registration, registration_tracker.count, registration_tracker.start_time)
         registration_tracker.registration = registration
         registration_tracker.count += 1
         if registration_tracker.start_time is None:
             registration_tracker.start_time = registration.metadata["startup"]
+        return {"id": "JB007"}
 
     # Start the mock boot-admin server that is needed to test pyctuator's registration
     boot_admin_config = Config(app=boot_admin_app, port=8001, loop="asyncio")
