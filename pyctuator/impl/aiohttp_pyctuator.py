@@ -20,34 +20,30 @@ class AioHttpPyctuator(PyctuatorRouter):
     def __init__(self, app: web.Application, pyctuator_impl: PyctuatorImpl) -> None:
         super().__init__(app, pyctuator_impl)
 
+        custom_dumps = partial(
+            json.dumps, default=self._custom_json_serializer
+        )
+
         async def empty_handler(request: web.Request) -> web.Response:
             return web.Response(text='')
 
         async def get_endpoints(request: web.Request) -> web.Response:
-            return web.json_response(self._to_dict(self.get_endpoints_data()))
+            return web.json_response(self.get_endpoints_data(), dumps=custom_dumps)
 
         async def get_environment(request: web.Request) -> web.Response:
-            return web.json_response(
-                self._to_dict(pyctuator_impl.get_environment())
-            )
+            return web.json_response(pyctuator_impl.get_environment(), dumps=custom_dumps)
 
         async def get_info(request: web.Request) -> web.Response:
-            return web.json_response(self._to_dict(pyctuator_impl.app_info))
+            return web.json_response(pyctuator_impl.app_info, dumps=custom_dumps)
 
         async def get_health(request: web.Request) -> web.Response:
-            return web.json_response(
-                self._to_dict(pyctuator_impl.get_health())
-            )
+            return web.json_response(pyctuator_impl.get_health(), dumps=custom_dumps)
 
         async def get_metric_names(request: web.Request) -> web.Response:
-            return web.json_response(
-                self._to_dict(pyctuator_impl.get_metric_names())
-            )
+            return web.json_response(pyctuator_impl.get_metric_names(), dumps=custom_dumps)
 
         async def get_loggers(request: web.Request) -> web.Response:
-            return web.json_response(
-                self._to_dict(pyctuator_impl.logging.get_loggers())
-            )
+            return web.json_response(pyctuator_impl.logging.get_loggers(), dumps=custom_dumps)
 
         async def set_logger_level(request: web.Request) -> web.Response:
             request_dict = await request.json()
@@ -59,32 +55,19 @@ class AioHttpPyctuator(PyctuatorRouter):
 
         async def get_logger(request: web.Request) -> web.Response:
             logger_name = request.match_info["logger_name"]
-            return web.json_response(
-                self._to_dict(pyctuator_impl.logging.get_logger(logger_name))
-            )
+            return web.json_response(pyctuator_impl.logging.get_logger(logger_name), dumps=custom_dumps)
 
         async def get_thread_dump(request: web.Request) -> web.Response:
-            return web.json_response(
-                self._to_dict(pyctuator_impl.get_thread_dump())
-            )
+            return web.json_response(pyctuator_impl.get_thread_dump(), dumps=custom_dumps)
 
         async def get_httptrace(request: web.Request) -> web.Response:
             raw_data = pyctuator_impl.http_tracer.get_httptrace()
-            custom_dumps = partial(
-                json.dumps, default=self._datetime_serializer
-            )
-            return web.json_response(
-                self._to_dict(raw_data), dumps=custom_dumps
-            )
+            return web.json_response(raw_data, dumps=custom_dumps)
 
         async def get_metric_measurement(request: web.Request) -> web.Response:
             return web.json_response(
-                self._to_dict(
-                    pyctuator_impl.get_metric_measurement(
-                        request.match_info["metric_name"]
-                    )
-                )
-            )
+                pyctuator_impl.get_metric_measurement(request.match_info["metric_name"]),
+                dumps=custom_dumps)
 
         async def get_logfile(request: web.Request) -> web.Response:
             range_header = request.headers.get("range")
@@ -155,12 +138,10 @@ class AioHttpPyctuator(PyctuatorRouter):
         )
         app.middlewares.append(intercept_requests_and_responses)
 
-    def _to_dict(self, data: object) -> Optional[dict]:
-        if dataclasses.is_dataclass(data):
-            return dataclasses.asdict(data)
-        return None
+    def _custom_json_serializer(self, value: Any) -> Any:
+        if dataclasses.is_dataclass(value):
+            return dataclasses.asdict(value)
 
-    def _datetime_serializer(self, value: Any) -> Optional[str]:
         if isinstance(value, datetime):
             return str(value)
         return None

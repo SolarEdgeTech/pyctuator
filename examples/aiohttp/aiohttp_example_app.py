@@ -27,7 +27,7 @@ pyctuator = Pyctuator(
     "Example aiohttp",
     app_url=f"http://{example_app_address}:8888",
     pyctuator_endpoint_url=f"http://{example_app_address}:8888/pyctuator",
-    registration_url=f"http://{example_sba_address}:8082/instances",
+    registration_url=f"http://{example_sba_address}:8080/instances",
     app_description="Demonstrate Spring Boot Admin Integration with aiohttp",
 )
 

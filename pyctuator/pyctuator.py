@@ -51,7 +51,7 @@ class Pyctuator:
 
         * Flask - `app` is an instance of `flask.app.Flask`
 
-        * aiohttp - `app`is an instance of `aiohttp.web.Application`
+        * aiohttp - `app` is an instance of `aiohttp.web.Application`
 
         :param app: an instance of a supported web-framework with which the pyctuator endpoints will be registered
         :param app_name: the application's name that will be presented in the "Info" section in boot-admin

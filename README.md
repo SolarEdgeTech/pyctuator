@@ -149,7 +149,7 @@ from pyctuator.pyctuator import Pyctuator
 app = web.Application()
 routes = web.RouteTableDef()
 
-@route.get("/")
+@routes.get("/")
 def hello():
     return web.Response(text="Hello World!")
 
@@ -309,7 +309,7 @@ To run these examples, you'll need to have Spring Boot Admin running in a local 
 
 Unless the example includes a docker-compose file, you'll need to start Spring Boot Admin using docker directly:
 ```sh
-docker run -p 8080:8080 michayaak/spring-boot-admin:2.2.3-1
+docker run --rm -p 8080:8080 michayaak/spring-boot-admin:2.2.3-1
 ```
 (the docker image's tag represents the version of Spring Boot Admin, so if you need to use version `2.0.0`, use `michayaak/spring-boot-admin:2.0.0` instead, note it accepts connections on port 8082).
 

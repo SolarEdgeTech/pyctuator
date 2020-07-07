@@ -4,7 +4,7 @@ This example demonstrates the integration with the [FastAPI](https://fastapi.tia
 ## Running the example
 1. Start an instance of SBA (Spring Boot Admin):
     ```sh
-    docker run -p 8082:8082 michayaak/spring-boot-admin:2.2.2
+    docker run --rm -p 8080:8080 michayaak/spring-boot-admin:2.2.3-1
     ```
 2. Once Spring Boot Admin is running, you can run the examples as follow:
     ```sh
