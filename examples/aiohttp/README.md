@@ -1,5 +1,5 @@
-# FastAPI example
-This example demonstrates the integration with the [FastAPI](https://fastapi.tiangolo.com/) web-framework.
+# aiohttp example
+This example demonstrates the integration with the [aiohttp](https://docs.aiohttp.org).
 
 ## Running the example
 1. Start an instance of SBA (Spring Boot Admin):
@@ -8,9 +8,10 @@ This example demonstrates the integration with the [FastAPI](https://fastapi.tia
     ```
 2. Once Spring Boot Admin is running, you can run the examples as follow:
     ```sh
-    cd examples/FastAPI
+    cd examples/aiohttp
     poetry install
-    poetry run python -m fastapi_example_app
+    poetry run python -m aiohttp_example_app
     ``` 
 
-![FastAPI Example](../images/FastAPI.png)
+![aiohttp Example](../images/aiohttp.png)
+

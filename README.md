@@ -7,7 +7,7 @@
 Monitor Python web apps using 
 [Spring Boot Admin](https://github.com/codecentric/spring-boot-admin). 
 
-Pyctuator supports **Flask** and **FastAPI**. **Django** support is planned as well.
+Pyctuator supports **Flask**, **FastAPI** and **aiohttp**. **Django** support is planned as well.
 
 The following video shows a FastAPI web app being monitored and controled using Spring Boot Admin.
  
@@ -63,9 +63,9 @@ It currently supports the following Actuator features:
 * **HTTP traces** - Tail recent HTTP requests, including status codes and latency
 
 ## Quickstart
-The examples below show a minimal integration of **FastAPI** and **Flask** applications with **Pyctuator**.
+The examples below show a minimal integration of **FastAPI**, **Flask** and **aiohttp** applications with **Pyctuator**.
 
-After installing Flask/FastAPI and Pyctuator, start by launching a local Spring Boot Admin instance:
+After installing Flask/FastAPI/aiohttp and Pyctuator, start by launching a local Spring Boot Admin instance:
 
 ```sh
 docker run --rm --name spring-boot-admin -p 8080:8080 michayaak/spring-boot-admin:2.2.3-1
@@ -138,6 +138,36 @@ Server(config=(Config(app=app, loop="asyncio"))).run()
 The application will automatically register with Spring Boot Admin upon start up.
 
 Log in to the Spring Boot Admin UI at `http://localhost:8080` to interact with the application. 
+
+### aiohttp
+The following example is complete and should run as is.
+
+```python
+from aiohttp import web
+from pyctuator.pyctuator import Pyctuator
+
+app = web.Application()
+routes = web.RouteTableDef()
+
+@routes.get("/")
+def hello():
+    return web.Response(text="Hello World!")
+
+Pyctuator(
+    app,
+    "aiohttp Pyctuator",
+    app_url="http://host.docker.internal:8888",
+    pyctuator_endpoint_url="http://host.docker.internal:8888/pyctuator",
+    registration_url="http://localhost:8080/instances"
+)
+
+app.add_routes(routes)
+web.run_app(app, port=8888)
+```
+
+The application will automatically register with Spring Boot Admin upon start up.
+
+Log in to the Spring Boot Admin UI at `http://localhost:8080` to interact with the application.
 
 ### Registration Notes
 When registering a service in Spring Boot Admin, note that:
@@ -279,7 +309,7 @@ To run these examples, you'll need to have Spring Boot Admin running in a local 
 
 Unless the example includes a docker-compose file, you'll need to start Spring Boot Admin using docker directly:
 ```sh
-docker run -p 8080:8080 michayaak/spring-boot-admin:2.2.3-1
+docker run --rm -p 8080:8080 michayaak/spring-boot-admin:2.2.3-1
 ```
 (the docker image's tag represents the version of Spring Boot Admin, so if you need to use version `2.0.0`, use `michayaak/spring-boot-admin:2.0.0` instead, note it accepts connections on port 8082).
 
