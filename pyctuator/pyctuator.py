@@ -122,7 +122,7 @@ class Pyctuator:
                     return
 
         # Fail in case no framework was found for the target app
-        raise EnvironmentError("No framework was found that is matching the target app"
+        raise EnvironmentError("No framework was found that is matching the target app "
                                "(is it properly installed and imported?)")
 
     def stop(self) -> None:
