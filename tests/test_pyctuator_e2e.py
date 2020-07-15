@@ -32,7 +32,7 @@ def pyctuator_server(request) -> Generator:  # type: ignore
     pyctuator_server.start()
 
     # Yield back to pytest until the module is done
-    yield None
+    yield pyctuator_server
 
     # Once the module is done, stop the pyctuator-server
     pyctuator_server.stop()
@@ -176,14 +176,17 @@ def test_metrics_endpoint(endpoints: Endpoints) -> None:
 
 @pytest.mark.usefixtures("boot_admin_server", "pyctuator_server")
 @pytest.mark.mark_recurring_registration
-def test_recurring_registration(registration_tracker: RegistrationTrackerFixture) -> None:
+def test_recurring_registration_and_deregistration(
+        registration_tracker: RegistrationTrackerFixture,
+        pyctuator_server: PyctuatorServer
+) -> None:
     # Verify that at least 4 registrations occurred within 10 seconds since the test started
     start = time.time()
     while registration_tracker.count < 4:
         time.sleep(0.5)
         if time.time() - start > 15:
             pytest.fail(
-                f"Expected at least 4 recurring registrations within 10 seconds but got {registration_tracker.count}")
+                "Expected at least 4 recurring registrations within 10 seconds but got {registration_tracker.count}")
 
     # Verify that the reported startup time is the same across all the registrations and that its later then the test's
     # start time
@@ -191,6 +194,10 @@ def test_recurring_registration(registration_tracker: RegistrationTrackerFixture
     assert registration_tracker.start_time == registration_tracker.registration.metadata["startup"]
     registration_start_time = datetime.fromisoformat(registration_tracker.start_time)
     assert registration_start_time > registration_tracker.test_start_time - timedelta(seconds=10)
+
+    # Ask to deregister (in real life, called by atexit) and verify it was registered
+    pyctuator_server.atexit()
+    assert registration_tracker.deregistration_time > registration_start_time
 
 
 @pytest.mark.usefixtures("boot_admin_server", "pyctuator_server")

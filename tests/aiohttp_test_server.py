@@ -79,6 +79,12 @@ class AiohttpPyctuatorServer(PyctuatorServer):
             time.sleep(0.01)
 
     def stop(self) -> None:
+        logging.info("Stopping aiohttp server")
         self.pyctuator.stop()
         self.should_stop_server = True
         self.thread.join()
+        logging.info("aiohttp server stopped")
+
+    def atexit(self) -> None:
+        if self.pyctuator.boot_admin_registration_handler:
+            self.pyctuator.boot_admin_registration_handler.deregister_from_admin_server()

@@ -55,6 +55,17 @@ class FastApiPyctuatorServer(PyctuatorServer):
             time.sleep(0.01)
 
     def stop(self) -> None:
+        logging.info("Stopping FastAPI server")
         self.pyctuator.stop()
+
+        # Allow the recurring registration to complete any in-progress request before stopping FastAPI
+        time.sleep(1)
+
         self.server.should_exit = True
+        self.server.force_exit = True
         self.thread.join()
+        logging.info("FastAPI server stopped")
+
+    def atexit(self) -> None:
+        if self.pyctuator.boot_admin_registration_handler:
+            self.pyctuator.boot_admin_registration_handler.deregister_from_admin_server()

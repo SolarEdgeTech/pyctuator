@@ -43,6 +43,7 @@ class RegistrationTrackerFixture:
     registration: Optional[RegistrationRequest]
     count: int
     start_time: Optional[str]
+    deregistration_time: Optional[datetime]
     test_start_time: datetime
 
 
@@ -53,7 +54,7 @@ class CustomServer(Server):
 
 @pytest.fixture
 def registration_tracker() -> RegistrationTrackerFixture:
-    return RegistrationTrackerFixture(None, 0, None, datetime.now(timezone.utc))
+    return RegistrationTrackerFixture(None, 0, None, None, datetime.now(timezone.utc))
 
 
 @pytest.fixture
@@ -75,6 +76,13 @@ def boot_admin_server(registration_tracker: RegistrationTrackerFixture) -> Gener
             registration_tracker.start_time = registration.metadata["startup"]
         return {"id": "JB007"}
 
+    # pylint: disable=unused-argument,unused-variable
+    @boot_admin_app.delete("/register/{registration_id}", tags=["admin-server"])
+    def deregister(registration_id: str) -> None:
+        logging.debug("Got deregistration, delete %s (previous deregistration time is %s)",
+                      registration_id, registration_tracker.deregistration_time)
+        registration_tracker.deregistration_time = datetime.now(timezone.utc)
+
     # Start the mock boot-admin server that is needed to test pyctuator's registration
     boot_admin_config = Config(app=boot_admin_app, port=8001, loop="asyncio")
     boot_admin_server = CustomServer(config=boot_admin_config)
@@ -87,6 +95,7 @@ def boot_admin_server(registration_tracker: RegistrationTrackerFixture) -> Gener
     yield None
 
     boot_admin_server.should_exit = True
+    boot_admin_server.force_exit = True
     boot_admin_thread.join()
 
 
@@ -126,4 +135,8 @@ class PyctuatorServer(ABC):
 
     @abstractmethod
     def stop(self) -> None:
+        pass
+
+    @abstractmethod
+    def atexit(self) -> None:
         pass

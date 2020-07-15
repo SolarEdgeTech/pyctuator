@@ -71,4 +71,8 @@ class FlaskPyctuatorServer(PyctuatorServer):
         self.pyctuator.stop()
         requests.post("http://localhost:5000/shutdown")
         self.thread.join()
-        logging.info("Flask server is shutdown")
+        logging.info("Flask server stopped")
+
+    def atexit(self) -> None:
+        if self.pyctuator.boot_admin_registration_handler:
+            self.pyctuator.boot_admin_registration_handler.deregister_from_admin_server()
