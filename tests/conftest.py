@@ -1,4 +1,5 @@
 import logging
+import secrets
 import threading
 import time
 from abc import ABC, abstractmethod
@@ -8,9 +9,10 @@ from typing import Generator, Optional, Dict
 
 import pytest
 import requests
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends, HTTPException
+from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from pydantic import BaseModel
-from starlette.requests import Request
+from starlette import status
 from uvicorn.config import Config
 from uvicorn.main import Server
 
@@ -65,11 +67,36 @@ def boot_admin_server(registration_tracker: RegistrationTrackerFixture) -> Gener
         docs_url="/api",
     )
 
-    # pylint: disable=unused-argument,unused-variable
+    security = HTTPBasic()
+
+    def get_current_username(credentials: HTTPBasicCredentials = Depends(security)) -> str:
+        correct_username = secrets.compare_digest(credentials.username, "moo")
+        correct_password = secrets.compare_digest(credentials.password, "haha")
+        if not (correct_username and correct_password):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Moo haha",
+            )
+        return credentials.username
+
+    # pylint: disable=unused-variable
     @boot_admin_app.post("/register", tags=["admin-server"])
-    def register(request: Request, registration: RegistrationRequest) -> Dict[str, str]:
+    def register(registration: RegistrationRequest) -> Dict[str, str]:
         logging.debug("Got registration post %s, %d registrations since %s",
                       registration, registration_tracker.count, registration_tracker.start_time)
+        registration_tracker.registration = registration
+        registration_tracker.count += 1
+        if registration_tracker.start_time is None:
+            registration_tracker.start_time = registration.metadata["startup"]
+        return {"id": "JB007"}
+
+    # pylint: disable=unused-variable
+    @boot_admin_app.post("/register-with-basic-auth", tags=["admin-server"])
+    def register_with_basic_auth(
+            registration: RegistrationRequest,
+            username: str = Depends(get_current_username)) -> Dict[str, str]:
+        logging.debug("Got registration post %s from %s, %d registrations since %s",
+                      registration, username, registration_tracker.count, registration_tracker.start_time)
         registration_tracker.registration = registration
         registration_tracker.count += 1
         if registration_tracker.start_time is None:
