@@ -19,23 +19,26 @@ def require_redis_server() -> None:
     if not should_test_with_redis:
         pytest.skip("No Redis server (env TEST_REDIS_SERVER isn't True), skipping")
 
+@pytest.fixture
+def redis_host() -> str:
+    return os.getenv("REDIS_HOST", "localhost")
 
 @pytest.mark.usefixtures("require_redis", "require_redis_server")
-def test_redis_health() -> None:
+def test_redis_health(redis_host: str) -> None:
     import redis
     from pyctuator.health.health_provider import Status
     from pyctuator.health.redis_health_provider import RedisHealthProvider, RedisHealthStatus, RedisHealthDetails
 
-    health = RedisHealthProvider(redis.Redis()).get_health()
+    health = RedisHealthProvider(redis.Redis(host=redis_host)).get_health()
     assert health == RedisHealthStatus(Status.UP, RedisHealthDetails("5.0.3", "standalone"))
 
 
 @pytest.mark.usefixtures("require_redis", "require_redis_server")
-def test_redis_bad_password() -> None:
+def test_redis_bad_password(redis_host: str) -> None:
     import redis
     from pyctuator.health.health_provider import Status
     from pyctuator.health.redis_health_provider import RedisHealthProvider
 
-    health = RedisHealthProvider(redis.Redis(password="blabla")).get_health()
+    health = RedisHealthProvider(redis.Redis(host=redis_host, password="blabla")).get_health()
     assert health.status == Status.DOWN
     assert "Client sent AUTH, but no password is set" in str(health.details.failure)

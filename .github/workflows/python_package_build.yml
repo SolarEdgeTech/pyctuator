@@ -12,19 +12,34 @@ jobs:
     container:
       image: matanrubin/python-poetry:3.7
 
+    env:
+      TEST_REDIS_SERVER: True
+      REDIS_HOST: redis
+
+    services:
+      # User a redis container for testing the redis health-provider
+      redis:
+        image: redis:5.0.3
+
     steps:
       - uses: actions/checkout@v2
       - run: make bootstrap
       - run: poetry build -vvv
+
+      # Install all dependencies except for psutil and run the tests with coverage - this tests handling missing psutil
       - run: poetry install --extras flask --extras fastapi --extras aiohttp --extras db --extras redis
       - run: make coverage
+
+      # Run pylint+mypy after installing psutil so they don't complain on missing dependencies
+      - run: poetry install --extras psutil
+      - run: make check
+
+      # Run tests with coverage again - this adds tests that require psutil
+      - run: make coverage
+
+      # Upload coverage files to codecov
       - uses: actions/upload-artifact@v2
         with:
           name: htmlcov.zip
           path: htmlcov/
       - uses: codecov/codecov-action@v1
-
-      # Install the extra psutil module and run linting+tests in the "psutil enabled" env
-      - run: poetry install --extras psutil
-      - run: make check
-      - run: make test
