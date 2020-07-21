@@ -36,10 +36,7 @@ class BootAdminRegistrationHandler:
 
         self.should_continue_registration_schedule: bool = False
 
-    def _schedule_next_registration(
-            self,
-            registration_interval_sec: int
-    ) -> None:
+    def _schedule_next_registration(self, registration_interval_sec: int) -> None:
         timer = threading.Timer(
             registration_interval_sec,
             self._register_with_admin_server,

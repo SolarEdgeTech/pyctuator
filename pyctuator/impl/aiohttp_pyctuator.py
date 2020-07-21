@@ -4,7 +4,7 @@ from collections import defaultdict
 from datetime import datetime
 from functools import partial
 from http import HTTPStatus
-from typing import Any, Callable, List, Mapping, Optional
+from typing import Any, Callable, List, Mapping
 
 from aiohttp import web
 from multidict import CIMultiDictProxy
