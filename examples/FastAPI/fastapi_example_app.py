@@ -8,7 +8,6 @@ from uvicorn.config import Config
 
 from pyctuator.pyctuator import Pyctuator
 
-logging.basicConfig(level=logging.INFO)
 my_logger = logging.getLogger("example")
 
 app = FastAPI(

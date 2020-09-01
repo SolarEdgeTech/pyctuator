@@ -6,8 +6,6 @@ from flask import Flask
 
 from pyctuator.pyctuator import Pyctuator
 
-logging.basicConfig(level=logging.INFO)
-
 # Keep the console clear - configure werkzeug (flask's WSGI web app) not to log the detail of every incoming request
 logging.getLogger("werkzeug").setLevel(logging.WARNING)
 

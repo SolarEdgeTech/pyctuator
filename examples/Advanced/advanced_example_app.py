@@ -67,7 +67,6 @@ def get_conf(key: str) -> Any:
 # A FastAPI application is initialized providing some test API
 # ----------------------------------------------------------------------------------------------------------------------
 
-logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("ExampleApp")
 
 # Initialize a connection to the DB which the app is using

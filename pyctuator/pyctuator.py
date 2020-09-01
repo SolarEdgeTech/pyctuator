@@ -89,6 +89,11 @@ class Pyctuator:
         self.boot_admin_registration_handler: Optional[BootAdminRegistrationHandler] = None
 
         root_logger = logging.getLogger()
+        # If application did not initiate logging module, add default handler to root logger
+        # logging.info implicitly calls logging.basicConfig(), see logging.basicConfig in Python's documentation.
+        if not root_logger.hasHandlers():
+            logging.info("Logging not configured, using logging.basicConfig()")
+
         root_logger.addHandler(self.pyctuator_impl.logfile.log_messages)
 
         # Find and initialize an integration layer between the web-framework adn pyctuator
