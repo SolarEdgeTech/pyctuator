@@ -6,7 +6,6 @@ from aiohttp import web
 
 from pyctuator.pyctuator import Pyctuator
 
-logging.basicConfig(level=logging.INFO)
 my_logger = logging.getLogger("example")
 app = web.Application()
 routes = web.RouteTableDef()
