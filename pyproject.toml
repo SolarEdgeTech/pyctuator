@@ -42,6 +42,7 @@ PyMySQL = {version = "^0.9.3", optional = true}
 cryptography = {version = "^2.8", optional = true}
 redis = {version = "^3.3", optional = true}
 aiohttp = {version = "^3.6.2", optional = true}
+tornado = {version = "^6.0.4", optional = true}
 
 [tool.poetry.dev-dependencies]
 requests = "^2.22"
@@ -56,6 +57,7 @@ psutil = ["psutil"]
 fastapi = ["fastapi", "uvicorn"]
 flask = ["flask"]
 aiohttp = ["aiohttp"]
+tornado = ["tornado"]
 db = ["sqlalchemy", "PyMySQL", "cryptography"]
 redis = ["redis"]
 
