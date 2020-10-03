@@ -27,7 +27,7 @@ jobs:
       - run: poetry build -vvv
 
       # Install all dependencies except for psutil and run the tests with coverage - this tests handling missing psutil
-      - run: poetry install --extras flask --extras fastapi --extras aiohttp --extras db --extras redis
+      - run: poetry install --extras flask --extras fastapi --extras aiohttp --extras tornado --extras db --extras redis
       - run: make coverage
 
       # Run pylint+mypy after installing psutil so they don't complain on missing dependencies

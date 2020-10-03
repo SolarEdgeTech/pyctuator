@@ -3,22 +3,26 @@ import logging
 import random
 
 from tornado import ioloop
-from tornado.web import Application, RequestHandler
 from tornado.httpserver import HTTPServer
+from tornado.web import Application, RequestHandler
 
 from pyctuator.pyctuator import Pyctuator
 
 my_logger = logging.getLogger("example")
 
+
 class HomeHandler(RequestHandler):
     def get(self):
         my_logger.debug(f"{datetime.datetime.now()} - {str(random.randint(0, 100))}")
-        print("Printing to STDOUT")
         self.write("Hello World!")
 
-app = Application([
-    (r"/", HomeHandler)
-], debug=False)
+
+app = Application(
+    [
+        (r"/", HomeHandler)
+    ],
+    debug=False
+)
 
 example_app_address = "host.docker.internal"
 example_sba_address = "localhost"

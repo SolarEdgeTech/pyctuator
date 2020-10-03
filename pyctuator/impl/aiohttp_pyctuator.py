@@ -122,10 +122,7 @@ class AioHttpPyctuator(PyctuatorRouter):
                 web.get("/pyctuator/info", get_info),
                 web.get("/pyctuator/health", get_health),
                 web.get("/pyctuator/metrics", get_metric_names),
-                web.get(
-                    "/pyctuator/metrics/{metric_name}",
-                    get_metric_measurement
-                ),
+                web.get("/pyctuator/metrics/{metric_name}", get_metric_measurement),
                 web.get("/pyctuator/loggers", get_loggers),
                 web.get("/pyctuator/loggers/{logger_name}", get_logger),
                 web.post("/pyctuator/loggers/{logger_name}", set_logger_level),
