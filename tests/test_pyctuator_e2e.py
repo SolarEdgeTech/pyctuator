@@ -22,9 +22,12 @@ from tests.flask_test_server import FlaskPyctuatorServer
 
 
 # mypy: ignore_errors
+from tests.tornado_test_server import TornadoPyctuatorServer
+
+
 @pytest.fixture(
-    params=[FastApiPyctuatorServer, FlaskPyctuatorServer, AiohttpPyctuatorServer],
-    ids=["FastAPI", "Flask", "aiohttp"]
+    params=[FastApiPyctuatorServer, FlaskPyctuatorServer, AiohttpPyctuatorServer, TornadoPyctuatorServer],
+    ids=["FastAPI", "Flask", "aiohttp", "Tornado"]
 )
 def pyctuator_server(request) -> Generator:  # type: ignore
     # Start a the web-server in which the pyctuator is integrated

@@ -1,16 +1,15 @@
 [tool.poetry]
-name = "fastapi-pyctuator-example"
+name = "tornado-pyctuator-example"
 version = "1.0.0"
 description = "Example of using Pyctuator"
 authors = [
-    "Luke Skywalker <Luke@starwars.com>",
+    "Desmond Stonie <aneasystone@gmail.com>",
 ]
 
 [tool.poetry.dependencies]
 python = "^3.7"
 psutil = { version = "^5.6" }
-fastapi = { version = "^0.41.0" }
-uvicorn = { version = "^0.9.0" }
+tornado = { version = "^6.0.4" }
 pyctuator = { version = "^0.13.1" }
 
 [build-system]
