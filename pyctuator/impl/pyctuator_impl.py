@@ -102,8 +102,23 @@ class PyctuatorImpl:
             for provider in self.health_providers
             if provider.is_supported()
         }
-        service_is_up = all(health_status.status == Status.UP for health_status in health_statuses.values())
-        return HealthSummary(Status.UP if service_is_up else Status.DOWN, health_statuses)
+
+        # Health is UP if no provider is registered
+        if not health_statuses:
+            return HealthSummary(Status.UP, health_statuses)
+
+        # If there's at least one provider and any of the providers is DOWN, the service is DOWN
+        service_is_down = any(health_status.status == Status.DOWN for health_status in health_statuses.values())
+        if service_is_down:
+            return HealthSummary(Status.DOWN, health_statuses)
+
+        # IF there's at least one provider and none of the providers is DOWN and at least one is UP, the service is UP
+        service_is_up = any(health_status.status == Status.UP for health_status in health_statuses.values())
+        if service_is_up:
+            return HealthSummary(Status.UP, health_statuses)
+
+        # else, all providers are unknown so the service is UNKNOWN
+        return HealthSummary(Status.UNKNOWN, health_statuses)
 
     def get_metric_names(self) -> MetricNames:
         metric_names = []
