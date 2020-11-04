@@ -1,12 +1,13 @@
 import http.client
 import json
 import logging
+import os
+import ssl
 import threading
 import urllib.parse
 from base64 import b64encode
 from datetime import datetime
-
-from http.client import HTTPConnection
+from http.client import HTTPConnection, HTTPResponse
 from typing import Optional, Dict
 
 from pyctuator.auth import Auth, BasicAuth
@@ -35,6 +36,8 @@ class BootAdminRegistrationHandler:
         self.instance_id = None
 
         self.should_continue_registration_schedule: bool = False
+        self.disable_certificate_validation_for_https_registration: bool = \
+            os.getenv("PYCTUATOR_REGISTRATION_NO_CERT") is not None
 
     def _schedule_next_registration(self, registration_interval_sec: int) -> None:
         timer = threading.Timer(
@@ -66,15 +69,7 @@ class BootAdminRegistrationHandler:
             headers = {"Content-type": "application/json"}
             self.authenticate(headers)
 
-            reg_url_split = urllib.parse.urlsplit(self.registration_url)
-            conn = http.client.HTTPConnection(reg_url_split.hostname, reg_url_split.port)
-            conn.request(
-                "POST",
-                reg_url_split.path,
-                body=json.dumps(registration_data),
-                headers=headers,
-            )
-            response = conn.getresponse()
+            response = self._http_request(self.registration_url, "POST", headers, json.dumps(registration_data))
 
             if response.status < 200 or response.status >= 300:
                 logging.warning("Failed registering with boot-admin, got %s - %s", response.status, response.read())
@@ -104,14 +99,7 @@ class BootAdminRegistrationHandler:
 
         conn: Optional[HTTPConnection] = None
         try:
-            reg_url_split = urllib.parse.urlsplit(deregistration_url)
-            conn = http.client.HTTPConnection(reg_url_split.hostname, reg_url_split.port)
-            conn.request(
-                "DELETE",
-                reg_url_split.path,
-                headers=headers,
-            )
-            response = conn.getresponse()
+            response = self._http_request(deregistration_url, "DELETE", headers)
 
             if response.status < 200 or response.status >= 300:
                 logging.warning("Failed deregistering from boot-admin, got %s - %s", response.status, response.read())
@@ -139,3 +127,24 @@ class BootAdminRegistrationHandler:
     def stop(self) -> None:
         logging.info("Stopping recurring registration")
         self.should_continue_registration_schedule = False
+
+    def _http_request(self, url: str, method: str, headers: Dict[str, str], body: Optional[str] = None) -> HTTPResponse:
+        url_parts = urllib.parse.urlsplit(url)
+        if url_parts.scheme == "http":
+            conn = http.client.HTTPConnection(url_parts.hostname, url_parts.port)
+        elif url_parts.scheme == "https":
+            context = None
+            if self.disable_certificate_validation_for_https_registration:
+                context = ssl.SSLContext()
+                context.verify_mode = ssl.CERT_NONE
+            conn = http.client.HTTPSConnection(url_parts.hostname, url_parts.port, context=context)
+        else:
+            raise ValueError(f"Unknown scheme in {url}")
+
+        conn.request(
+            method,
+            url_parts.path,
+            body=body,
+            headers=headers,
+        )
+        return conn.getresponse()

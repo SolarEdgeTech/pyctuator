@@ -173,6 +173,7 @@ Log in to the Spring Boot Admin UI at `http://localhost:8080` to interact with t
 When registering a service in Spring Boot Admin, note that:
 * **Docker** - If the Spring Boot Admin is running in a container while the managed service is running in the docker-host directly, the `app_url` and `pyctuator_endpoint_url` should use `host.docker.internal` as the url's host so Spring Boot Admin will be able to connect to the monitored service.
 * **Http Traces** - In order for the "Http Traces" tab to be able to hide requests sent by Spring Boot Admin to the Pyctuator endpoint, `pyctuator_endpoint_url` must be using the same host and port as `app_url`.
+* **HTTPS** - If Spring Boot Admin is using HTTPS with self-signed certificate, set the `PYCTUATOR_REGISTRATION_NO_CERT` environment variable so Pyctuator will disable certificate validation when registering (and deregistering).
 
 ## Advanced Configuration
 The following sections are intended for advanced users who want to configure advanced Pyctuator features.
