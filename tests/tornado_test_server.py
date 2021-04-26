@@ -27,11 +27,15 @@ class TornadoPyctuatorServer(PyctuatorServer):
                 sleep_sec: Optional[str] = self.get_argument("sleep_sec", None)
                 # Sleep if requested to sleep - used for asserting httptraces timing
                 if sleep_sec:
-                    logging.info("Sleeping %s seconds before replying", sleep_sec)
+                    logging.info(
+                        "Sleeping %s seconds before replying", sleep_sec)
                     time.sleep(int(sleep_sec))
 
                 # Echo 'User-Data' header as 'resp-data' - used for asserting headers are captured properly
-                self.add_header("resp-data", str(self.request.headers.get("User-Data")))
+                self.add_header(
+                    "resp-data", str(self.request.headers.get("User-Data")))
+                self.add_header(
+                    "response-secret", "my password")
                 self.write("my content")
 
         self.app = Application(

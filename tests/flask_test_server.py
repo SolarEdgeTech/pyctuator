@@ -52,6 +52,8 @@ class FlaskPyctuatorServer(PyctuatorServer):
             # Echo 'User-Data' header as 'resp-data' - used for asserting headers are captured properly
             resp = Response()
             resp.headers["resp-data"] = str(request.headers.get("User-Data"))
+            resp.headers["response-secret"] = str(
+                request.headers.get("my password"))
             return resp
 
     def start(self) -> None:

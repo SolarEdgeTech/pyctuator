@@ -299,8 +299,12 @@ def test_traces_endpoint(endpoints: Endpoints) -> None:
     assert user_header == trace["response"]["headers"]["resp-data"][0]
     assert int(response.headers.get("Content-Length", -1)) > 0
 
-    # Assert Authorization is scrubbed
-    auth_header = "Authorization" if "Authorization" in trace["request"]["headers"] else "authorization"
+    # Assert Response Secret is scrubbed
+    assert "******" == trace["response"]["headers"]["response-secret"][0]
+
+    # Assert Request Authorization is scrubbed
+    auth_header = "Authorization" if "Authorization" in trace[
+        "request"]["headers"] else "authorization"
     assert "******" == trace["request"]["headers"][auth_header][0]
     # Assert timestamp is formatted in ISO format
     datetime.fromisoformat(trace["timestamp"])

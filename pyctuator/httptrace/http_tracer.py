@@ -12,11 +12,16 @@ class HttpTracer:
         return Traces(list(self.traces_list))
 
     def add_record(self, record: TraceRecord) -> None:
-        headers = record.request.headers
+
+        self._scrub_and_normalize_headers(record.request.headers)
+        self._scrub_and_normalize_headers(record.response.headers)
+
+        self.traces_list.append(record)
+
+    def _scrub_and_normalize_headers(self, headers: dict) -> None:
         if headers:
             for k, values in headers.items():
                 if isinstance(values, list):
                     headers[k] = [scrub_header_value(k, v) for v in values]
                 else:
                     headers[k] = [scrub_header_value(k, values)]
-        self.traces_list.append(record)

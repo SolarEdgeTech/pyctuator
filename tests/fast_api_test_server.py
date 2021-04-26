@@ -47,7 +47,7 @@ class FastApiPyctuatorServer(PyctuatorServer):
                 time.sleep(sleep_sec)
 
             # Echo 'User-Data' header as 'resp-data' - used for asserting headers are captured properly
-            return Response(headers={"resp-data": str(request.headers.get("User-Data"))}, content="my content")
+            return Response(headers={"resp-data": str(request.headers.get("User-Data")), "response-secret": "my password"}, content="my content")
 
     def start(self) -> None:
         self.thread.start()
