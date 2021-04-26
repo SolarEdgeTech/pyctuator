@@ -1,7 +1,7 @@
 import re
 
 _keys_to_scrub = re.compile(
-    "^(.*[^A-Za-z])?key([^A-Za-z].*)?$|.*secret.*|.*password.*|.*token.*|.*authorization.*",
+    "^(.*[^A-Za-z])?key([^A-Za-z].*)?$|.*secret.*|.*password.*|.*token.*|.*authorization.*|.*authentication.*",
     re.IGNORECASE
 )
 
