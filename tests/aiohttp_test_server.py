@@ -41,7 +41,11 @@ class AiohttpPyctuatorServer(PyctuatorServer):
                 time.sleep(int(sleep_sec))
 
             # Echo 'User-Data' header as 'resp-data' - used for asserting headers are captured properly
-            return web.Response(headers={"resp-data": str(request.headers.get("User-Data")), "response-secret": "my password"}, body="my content")
+            headers = {
+                "resp-data": str(request.headers.get("User-Data")),
+                "response-secret": "my password"
+            }
+            return web.Response(headers=headers, body="my content")
 
         self.app.add_routes(self.routes)
 
