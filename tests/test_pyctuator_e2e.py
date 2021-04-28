@@ -288,7 +288,10 @@ def test_traces_endpoint(endpoints: Endpoints) -> None:
     # Create a request with header
     user_header = "my header test"
     authorization = "bearer 123"
-    requests.get(endpoints.root + "httptrace_test_url", headers={"User-Data": user_header, "authorization": authorization})
+    requests.get(
+        endpoints.root + "httptrace_test_url",
+        headers={"User-Data": user_header, "authorization": authorization}
+    )
 
     # Get the captured httptraces
     response = requests.get(endpoints.httptrace)
@@ -300,12 +303,12 @@ def test_traces_endpoint(endpoints: Endpoints) -> None:
     assert int(response.headers.get("Content-Length", -1)) > 0
 
     # Assert Response Secret is scrubbed
-    assert "******" == trace["response"]["headers"]["response-secret"][0]
+    assert trace["response"]["headers"]["response-secret"][0] == "******"
 
     # Assert Request Authorization is scrubbed
     auth_header = "Authorization" if "Authorization" in trace[
         "request"]["headers"] else "authorization"
-    assert "******" == trace["request"]["headers"][auth_header][0]
+    assert trace["request"]["headers"][auth_header][0] == "******"
     # Assert timestamp is formatted in ISO format
     datetime.fromisoformat(trace["timestamp"])
 
