@@ -1,4 +1,5 @@
 import collections
+from typing import List, Mapping
 from pyctuator.httptrace.http_header_scrubber import scrub_header_value
 
 from pyctuator.httptrace import Traces, TraceRecord
@@ -13,15 +14,21 @@ class HttpTracer:
 
     def add_record(self, record: TraceRecord) -> None:
 
-        self._scrub_and_normalize_headers(record.request.headers)
-        self._scrub_and_normalize_headers(record.response.headers)
+        record.request.headers = self._scrub_and_normalize_headers(
+            record.request.headers)
+        record.response.headers = self._scrub_and_normalize_headers(
+            record.response.headers)
 
         self.traces_list.append(record)
 
-    def _scrub_and_normalize_headers(self, headers: dict) -> None:
-        if headers:
-            for k, values in headers.items():
-                if isinstance(values, list):
-                    headers[k] = [scrub_header_value(k, v) for v in values]
-                else:
-                    headers[k] = [scrub_header_value(k, values)]
+    def _scrub_and_normalize_headers(self, headers: Mapping[str, List[str]]) -> Mapping[str, List[str]]:
+
+        processed_headers = {}
+        for k, values in headers.items():
+            if isinstance(values, list):
+                processed_headers[k] = [
+                    scrub_header_value(k, v) for v in values]
+            elif isinstance(values, str):
+                # this case happens for tornado headers, unsure why mypy is not catching this, maybe catch this earlier
+                processed_headers[k] = [scrub_header_value(k, values)]
+        return processed_headers
