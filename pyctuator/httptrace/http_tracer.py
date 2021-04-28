@@ -22,13 +22,4 @@ class HttpTracer:
         self.traces_list.append(record)
 
     def _scrub_and_normalize_headers(self, headers: Mapping[str, List[str]]) -> Mapping[str, List[str]]:
-
-        processed_headers = {}
-        for k, values in headers.items():
-            if isinstance(values, list):
-                processed_headers[k] = [
-                    scrub_header_value(k, v) for v in values]
-            elif isinstance(values, str):
-                # this case happens for tornado headers, unsure why mypy is not catching this, maybe catch this earlier
-                processed_headers[k] = [scrub_header_value(k, values)]
-        return processed_headers
+        return {header: [scrub_header_value(header, value) for value in values] for (header, values) in headers.items()}

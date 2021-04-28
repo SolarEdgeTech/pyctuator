@@ -3,8 +3,9 @@ import json
 from datetime import datetime, timedelta
 from functools import partial
 from http import HTTPStatus
-from typing import Any, Optional, Callable
+from typing import Any, Optional, Callable, Mapping, List
 
+from tornado.httputil import HTTPHeaders
 from tornado.web import Application, RequestHandler
 
 from pyctuator.httptrace import TraceRecord, TraceRequest, TraceResponse
@@ -180,11 +181,11 @@ class TornadoHttpPyctuator(PyctuatorRouter):
             request=TraceRequest(
                 method=handler.request.method or "",
                 uri=handler.request.full_url(),
-                headers={k.lower(): v for k, v in handler.request.headers.items()}
+                headers=get_headers(handler.request.headers)
             ),
             response=TraceResponse(
                 status=handler.get_status(),
-                headers={k.lower(): [v] for k, v in handler._headers.items()}  # pylint: disable=protected-access
+                headers=get_headers(handler._headers)  # pylint: disable=protected-access
             ),
             timeTaken=int(handler.request.request_time() * 1000),
         )
@@ -200,3 +201,9 @@ class TornadoHttpPyctuator(PyctuatorRouter):
         if isinstance(value, datetime):
             return str(value)
         return None
+
+
+def get_headers(headers: HTTPHeaders) -> Mapping[str, List[str]]:
+    """ Tornado's HTTPHeaders contains multiple entries of the same header name if multiple values were used, this
+    function groups headers by header name. See documentation of `tornado.httputil.HTTPHeaders` """
+    return {header.lower(): headers.get_list(header) for header in headers.keys()}
