@@ -38,7 +38,7 @@ class Pyctuator:
             logfile_max_size: int = 10000,
             logfile_formatter: str = default_logfile_format,
             auto_deregister: bool = True,
-            metadata: dict = None
+            metadata: Optional[dict] = {}
     ) -> None:
         """The entry point for integrating pyctuator with a web-frameworks such as FastAPI and Flask.
 
@@ -91,6 +91,8 @@ class Pyctuator:
 
         self.boot_admin_registration_handler: Optional[BootAdminRegistrationHandler] = None
 
+        self.metadata = metadata
+
         root_logger = logging.getLogger()
         # If application did not initiate logging module, add default handler to root logger
         # logging.info implicitly calls logging.basicConfig(), see logging.basicConfig in Python's documentation.
@@ -121,7 +123,7 @@ class Pyctuator:
                             start_time,
                             app_url,
                             registration_interval_sec,
-                            metadata
+                            self.metadata
                         )
 
                         # Deregister from SBA on exit
