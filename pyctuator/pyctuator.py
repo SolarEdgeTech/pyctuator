@@ -38,6 +38,7 @@ class Pyctuator:
             logfile_max_size: int = 10000,
             logfile_formatter: str = default_logfile_format,
             auto_deregister: bool = True,
+            metadata: dict = None
     ) -> None:
         """The entry point for integrating pyctuator with a web-frameworks such as FastAPI and Flask.
 
@@ -120,6 +121,7 @@ class Pyctuator:
                             start_time,
                             app_url,
                             registration_interval_sec,
+                            metadata
                         )
 
                         # Deregister from SBA on exit
