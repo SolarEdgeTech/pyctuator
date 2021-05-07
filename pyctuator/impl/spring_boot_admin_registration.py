@@ -25,7 +25,7 @@ class BootAdminRegistrationHandler:
             start_time: datetime,
             service_url: str,
             registration_interval_sec: int,
-            application_metadata: dict
+            application_metadata: Optional[dict] = None
     ) -> None:
         self.registration_url = registration_url
         self.registration_auth = registration_auth
@@ -35,7 +35,7 @@ class BootAdminRegistrationHandler:
         self.service_url = service_url if service_url.endswith("/") else service_url + "/"
         self.registration_interval_sec = registration_interval_sec
         self.instance_id = None
-        self.application_metadata = application_metadata
+        self.application_metadata = application_metadata if application_metadata else {}
 
         self.should_continue_registration_schedule: bool = False
         self.disable_certificate_validation_for_https_registration: bool = \
