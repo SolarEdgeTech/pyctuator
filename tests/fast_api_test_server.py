@@ -27,6 +27,7 @@ class FastApiPyctuatorServer(PyctuatorServer):
             "http://localhost:8000/pyctuator",
             "http://localhost:8001/register",
             registration_interval_sec=1,
+            metadata=self.metadata,
         )
 
         @self.app.get("/logfile_test_repeater", tags=["pyctuator"])

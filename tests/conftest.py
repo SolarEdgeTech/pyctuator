@@ -1,4 +1,5 @@
 import logging
+import random
 import secrets
 import threading
 import time
@@ -155,6 +156,7 @@ def endpoints(registration_tracker: RegistrationTrackerFixture) -> Endpoints:
 
 
 class PyctuatorServer(ABC):
+    metadata: Optional[dict] = {f"k{i}": f"v{i}" for i in range(random.randrange(10))}
 
     @abstractmethod
     def start(self) -> None:
