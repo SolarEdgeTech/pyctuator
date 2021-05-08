@@ -20,7 +20,8 @@ class FlaskPyctuatorServer(PyctuatorServer):
             "http://localhost:5000",
             "http://localhost:5000/pyctuator",
             "http://localhost:8001/register",
-            registration_interval_sec=1
+            registration_interval_sec=1,
+            metadata=self.metadata,
         )
 
         @self.app.route("/shutdown", methods=["POST"])
