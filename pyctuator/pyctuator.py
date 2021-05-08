@@ -38,7 +38,7 @@ class Pyctuator:
             logfile_max_size: int = 10000,
             logfile_formatter: str = default_logfile_format,
             auto_deregister: bool = True,
-            metadata: Optional[dict] = {}
+            metadata: Optional[dict] = None
     ) -> None:
         """The entry point for integrating pyctuator with a web-frameworks such as FastAPI and Flask.
 
@@ -70,6 +70,10 @@ class Pyctuator:
         :param registration_interval_sec: how often pyctuator will renew its registration with spring-boot-admin
         :param free_disk_space_down_threshold_bytes: amount of free space in bytes in "./" (the application's current
          working directory) below which the built-in disk-space health-indicator will fail
+        :param auto_deregister: if true, pyctuator will automatically deregister from SBA during shutdown, needed for
+        example when running in k8s so every time a new pod is created it is assigned a different IP address, resulting
+        with SBA showing "offline" instances
+        :param metadata: optional metadata key-value pairs that are displayed in SBA main page of an instance
         """
 
         self.auto_deregister = auto_deregister

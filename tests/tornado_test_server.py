@@ -53,6 +53,7 @@ class TornadoPyctuatorServer(PyctuatorServer):
             registration_url=f"http://localhost:8001/register",
             app_description="Demonstrate Spring Boot Admin Integration with Tornado",
             registration_interval_sec=1,
+            metadata=self.metadata,
         )
 
         self.io_loop: Optional[ioloop.IOLoop] = None

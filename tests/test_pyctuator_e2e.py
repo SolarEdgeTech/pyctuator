@@ -19,8 +19,6 @@ from tests.aiohttp_test_server import AiohttpPyctuatorServer
 from tests.conftest import Endpoints, PyctuatorServer, RegistrationRequest, RegistrationTrackerFixture
 from tests.fast_api_test_server import FastApiPyctuatorServer
 from tests.flask_test_server import FlaskPyctuatorServer
-
-
 # mypy: ignore_errors
 from tests.tornado_test_server import TornadoPyctuatorServer
 
@@ -197,6 +195,11 @@ def test_recurring_registration_and_deregistration(
     assert registration_tracker.start_time == registration_tracker.registration.metadata["startup"]
     registration_start_time = datetime.fromisoformat(registration_tracker.start_time)
     assert registration_start_time > registration_tracker.test_start_time - timedelta(seconds=10)
+
+    # Verify that the randomly generated metadata created when the server starter are included in the registration
+    metadata = registration_tracker.registration.metadata
+    metadata_without_startup = {k: metadata[k] for k in metadata if k != "startup"}
+    assert metadata_without_startup == pyctuator_server.metadata
 
     # Ask to deregister (in real life, called by atexit) and verify it was registered
     pyctuator_server.atexit()
