@@ -33,7 +33,7 @@ class Pyctuator:
             registration_url: Optional[str],
             registration_auth: Optional[Auth] = None,
             app_description: Optional[str] = None,
-            registration_interval_sec: int = 10,
+            registration_interval_sec: float = 10,
             free_disk_space_down_threshold_bytes: int = 1024 * 1024 * 100,
             logfile_max_size: int = 10000,
             logfile_formatter: str = default_logfile_format,
