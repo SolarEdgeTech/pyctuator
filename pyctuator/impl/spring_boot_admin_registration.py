@@ -24,7 +24,7 @@ class BootAdminRegistrationHandler:
             pyctuator_base_url: str,
             start_time: datetime,
             service_url: str,
-            registration_interval_sec: int,
+            registration_interval_sec: float,
             application_metadata: Optional[dict] = None
     ) -> None:
         self.registration_url = registration_url
@@ -41,7 +41,7 @@ class BootAdminRegistrationHandler:
         self.disable_certificate_validation_for_https_registration: bool = \
             os.getenv("PYCTUATOR_REGISTRATION_NO_CERT") is not None
 
-    def _schedule_next_registration(self, registration_interval_sec: int) -> None:
+    def _schedule_next_registration(self, registration_interval_sec: float) -> None:
         timer = threading.Timer(
             registration_interval_sec,
             self._register_with_admin_server,
@@ -66,8 +66,7 @@ class BootAdminRegistrationHandler:
             }
         }
 
-        logging.debug("Trying to post registration data to %s: %s",
-                      self.registration_url, registration_data)
+        logging.debug("Trying to post registration data to %s: %s", self.registration_url, registration_data)
 
         conn: Optional[HTTPConnection] = None
         try:
@@ -123,11 +122,11 @@ class BootAdminRegistrationHandler:
             encoded_authorization: str = b64encode(bytes(authorization_string, "utf-8")).decode("ascii")
             headers["Authorization"] = f"Basic {encoded_authorization}"
 
-    def start(self) -> None:
+    def start(self, initial_delay_sec: float = None) -> None:
         logging.info("Starting recurring registration of %s with %s",
                      self.pyctuator_base_url, self.registration_url)
         self.should_continue_registration_schedule = True
-        self._register_with_admin_server()
+        self._schedule_next_registration(initial_delay_sec or self.registration_interval_sec)
 
     def stop(self) -> None:
         logging.info("Stopping recurring registration")

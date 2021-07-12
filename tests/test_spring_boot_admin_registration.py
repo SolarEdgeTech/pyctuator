@@ -1,3 +1,4 @@
+import time
 from datetime import datetime
 from typing import Optional, Any
 
@@ -13,7 +14,7 @@ def test_registration_no_auth(registration_tracker: RegistrationTrackerFixture) 
     registration_handler = get_registration_handler("http://localhost:8001/register", None)
 
     try:
-        registration_handler.start()
+        _start_registration(registration_handler)
         assert registration_tracker.count == 1
 
     finally:
@@ -25,7 +26,7 @@ def test_registration_basic_auth_no_creds(registration_tracker: RegistrationTrac
     registration_handler = get_registration_handler("http://localhost:8001/register-with-basic-auth", None)
 
     try:
-        registration_handler.start()
+        _start_registration(registration_handler)
         assert registration_tracker.count == 0
 
         error_message = "Failed registering with boot-admin, got %s - %s"
@@ -46,7 +47,7 @@ def test_registration_basic_auth_bad_creds(registration_tracker: RegistrationTra
     )
 
     try:
-        registration_handler.start()
+        _start_registration(registration_handler)
         assert registration_tracker.count == 0
 
         error_message = "Failed registering with boot-admin, got %s - %s"
@@ -67,7 +68,7 @@ def test_registration_basic_auth(registration_tracker: RegistrationTrackerFixtur
     )
 
     try:
-        registration_handler.start()
+        _start_registration(registration_handler)
         assert registration_tracker.count == 1
 
     finally:
@@ -84,3 +85,11 @@ def get_registration_handler(registration_url: str, registration_auth: Optional[
         service_url="http://whatever/service",
         registration_interval_sec=100
     )
+
+
+def _start_registration(registration_handler: BootAdminRegistrationHandler) -> None:
+    # Registration is done asynchronously, for the test, ask to register shortly after start is called
+    registration_handler.start(0.01)
+
+    # Wait enough after starting the registration allowing the async registration to happen.
+    time.sleep(0.1)
