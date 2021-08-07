@@ -38,7 +38,8 @@ class Pyctuator:
             logfile_max_size: int = 10000,
             logfile_formatter: str = default_logfile_format,
             auto_deregister: bool = True,
-            metadata: Optional[dict] = None
+            metadata: Optional[dict] = None,
+            additional_app_info: Optional[dict] = None,
     ) -> None:
         """The entry point for integrating pyctuator with a web-frameworks such as FastAPI and Flask.
 
@@ -74,6 +75,7 @@ class Pyctuator:
         example when running in k8s so every time a new pod is created it is assigned a different IP address, resulting
         with SBA showing "offline" instances
         :param metadata: optional metadata key-value pairs that are displayed in SBA main page of an instance
+        :param additional_app_info: additional arbitrary information to add to the application's "Info" section
         """
 
         self.auto_deregister = auto_deregister
@@ -85,6 +87,7 @@ class Pyctuator:
             pyctuator_endpoint_url,
             logfile_max_size,
             logfile_formatter,
+            additional_app_info,
         )
 
         # Register default health/metrics/environment providers

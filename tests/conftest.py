@@ -157,6 +157,14 @@ def endpoints(registration_tracker: RegistrationTrackerFixture) -> Endpoints:
 
 class PyctuatorServer(ABC):
     metadata: Optional[dict] = {f"k{i}": f"v{i}" for i in range(random.randrange(10))}
+    additional_app_info = dict(
+        serviceLinks=dict(
+            metrics="http://xyz/service/metrics",
+        ),
+        podLinks=dict(
+            metrics=["http://xyz/pod/metrics/memory", "http://xyz/pod/metrics/cpu"],
+        )
+    )
 
     @abstractmethod
     def start(self) -> None:

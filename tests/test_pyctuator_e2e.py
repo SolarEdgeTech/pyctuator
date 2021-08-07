@@ -25,7 +25,7 @@ from tests.tornado_test_server import TornadoPyctuatorServer
 
 @pytest.fixture(
     params=[FastApiPyctuatorServer, FlaskPyctuatorServer, AiohttpPyctuatorServer, TornadoPyctuatorServer],
-    ids=["FastAPI", "Flask", "aiohttp", "Tornado"]
+    ids=["FastAPI", "Flask", "AIOHTTP", "Tornado"]
 )
 def pyctuator_server(request) -> Generator:  # type: ignore
     # Start a the web-server in which the pyctuator is integrated
@@ -98,6 +98,15 @@ def test_env_endpoint(endpoints: Endpoints) -> None:
     response = requests.get(endpoints.info)
     assert response.status_code == HTTPStatus.OK
     assert response.json()["app"] is not None
+
+
+@pytest.mark.usefixtures("boot_admin_server", "pyctuator_server")
+@pytest.mark.mark_env_endpoint
+def test_info_endpoint(endpoints: Endpoints, pyctuator_server: PyctuatorServer) -> None:
+    response = requests.get(endpoints.info)
+    assert response.status_code == HTTPStatus.OK
+    assert response.json()["podLinks"] == pyctuator_server.additional_app_info["podLinks"]
+    assert response.json()["serviceLinks"] == pyctuator_server.additional_app_info["serviceLinks"]
 
 
 @pytest.mark.usefixtures("boot_admin_server", "pyctuator_server")

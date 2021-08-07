@@ -81,7 +81,7 @@ class FlaskPyctuator(PyctuatorRouter):
 
         @flask_blueprint.route("/info")
         def get_info() -> Any:
-            return jsonify(pyctuator_impl.app_info)
+            return jsonify(pyctuator_impl.get_app_info())
 
         @flask_blueprint.route("/health")
         def get_health() -> Any:

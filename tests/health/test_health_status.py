@@ -32,7 +32,8 @@ def pyctuator_impl() -> PyctuatorImpl:
         AppInfo(app=AppDetails(name="appy")),
         "http://appy/pyctuator",
         10,
-        default_logfile_format
+        default_logfile_format,
+        None,
     )
 
 
