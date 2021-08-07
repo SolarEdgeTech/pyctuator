@@ -1,8 +1,7 @@
+import dataclasses
 from dataclasses import dataclass
 from datetime import datetime
-from typing import List
-from typing import Mapping
-from typing import Optional
+from typing import List, Dict, Mapping, Optional
 from urllib.parse import urlparse
 
 from pyctuator.environment.environment_provider import EnvironmentData, EnvironmentProvider
@@ -56,9 +55,11 @@ class PyctuatorImpl:
             pyctuator_endpoint_url: str,
             logfile_max_size: int,
             logfile_formatter: str,
+            additional_app_info: Optional[dict],
     ):
         self.app_info = app_info
         self.pyctuator_endpoint_url = pyctuator_endpoint_url
+        self.additional_app_info = additional_app_info
 
         self.metrics_providers: List[MetricsProvider] = []
         self.health_providers: List[HealthProvider] = []
@@ -135,3 +136,11 @@ class PyctuatorImpl:
 
     def get_thread_dump(self) -> ThreadDump:
         return self.thread_dump_provider.get_thread_dump()
+
+    def get_app_info(self) -> Dict:
+        app_info_dict = {k: v for (k, v) in dataclasses.asdict(self.app_info).items() if v}
+
+        if self.additional_app_info:
+            app_info_dict = {**app_info_dict, **self.additional_app_info}
+
+        return app_info_dict

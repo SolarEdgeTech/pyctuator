@@ -50,7 +50,7 @@ class InfoHandler(AbstractPyctuatorHandler):
     def get(self) -> None:
         assert self.pyctuator_router is not None
         assert self.dumps is not None
-        self.write(self.dumps(self.pyctuator_router.pyctuator_impl.app_info))
+        self.write(self.dumps(self.pyctuator_router.pyctuator_impl.get_app_info()))
 
 
 # GET /health

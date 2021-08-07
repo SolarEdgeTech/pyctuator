@@ -54,6 +54,7 @@ class TornadoPyctuatorServer(PyctuatorServer):
             app_description="Demonstrate Spring Boot Admin Integration with Tornado",
             registration_interval_sec=1,
             metadata=self.metadata,
+            additional_app_info=self.additional_app_info,
         )
 
         self.io_loop: Optional[ioloop.IOLoop] = None

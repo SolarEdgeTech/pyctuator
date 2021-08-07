@@ -25,6 +25,7 @@ class AiohttpPyctuatorServer(PyctuatorServer):
             "http://localhost:8001/register",
             registration_interval_sec=1,
             metadata=self.metadata,
+            additional_app_info=self.additional_app_info,
         )
 
         @self.routes.get("/logfile_test_repeater")

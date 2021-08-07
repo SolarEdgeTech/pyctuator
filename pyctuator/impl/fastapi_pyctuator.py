@@ -15,7 +15,7 @@ from pyctuator.health.health_provider import HealthSummary
 from pyctuator.httptrace import TraceRecord, TraceRequest, TraceResponse
 from pyctuator.httptrace.http_tracer import Traces
 from pyctuator.impl import SBA_V2_CONTENT_TYPE
-from pyctuator.impl.pyctuator_impl import PyctuatorImpl, AppInfo
+from pyctuator.impl.pyctuator_impl import PyctuatorImpl
 from pyctuator.impl.pyctuator_router import PyctuatorRouter, EndpointsData
 from pyctuator.logging.pyctuator_logging import LoggersData, LoggerLevels
 from pyctuator.metrics.metrics_provider import Metric, MetricNames
@@ -67,8 +67,8 @@ class FastApiPyctuator(PyctuatorRouter):
             return pyctuator_impl.get_environment()
 
         @router.get("/info", include_in_schema=include_in_openapi_schema, tags=["pyctuator"])
-        def get_info() -> AppInfo:
-            return pyctuator_impl.app_info
+        def get_info() -> Dict:
+            return pyctuator_impl.get_app_info()
 
         @router.get("/health", include_in_schema=include_in_openapi_schema, tags=["pyctuator"])
         def get_health() -> HealthSummary:

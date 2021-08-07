@@ -204,6 +204,33 @@ Once you configure build and git info, you should see them in the Details tab of
 
 ![Detailed Build Info](examples/images/Main_Details_BuildInfo.png)
 
+### Additional Application Info
+In addition to adding build and git info, Pyctuator allows adding arbitrary application details to the "Info" section in SBA.
+
+This is done by initializing the `additional_app_info` parameter with an arbitrary dictionary.
+For example, you can provide links to your application's metrics:
+```python
+Pyctuator(
+  app,
+  "Flask Pyctuator",
+  app_url=f"http://172.18.0.1:5000",
+  pyctuator_endpoint_url=f"http://172.18.0.1:5000/pyctuator",
+  registration_url=f"http://localhost:8080/instances",
+  app_description="Demonstrate Spring Boot Admin Integration with Flask",
+  additional_app_info=dict(
+    serviceLinks=dict(
+      metrics="http://xyz/service/metrics"
+    ),
+    podLinks=dict(
+      metrics=["http://xyz/pod/metrics/memory", "http://xyz/pod/metrics/cpu"]
+    )
+  )
+)
+```
+
+This will result with the following Info page in SBA:
+![img.png](examples/images/Additional_App_Info.png)
+
 ### DB Health
 For services that use SQL database via SQLAlchemy, Pyctuator can easily monitor and expose the connection's health 
 using the DbHealthProvider class as demonstrated below:
