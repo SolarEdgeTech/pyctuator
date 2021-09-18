@@ -3,7 +3,6 @@ from dataclasses import dataclass
 from typing import Optional
 
 from sqlalchemy.engine import Engine
-from sqlalchemy.exc import OperationalError
 
 from pyctuator.health.health_provider import HealthProvider, HealthStatus, Status, HealthDetails
 

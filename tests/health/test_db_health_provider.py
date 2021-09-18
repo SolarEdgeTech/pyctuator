@@ -32,7 +32,7 @@ def test_sqlite_health() -> None:
 
     engine = create_engine("sqlite:///:memory:", echo=True)
     health_provider = DbHealthProvider(engine)
-    assert health_provider.get_health() == DbHealthStatus(Status.UP, DbHealthDetails("sqlite"))
+    assert health_provider.get_health() == DbHealthStatus(status=Status.UP, details=DbHealthDetails("sqlite"))
 
 
 @pytest.mark.usefixtures("require_sql_alchemy", "require_pymysql", "require_mysql_server")
@@ -44,7 +44,7 @@ def test_mysql_health() -> None:
 
     engine: Engine = create_engine("mysql+pymysql://root:root@localhost:3306", echo=True)
     health_provider = DbHealthProvider(engine)
-    assert health_provider.get_health() == DbHealthStatus(Status.UP, DbHealthDetails("mysql"))
+    assert health_provider.get_health() == DbHealthStatus(status=Status.UP, details=DbHealthDetails("mysql"))
 
     engine = create_engine("mysql+pymysql://kukipuki:blahblah@localhost:3306", echo=True)
     health_provider = DbHealthProvider(engine)
