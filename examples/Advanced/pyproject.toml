@@ -14,7 +14,7 @@ uvicorn = { version = "^0.11.7" }
 pyctuator = { version = "^0.15.0" }
 sqlalchemy = { version = "^1.3" }
 PyMySQL = { version = "^0.9.3" }
-cryptography = { version = "^2.8" }
+cryptography = { version = "^3.3" }
 redis = { version = "^3.3" }
 
 [build-system]
