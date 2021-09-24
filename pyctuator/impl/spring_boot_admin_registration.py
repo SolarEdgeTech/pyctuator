@@ -25,7 +25,8 @@ class BootAdminRegistrationHandler:
             start_time: datetime,
             service_url: str,
             registration_interval_sec: float,
-            application_metadata: Optional[dict] = None
+            application_metadata: Optional[dict] = None,
+            ssl_context: Optional[ssl.SSLContext] = None,
     ) -> None:
         self.registration_url = registration_url
         self.registration_auth = registration_auth
@@ -36,6 +37,7 @@ class BootAdminRegistrationHandler:
         self.registration_interval_sec = registration_interval_sec
         self.instance_id = None
         self.application_metadata = application_metadata if application_metadata else {}
+        self.ssl_context = ssl_context
 
         self.should_continue_registration_schedule: bool = False
         self.disable_certificate_validation_for_https_registration: bool = \
@@ -137,8 +139,8 @@ class BootAdminRegistrationHandler:
         if url_parts.scheme == "http":
             conn = http.client.HTTPConnection(url_parts.hostname, url_parts.port)
         elif url_parts.scheme == "https":
-            context = None
-            if self.disable_certificate_validation_for_https_registration:
+            context = self.ssl_context
+            if not context and self.disable_certificate_validation_for_https_registration:
                 context = ssl.SSLContext()
                 context.verify_mode = ssl.CERT_NONE
             conn = http.client.HTTPSConnection(url_parts.hostname, url_parts.port, context=context)
