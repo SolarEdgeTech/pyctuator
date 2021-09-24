@@ -2,6 +2,7 @@
 import atexit
 import importlib.util
 import logging
+import ssl
 from datetime import datetime, timezone
 from typing import Any, Optional, Dict, Callable
 
@@ -40,6 +41,7 @@ class Pyctuator:
             auto_deregister: bool = True,
             metadata: Optional[dict] = None,
             additional_app_info: Optional[dict] = None,
+            ssl_context: Optional[ssl.SSLContext] = None,
     ) -> None:
         """The entry point for integrating pyctuator with a web-frameworks such as FastAPI and Flask.
 
@@ -76,6 +78,7 @@ class Pyctuator:
         with SBA showing "offline" instances
         :param metadata: optional metadata key-value pairs that are displayed in SBA main page of an instance
         :param additional_app_info: additional arbitrary information to add to the application's "Info" section
+        :param ssl_context: optional SSL context to be used when registering with SBA
         """
 
         self.auto_deregister = auto_deregister
@@ -99,6 +102,7 @@ class Pyctuator:
         self.boot_admin_registration_handler: Optional[BootAdminRegistrationHandler] = None
 
         self.metadata = metadata
+        self.ssl_context = ssl_context
 
         root_logger = logging.getLogger()
         # If application did not initiate logging module, add default handler to root logger
@@ -130,7 +134,8 @@ class Pyctuator:
                             start_time,
                             app_url,
                             registration_interval_sec,
-                            self.metadata
+                            self.metadata,
+                            self.ssl_context,
                         )
 
                         # Deregister from SBA on exit
