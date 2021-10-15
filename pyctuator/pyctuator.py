@@ -42,6 +42,7 @@ class Pyctuator:
             metadata: Optional[dict] = None,
             additional_app_info: Optional[dict] = None,
             ssl_context: Optional[ssl.SSLContext] = None,
+            customizer: Optional[Callable] = None
     ) -> None:
         """The entry point for integrating pyctuator with a web-frameworks such as FastAPI and Flask.
 
@@ -79,6 +80,9 @@ class Pyctuator:
         :param metadata: optional metadata key-value pairs that are displayed in SBA main page of an instance
         :param additional_app_info: additional arbitrary information to add to the application's "Info" section
         :param ssl_context: optional SSL context to be used when registering with SBA
+        :param customizer: a function that can customize the integration with the web-framework which is therefore web-
+         framework specific. For FastAPI, the function receives pyctuator's APIRouter allowing to add "dependencies" and
+         anything else that's provided by the router. See fastapi_with_authentication_example_app.py
         """
 
         self.auto_deregister = auto_deregister
@@ -113,7 +117,7 @@ class Pyctuator:
         root_logger.addHandler(self.pyctuator_impl.logfile.log_messages)
 
         # Find and initialize an integration layer between the web-framework adn pyctuator
-        framework_integrations = {
+        framework_integrations: Dict[str, Callable[[Any, PyctuatorImpl, Optional[Callable]], bool]] = {
             "flask": self._integrate_flask,
             "fastapi": self._integrate_fastapi,
             "aiohttp": self._integrate_aiohttp,
@@ -122,7 +126,7 @@ class Pyctuator:
         for framework_name, framework_integration_function in framework_integrations.items():
             if self._is_framework_installed(framework_name):
                 logging.debug("Framework %s is installed, trying to integrate with it", framework_name)
-                success = framework_integration_function(app, self.pyctuator_impl)
+                success = framework_integration_function(app, self.pyctuator_impl, customizer)
                 if success:
                     logging.debug("Integrated with framework %s", framework_name)
                     if registration_url is not None:
@@ -176,7 +180,7 @@ class Pyctuator:
     def _is_framework_installed(self, framework_name: str) -> bool:
         return importlib.util.find_spec(framework_name) is not None
 
-    def _integrate_fastapi(self, app: Any, pyctuator_impl: PyctuatorImpl) -> bool:
+    def _integrate_fastapi(self, app: Any, pyctuator_impl: PyctuatorImpl, customizer: Optional[Callable]) -> bool:
         """
         This method should only be called if we detected that FastAPI is installed.
         It will then check whether the given app is a FastAPI app, and if so - it will add the Pyctuator
@@ -185,11 +189,12 @@ class Pyctuator:
         from fastapi import FastAPI
         if isinstance(app, FastAPI):
             from pyctuator.impl.fastapi_pyctuator import FastApiPyctuator
-            FastApiPyctuator(app, pyctuator_impl, False)
+            FastApiPyctuator(app, pyctuator_impl, False, customizer)
             return True
         return False
 
-    def _integrate_flask(self, app: Any, pyctuator_impl: PyctuatorImpl) -> bool:
+    # pylint: disable=unused-argument
+    def _integrate_flask(self, app: Any, pyctuator_impl: PyctuatorImpl, customizer: Optional[Callable]) -> bool:
         """
         This method should only be called if we detected that Flask is installed.
         It will then check whether the given app is a Flask app, and if so - it will add the Pyctuator
@@ -202,7 +207,8 @@ class Pyctuator:
             return True
         return False
 
-    def _integrate_aiohttp(self, app: Any, pyctuator_impl: PyctuatorImpl) -> bool:
+    # pylint: disable=unused-argument
+    def _integrate_aiohttp(self, app: Any, pyctuator_impl: PyctuatorImpl, customizer: Optional[Callable]) -> bool:
         """
         This method should only be called if we detected that aiohttp is installed.
         It will then check whether the given app is a aiohttp app, and if so - it will add the Pyctuator
@@ -215,7 +221,8 @@ class Pyctuator:
             return True
         return False
 
-    def _integrate_tornado(self, app: Any, pyctuator_impl: PyctuatorImpl) -> bool:
+    # pylint: disable=unused-argument
+    def _integrate_tornado(self, app: Any, pyctuator_impl: PyctuatorImpl, customizer: Optional[Callable]) -> bool:
         """
         This method should only be called if we detected that tornado is installed.
         It will then check whether the given app is a tornado app, and if so - it will add the Pyctuator
