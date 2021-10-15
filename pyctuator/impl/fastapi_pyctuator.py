@@ -35,9 +35,12 @@ class FastApiPyctuator(PyctuatorRouter):
             app: FastAPI,
             pyctuator_impl: PyctuatorImpl,
             include_in_openapi_schema: bool = False,
+            customizer: Callable[[APIRouter], None] = None
     ) -> None:
         super().__init__(app, pyctuator_impl)
         router = APIRouter()
+        if customizer:
+            customizer(router)
 
         @router.get("/", include_in_schema=include_in_openapi_schema, tags=["pyctuator"])
         def get_endpoints() -> EndpointsData:

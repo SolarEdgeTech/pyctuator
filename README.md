@@ -331,6 +331,10 @@ Pyctuator(
 )
 ``` 
 
+### Protecting Pyctuator with authentication
+Since there are numerous standard approaches to protect an API, Pyctuator doesn't explicitly support any of them. Instead, Pyctuator allows to customize its integration with the web-framework.
+See the example in [fastapi_with_authentication_example_app.py](examples/FastAPI/fastapi_with_authentication_example_app.py).
+
 ## Full blown examples
 The `examples` folder contains full blown Python projects that are built using [Poetry](https://python-poetry.org/).
 
