@@ -10,7 +10,7 @@ authors = [
 python = "^3.7"
 psutil = { version = "^5.6" }
 tornado = { version = "^6.0.4" }
-pyctuator = { version = "^0.17.0" }
+pyctuator = { version = "^0.18.0" }
 
 [build-system]
 requires = ["poetry>=0.12"]
