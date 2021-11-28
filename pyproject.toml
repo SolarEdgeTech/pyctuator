@@ -15,12 +15,15 @@ maintainers = [
 readme = "README.md"
 homepage = "https://github.com/SolarEdgeTech/pyctuator"
 repository = "https://github.com/SolarEdgeTech/pyctuator"
-keywords = ["spring boot admin", "actuator", "pyctuator", "fastapi", "flask", "aiohttp"]
+keywords = ["spring boot admin", "actuator", "pyctuator", "fastapi", "flask", "aiohttp", "tornado"]
 
 classifiers = [
     "Development Status :: 4 - Beta",
     "Environment :: Web Environment",
     "Framework :: Flask",
+    "Framework :: FastAPI",
+    "Framework :: AIOHTTP",
+    "Framework :: Tornado",
     "Intended Audience :: Developers",
     "Programming Language :: Python :: 3.7",
     "Topic :: Internet :: WWW/HTTP :: HTTP Servers",

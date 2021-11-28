@@ -68,7 +68,7 @@ The examples below show a minimal integration of **FastAPI**, **Flask** and **ai
 After installing Flask/FastAPI/aiohttp and Pyctuator, start by launching a local Spring Boot Admin instance:
 
 ```sh
-docker run --rm --name spring-boot-admin -p 8080:8080 michayaak/spring-boot-admin:2.2.3-1
+docker run --rm -p 8080:8080 --add-host=host.docker.internal:host-gateway michayaak/spring-boot-admin:2.2.3-1
 ```
 
 Then go to `http://localhost:8080` to get to the web UI.
