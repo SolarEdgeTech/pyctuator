@@ -2,6 +2,7 @@ from typing import Dict
 
 from pyctuator.environment.custom_environment_provider import CustomEnvironmentProvider
 from pyctuator.environment.environment_provider import PropertyValue
+from pyctuator.environment.scrubber import SecretScrubber
 
 
 def test_custom_environment_provider() -> None:
@@ -23,7 +24,7 @@ def test_custom_environment_provider() -> None:
         }
 
     provider = CustomEnvironmentProvider("custom", produce_env)
-    properties_source = provider.get_properties_source()
+    properties_source = provider.get_properties_source(SecretScrubber().scrub_secrets)
     assert properties_source.name == "custom"
     assert properties_source.properties == {
         "a": PropertyValue(value="s1"),

@@ -42,6 +42,22 @@ Additionally, Pyctuator can be configured to expose application-specific configu
 ![Insights Environment App Config](../images/Advanced_Insights_Environment_conf.png)
 Note that SBA only support flattened configuration hierarchy, which is automatically handled by Pyctuator.
 
+# Secret scrubbing
+Pyctuator is using a "secret scrubber" for scrubbing/masking secrets from environment-variables and config-entries that are being reported to SBA.
+The default secret scrubber is taking care fore masking values of keys that are expected to keep secrets.
+Additionally, the default scrubber is masking credentials that are included in URLs.
+
+It is possible to override the default scrubber by calling `set_secret_scrubber` providing it a mapping function that will hide/mask the desired keys. 
+Note that the pattern used by the built in `SecretScrubber` can be replaced.
+
+For example:
+
+```python
+pyctuator = Pyctuator(...)  # arguments removed for brevity
+secret_scrubber = SecretScrubber(keys_to_scrub=re.compile("^ABC$|^xyz$", re.IGNORECASE)).scrub_secrets
+pyctuator.set_secret_scrubber(secret_scrubber)
+```
+
 # Further customization
 Using Pyctuator, it is possible to have SBA monitor application-specific health aspects using custom health-providers. 
 

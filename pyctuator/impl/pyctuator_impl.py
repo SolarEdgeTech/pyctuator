@@ -1,10 +1,11 @@
 import dataclasses
 from dataclasses import dataclass
 from datetime import datetime
-from typing import List, Dict, Mapping, Optional
+from typing import List, Dict, Mapping, Optional, Callable
 from urllib.parse import urlparse
 
 from pyctuator.environment.environment_provider import EnvironmentData, EnvironmentProvider
+from pyctuator.environment.scrubber import SecretScrubber
 from pyctuator.health.health_provider import HealthStatus, HealthSummary, Status, HealthProvider
 from pyctuator.httptrace.http_tracer import HttpTracer
 from pyctuator.logfile.logfile import PyctuatorLogfile  # type: ignore
@@ -69,6 +70,8 @@ class PyctuatorImpl:
         self.logfile = PyctuatorLogfile(max_size=logfile_max_size, formatter=logfile_formatter)
         self.http_tracer = HttpTracer()
 
+        self.secret_scrubber: Callable[[Dict], Dict] = SecretScrubber().scrub_secrets
+
         # Determine the endpoint's URL path prefix and make sure it doesn't end with a "/"
         self.pyctuator_endpoint_path_prefix = urlparse(pyctuator_endpoint_url).path
         if self.pyctuator_endpoint_path_prefix[-1:] == "/":
@@ -83,11 +86,14 @@ class PyctuatorImpl:
     def register_environment_provider(self, provider: EnvironmentProvider) -> None:
         self.environment_providers.append(provider)
 
+    def set_secret_scrubber(self, secret_scrubber: Callable[[Dict], Dict]) -> None:
+        self.secret_scrubber = secret_scrubber
+
     def get_environment(self) -> EnvironmentData:
         active_profiles: List[str] = list()
         env_data = EnvironmentData(
             active_profiles,
-            [source.get_properties_source() for source in self.environment_providers]
+            [source.get_properties_source(self.secret_scrubber) for source in self.environment_providers]
         )
         return env_data
 
