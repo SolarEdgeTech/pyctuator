@@ -1,7 +1,6 @@
 from typing import Callable, Dict
 
 from pyctuator.environment.environment_provider import PropertiesSource, EnvironmentProvider, PropertyValue
-from pyctuator.environment.scrubber import scrub_secrets
 
 
 def _flatten(prefix: str, dict_to_flatten: Dict) -> Dict:
@@ -42,8 +41,8 @@ class CustomEnvironmentProvider(EnvironmentProvider):
         self.name = name
         self.env_provider = env_provider
 
-    def get_properties_source(self) -> PropertiesSource:
+    def get_properties_source(self, secret_scrubber: Callable[[Dict], Dict]) -> PropertiesSource:
         flattened_env = _flatten("", self.env_provider())
-        scrubbed_env = scrub_secrets(flattened_env)
+        scrubbed_env = secret_scrubber(flattened_env)
         properties_dict = {key: PropertyValue(value) for (key, value) in scrubbed_env.items()}
         return PropertiesSource(self.name, properties_dict)

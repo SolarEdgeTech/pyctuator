@@ -1,4 +1,6 @@
-from pyctuator.environment.scrubber import scrub_secrets
+import re
+
+from pyctuator.environment.scrubber import SecretScrubber
 
 
 def test_scrub_secrets() -> None:
@@ -30,5 +32,31 @@ def test_scrub_secrets() -> None:
         "db.url.4": "mysql+pymysql://host",
     }
 
-    scrubbed = scrub_secrets(with_secrets)
+    scrubbed = SecretScrubber().scrub_secrets(with_secrets)
+    assert scrubbed == expected_without_secrets
+
+
+def test_custom_scrub_secrets() -> None:
+    with_secrets = {
+        "some.value": "Good",
+        "another.value": 10,
+        "another.value.and.another": 10.0,
+        "a.boolean": True,
+        "some.api_key": "Bad",
+        "a.key": "Bad",
+        "a.keyboard": "Good",
+    }
+
+    expected_without_secrets = {
+        "some.value": "******",
+        "another.value": 10,
+        "another.value.and.another": 10.0,
+        "a.boolean": "******",
+        "some.api_key": "Bad",
+        "a.key": "Bad",
+        "a.keyboard": "Good",
+    }
+
+    scrubbed = SecretScrubber(keys_to_scrub=re.compile("^SOME.VALUE$|^a.BOOlean$", re.IGNORECASE))\
+        .scrub_secrets(with_secrets)
     assert scrubbed == expected_without_secrets

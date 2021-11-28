@@ -42,7 +42,7 @@ class Pyctuator:
             metadata: Optional[dict] = None,
             additional_app_info: Optional[dict] = None,
             ssl_context: Optional[ssl.SSLContext] = None,
-            customizer: Optional[Callable] = None
+            customizer: Optional[Callable] = None,
     ) -> None:
         """The entry point for integrating pyctuator with a web-frameworks such as FastAPI and Flask.
 
@@ -67,8 +67,9 @@ class Pyctuator:
          recommend this URL to be accessible by those who manage the application (i.e. don't use "http://localhost..."
          as it is only accessible from within the application's host)
         :param pyctuator_endpoint_url: the public URL from which Pyctuator REST API will be accessible, used for
-        registering the application with spring-boot-admin, must be accessible from spring-boot-admin server (i.e. don't
-        use http://localhost:8080/... unless spring-boot-admin is running on the same host as the monitored application)
+         registering the application with spring-boot-admin, must be accessible from spring-boot-admin server (i.e.
+         don't use http://localhost:8080/... unless spring-boot-admin is running on the same host as the monitored
+         application)
         :param registration_url: the spring-boot-admin endpoint to which registration requests must be posted
         :param registration_auth: optional authentication details to use when registering with spring-boot-admin
         :param registration_interval_sec: how often pyctuator will renew its registration with spring-boot-admin
@@ -157,6 +158,10 @@ class Pyctuator:
         if self.boot_admin_registration_handler:
             self.boot_admin_registration_handler.stop()
         self.boot_admin_registration_handler = None
+
+    def set_secret_scrubber(self, secret_scrubber: Callable[[Dict], Dict]) -> None:
+        """Overrides the default secret scrubber with a custom one. See SecretScrubber for example scrubber."""
+        self.pyctuator_impl.set_secret_scrubber(secret_scrubber)
 
     def register_environment_provider(self, name: str, env_provider: Callable[[], Dict]) -> None:
         self.pyctuator_impl.register_environment_provider(CustomEnvironmentProvider(name, env_provider))

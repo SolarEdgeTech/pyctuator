@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 
-from typing import Mapping, Optional, List, Any
+from typing import Mapping, Optional, List, Any, Callable, Dict
 
 
 @dataclass
@@ -25,5 +25,5 @@ class EnvironmentData:
 class EnvironmentProvider(ABC):
 
     @abstractmethod
-    def get_properties_source(self) -> PropertiesSource:
+    def get_properties_source(self, secret_scrubber: Callable[[Dict], Dict]) -> PropertiesSource:
         pass

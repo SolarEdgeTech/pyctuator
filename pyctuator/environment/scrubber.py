@@ -1,24 +1,29 @@
 import re
-from typing import Any, Dict
+from typing import Any, Dict, Pattern
 
-_keys_to_scrub = re.compile("^(.*[^A-Za-z])?key([^A-Za-z].*)?$|.*secret.*|.*password.*|.*token.*", re.IGNORECASE)
-_url_keys_to_scrub = re.compile(".*url.*", re.IGNORECASE)
+default_keys_to_scrub = re.compile("^(.*[^A-Za-z])?key([^A-Za-z].*)?$|.*secret.*|.*password.*|.*token.*", re.IGNORECASE)
 
 
-def scrub_secrets(mapping: Dict) -> Dict:
-    """Scrubs secrets from a dictionary replacing them with stars
+class SecretScrubber:
 
-    :param mapping: a mapping with "primitive" values that may include secrets
-    :return: a copy of the input mapping having all secrets replaced with stars
-    """
+    def __init__(self, keys_to_scrub: Pattern[str] = default_keys_to_scrub) -> None:
+        self.keys_to_scrub = keys_to_scrub
+        self.url_keys_to_scrub = re.compile(".*url.*", re.IGNORECASE)
 
-    def scrub(key: Any, value: Any) -> Any:
-        if _keys_to_scrub.match(key):
-            return "******"
+    def scrub_secrets(self, mapping: Dict) -> Dict:
+        """Scrubs secrets from a dictionary replacing them with stars
 
-        if _url_keys_to_scrub.match(key):
-            return re.sub(r"(.*//[^:]*:).*(@.*)", r"\1******\2", str(value))
+        :param mapping: a mapping with "primitive" values that may include secrets
+        :return: a copy of the input mapping having all secrets replaced with stars
+        """
 
-        return value
+        def scrub(key: Any, value: Any) -> Any:
+            if self.keys_to_scrub.match(key):
+                return "******"
 
-    return {k: scrub(k, v) for (k, v) in mapping.items()}
+            if self.url_keys_to_scrub.match(key):
+                return re.sub(r"(.*//[^:]*:).*(@.*)", r"\1******\2", str(value))
+
+            return value
+
+        return {k: scrub(k, v) for (k, v) in mapping.items()}
