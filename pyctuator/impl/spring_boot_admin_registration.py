@@ -136,8 +136,12 @@ class BootAdminRegistrationHandler:
 
     def _http_request(self, url: str, method: str, headers: Dict[str, str], body: Optional[str] = None) -> HTTPResponse:
         url_parts = urllib.parse.urlsplit(url)
+        if not url_parts.hostname:
+            raise ValueError(f"Unknown host in {url}")
+        hostname: str = url_parts.hostname
+
         if url_parts.scheme == "http":
-            conn = http.client.HTTPConnection(url_parts.hostname, url_parts.port)
+            conn = http.client.HTTPConnection(host=hostname, port=url_parts.port)
         elif url_parts.scheme == "https":
             context = self.ssl_context
             if not context and self.disable_certificate_validation_for_https_registration:

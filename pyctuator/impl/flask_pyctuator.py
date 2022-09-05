@@ -117,7 +117,7 @@ class FlaskPyctuator(PyctuatorRouter):
 
         @flask_blueprint.route("/logfile")
         def get_logfile() -> Tuple[Response, int]:
-            range_header: str = request.headers.environ.get('HTTP_RANGE')
+            range_header = request.environ.get('HTTP_RANGE')
             if not range_header:
                 response: Response = make_response(pyctuator_impl.logfile.log_messages.get_range())
                 return response, HTTPStatus.OK

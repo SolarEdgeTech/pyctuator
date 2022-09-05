@@ -48,9 +48,9 @@ class TornadoPyctuatorServer(PyctuatorServer):
         self.pyctuator = Pyctuator(
             self.app,
             "Tornado Pyctuator",
-            app_url=f"http://localhost:5000",
-            pyctuator_endpoint_url=f"http://localhost:5000/pyctuator",
-            registration_url=f"http://localhost:8001/register",
+            app_url="http://localhost:6000",
+            pyctuator_endpoint_url="http://localhost:6000/pyctuator",
+            registration_url="http://localhost:8001/register",
             app_description="Demonstrate Spring Boot Admin Integration with Tornado",
             registration_interval_sec=1,
             metadata=self.metadata,
@@ -63,7 +63,7 @@ class TornadoPyctuatorServer(PyctuatorServer):
 
     def _start_in_thread(self) -> None:
         self.io_loop = ioloop.IOLoop()
-        self.http_server.listen(5000)
+        self.http_server.listen(6000)
         self.io_loop.start()
 
     def start(self) -> None:

@@ -17,6 +17,8 @@ from starlette import status
 from uvicorn.config import Config
 from uvicorn.main import Server
 
+REQUEST_TIMEOUT = 10
+
 
 class RegistrationRequest(BaseModel):
     name: str
@@ -112,16 +114,18 @@ def boot_admin_server(registration_tracker: RegistrationTrackerFixture) -> Gener
         registration_tracker.deregistration_time = datetime.now(timezone.utc)
 
     # Start the mock boot-admin server that is needed to test pyctuator's registration
-    boot_admin_config = Config(app=boot_admin_app, port=8001, loop="asyncio")
+    boot_admin_config = Config(app=boot_admin_app, port=8001, loop="asyncio", lifespan="off", log_level="info")
     boot_admin_server = CustomServer(config=boot_admin_config)
     boot_admin_thread = threading.Thread(target=boot_admin_server.run)
     boot_admin_thread.start()
     while not boot_admin_server.started:
         time.sleep(0.01)
+    logging.info("Spring-boot-admin mock-server started")
 
     # Yield back to pytest until the module is done
     yield None
 
+    logging.info("Stopping spring-boot-admin mock-server")
     boot_admin_server.should_exit = True
     boot_admin_server.force_exit = True
     boot_admin_thread.join()
@@ -137,7 +141,7 @@ def endpoints(registration_tracker: RegistrationTrackerFixture) -> Endpoints:
 
     assert isinstance(registration_tracker.registration, RegistrationRequest)
 
-    response = requests.get(registration_tracker.registration.managementUrl)
+    response = requests.get(registration_tracker.registration.managementUrl, timeout=REQUEST_TIMEOUT)
     assert response.status_code == 200
 
     links = response.json()["_links"]
