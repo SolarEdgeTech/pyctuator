@@ -10,7 +10,7 @@ jobs:
   run_image:
     runs-on: [ubuntu-18.04]
     container:
-      image: matanrubin/python-poetry:3.7
+      image: matanrubin/python-poetry:3.9
 
     steps:
       - uses: actions/checkout@v2

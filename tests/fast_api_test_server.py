@@ -37,12 +37,12 @@ class FastApiPyctuatorServer(PyctuatorServer):
             logging.error(repeated_string)
             return repeated_string
 
-        self.server = CustomServer(config=(Config(app=self.app, loop="asyncio")))
+        self.server = CustomServer(config=(Config(app=self.app, loop="asyncio", lifespan="off", log_level="info")))
         self.thread = threading.Thread(target=self.server.run)
 
         @self.app.get("/httptrace_test_url")
         # pylint: disable=unused-variable
-        def get_httptrace_test_url(request: Request, sleep_sec: Optional[int]) -> Response:
+        def get_httptrace_test_url(request: Request, sleep_sec: Optional[int] = None) -> Response:
             # Sleep if requested to sleep - used for asserting httptraces timing
             if sleep_sec:
                 logging.info("Sleeping %s seconds before replying", sleep_sec)

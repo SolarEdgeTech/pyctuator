@@ -25,6 +25,8 @@ pylint:
 	poetry run pylint --exit-zero pyctuator tests
 
 mypy:
+	poetry run pip install types-redis
+	poetry run pip install types-requests
 	poetry run mypy -p pyctuator -p tests
 
 package:

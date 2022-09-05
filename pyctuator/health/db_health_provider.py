@@ -39,7 +39,7 @@ class DbHealthProvider(HealthProvider):
 
             return DbHealthStatus(
                 status=Status.UNKNOWN,
-                details=DbHealthDetails(self.engine.name, f"Pinging failed"))
+                details=DbHealthDetails(self.engine.name, "Pinging failed"))
 
         except Exception as e:  # pylint: disable=broad-except
             return DbHealthStatus(status=Status.DOWN, details=DbHealthDetails(self.engine.name, str(e)))

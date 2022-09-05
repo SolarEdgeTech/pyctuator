@@ -1,6 +1,7 @@
 import logging
 import threading
 import time
+from wsgiref.simple_server import make_server
 
 import requests
 from flask import Flask, request, Response
@@ -8,11 +9,17 @@ from flask import Flask, request, Response
 from pyctuator.pyctuator import Pyctuator
 from tests.conftest import PyctuatorServer
 
+REQUEST_TIMEOUT = 10
+
 
 class FlaskPyctuatorServer(PyctuatorServer):
     def __init__(self) -> None:
         self.app = Flask("Flask Example Server")
-        self.thread = threading.Thread(target=self.app.run)
+        self.server = make_server('127.0.0.1', 5000, self.app)
+        self.ctx = self.app.app_context()
+        self.ctx.push()
+
+        self.thread = threading.Thread(target=self.server.serve_forever)
 
         self.pyctuator = Pyctuator(
             self.app,
@@ -24,16 +31,6 @@ class FlaskPyctuatorServer(PyctuatorServer):
             metadata=self.metadata,
             additional_app_info=self.additional_app_info,
         )
-
-        @self.app.route("/shutdown", methods=["POST"])
-        # pylint: disable=unused-variable
-        def shutdown() -> str:
-            logging.info("Flask server shutting down...")
-            func = request.environ.get("werkzeug.server.shutdown")
-            if func is None:
-                raise RuntimeError("Not running with the Werkzeug Server")
-            func()
-            return "Flask server off"
 
         @self.app.route("/logfile_test_repeater")
         # pylint: disable=unused-variable
@@ -64,7 +61,7 @@ class FlaskPyctuatorServer(PyctuatorServer):
         while True:
             time.sleep(0.5)
             try:
-                requests.get("http://localhost:5000/pyctuator")
+                requests.get("http://localhost:5000/pyctuator", timeout=REQUEST_TIMEOUT)
                 logging.info("Flask server started")
                 return
             except requests.exceptions.RequestException:  # Catches all exceptions that Requests raises!
@@ -73,7 +70,7 @@ class FlaskPyctuatorServer(PyctuatorServer):
     def stop(self) -> None:
         logging.info("Stopping Flask server")
         self.pyctuator.stop()
-        requests.post("http://localhost:5000/shutdown")
+        self.server.shutdown()
         self.thread.join()
         logging.info("Flask server stopped")
 

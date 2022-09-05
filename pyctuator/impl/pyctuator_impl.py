@@ -90,7 +90,7 @@ class PyctuatorImpl:
         self.secret_scrubber = secret_scrubber
 
     def get_environment(self) -> EnvironmentData:
-        active_profiles: List[str] = list()
+        active_profiles: List[str] = []
         env_data = EnvironmentData(
             active_profiles,
             [source.get_properties_source(self.secret_scrubber) for source in self.environment_providers]
