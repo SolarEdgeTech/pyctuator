@@ -114,7 +114,7 @@ def boot_admin_server(registration_tracker: RegistrationTrackerFixture) -> Gener
         registration_tracker.deregistration_time = datetime.now(timezone.utc)
 
     # Start the mock boot-admin server that is needed to test pyctuator's registration
-    boot_admin_config = Config(app=boot_admin_app, port=8001, loop="asyncio", lifespan="off", log_level="info")
+    boot_admin_config = Config(app=boot_admin_app, port=8001, lifespan="off", log_level="info")
     boot_admin_server = CustomServer(config=boot_admin_config)
     boot_admin_thread = threading.Thread(target=boot_admin_server.run)
     boot_admin_thread.start()

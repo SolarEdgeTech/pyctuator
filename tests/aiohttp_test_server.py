@@ -8,20 +8,26 @@ from aiohttp import web
 from pyctuator.pyctuator import Pyctuator
 from tests.conftest import PyctuatorServer
 
+bind_port = 6000
+
 
 # mypy: ignore_errors
 # pylint: disable=unused-variable
 class AiohttpPyctuatorServer(PyctuatorServer):
 
     def __init__(self) -> None:
+        global bind_port
+        self.port = bind_port
+        bind_port += 1
+
         self.app = web.Application()
         self.routes = web.RouteTableDef()
 
         self.pyctuator = Pyctuator(
             self.app,
             "AIOHTTP Pyctuator",
-            "http://localhost:8888",
-            "http://localhost:8888/pyctuator",
+            f"http://localhost:{self.port}",
+            f"http://localhost:{self.port}/pyctuator",
             "http://localhost:8001/register",
             registration_interval_sec=1,
             metadata=self.metadata,
@@ -61,7 +67,7 @@ class AiohttpPyctuatorServer(PyctuatorServer):
         await runner.setup()
 
         logging.info("Starting aiohttp server")
-        site = web.TCPSite(runner, port=8888)
+        site = web.TCPSite(runner, port=self.port)
         await site.start()
         self.server_started = True
         logging.info("aiohttp server started")

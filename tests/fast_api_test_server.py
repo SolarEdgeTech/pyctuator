@@ -11,9 +11,15 @@ from uvicorn.config import Config
 from pyctuator.pyctuator import Pyctuator
 from tests.conftest import PyctuatorServer, CustomServer
 
+bind_port = 7000
+
 
 class FastApiPyctuatorServer(PyctuatorServer):
     def __init__(self) -> None:
+        global bind_port
+        self.port = bind_port
+        bind_port += 1
+
         self.app = FastAPI(
             title="FastAPI Example Server",
             description="Demonstrate Spring Boot Admin Integration with FastAPI",
@@ -23,8 +29,8 @@ class FastApiPyctuatorServer(PyctuatorServer):
         self.pyctuator = Pyctuator(
             self.app,
             "FastAPI Pyctuator",
-            "http://localhost:8000",
-            "http://localhost:8000/pyctuator",
+            f"http://localhost:{self.port}",
+            f"http://localhost:{self.port}/pyctuator",
             "http://localhost:8001/register",
             registration_interval_sec=1,
             metadata=self.metadata,
@@ -37,7 +43,7 @@ class FastApiPyctuatorServer(PyctuatorServer):
             logging.error(repeated_string)
             return repeated_string
 
-        self.server = CustomServer(config=(Config(app=self.app, loop="asyncio", lifespan="off", log_level="info")))
+        self.server = CustomServer(config=(Config(app=self.app, port=self.port, lifespan="off", log_level="info")))
         self.thread = threading.Thread(target=self.server.run)
 
         @self.app.get("/httptrace_test_url")
