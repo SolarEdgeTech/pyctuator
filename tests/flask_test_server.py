@@ -11,11 +11,17 @@ from tests.conftest import PyctuatorServer
 
 REQUEST_TIMEOUT = 10
 
+bind_port = 5000
+
 
 class FlaskPyctuatorServer(PyctuatorServer):
     def __init__(self) -> None:
+        global bind_port
+        self.port = bind_port
+        bind_port += 1
+
         self.app = Flask("Flask Example Server")
-        self.server = make_server('127.0.0.1', 5000, self.app)
+        self.server = make_server('127.0.0.1', self.port, self.app)
         self.ctx = self.app.app_context()
         self.ctx.push()
 
@@ -24,8 +30,8 @@ class FlaskPyctuatorServer(PyctuatorServer):
         self.pyctuator = Pyctuator(
             self.app,
             "Flask Pyctuator",
-            "http://localhost:5000",
-            "http://localhost:5000/pyctuator",
+            f"http://localhost:{self.port}",
+            f"http://localhost:{self.port}/pyctuator",
             "http://localhost:8001/register",
             registration_interval_sec=1,
             metadata=self.metadata,
@@ -61,7 +67,7 @@ class FlaskPyctuatorServer(PyctuatorServer):
         while True:
             time.sleep(0.5)
             try:
-                requests.get("http://localhost:5000/pyctuator", timeout=REQUEST_TIMEOUT)
+                requests.get(f"http://localhost:{self.port}/pyctuator", timeout=REQUEST_TIMEOUT)
                 logging.info("Flask server started")
                 return
             except requests.exceptions.RequestException:  # Catches all exceptions that Requests raises!

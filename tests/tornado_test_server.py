@@ -10,9 +10,14 @@ from tornado.web import Application, RequestHandler
 from pyctuator.pyctuator import Pyctuator
 from tests.conftest import PyctuatorServer
 
+bind_port = 9000
+
 
 class TornadoPyctuatorServer(PyctuatorServer):
     def __init__(self) -> None:
+        global bind_port
+        self.port = bind_port
+        bind_port += 1
 
         # pylint: disable=abstract-method
         class LogfileTestRepeater(RequestHandler):
@@ -43,13 +48,14 @@ class TornadoPyctuatorServer(PyctuatorServer):
                 ("/logfile_test_repeater", LogfileTestRepeater),
                 ("/httptrace_test_url", GetHttptraceTestUrl)
             ],
-            debug=True)
+            debug=False
+        )
 
         self.pyctuator = Pyctuator(
             self.app,
             "Tornado Pyctuator",
-            app_url="http://localhost:6000",
-            pyctuator_endpoint_url="http://localhost:6000/pyctuator",
+            app_url=f"http://localhost:{self.port}",
+            pyctuator_endpoint_url=f"http://localhost:{self.port}/pyctuator",
             registration_url="http://localhost:8001/register",
             app_description="Demonstrate Spring Boot Admin Integration with Tornado",
             registration_interval_sec=1,
@@ -63,7 +69,7 @@ class TornadoPyctuatorServer(PyctuatorServer):
 
     def _start_in_thread(self) -> None:
         self.io_loop = ioloop.IOLoop()
-        self.http_server.listen(6000)
+        self.app.listen(self.port)
         self.io_loop.start()
 
     def start(self) -> None:
