@@ -37,7 +37,8 @@ class AioHttpPyctuator(PyctuatorRouter):
             return web.json_response(pyctuator_impl.get_app_info(), dumps=custom_dumps)
 
         async def get_health(request: web.Request) -> web.Response:
-            return web.json_response(pyctuator_impl.get_health(), dumps=custom_dumps)
+            health = pyctuator_impl.get_health()
+            return web.json_response(health, status=health.http_status(), dumps=custom_dumps)
 
         async def get_metric_names(request: web.Request) -> web.Response:
             return web.json_response(pyctuator_impl.get_metric_names(), dumps=custom_dumps)

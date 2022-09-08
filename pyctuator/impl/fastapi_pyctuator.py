@@ -74,8 +74,10 @@ class FastApiPyctuator(PyctuatorRouter):
             return pyctuator_impl.get_app_info()
 
         @router.get("/health", include_in_schema=include_in_openapi_schema, tags=["pyctuator"])
-        def get_health() -> HealthSummary:
-            return pyctuator_impl.get_health()
+        def get_health(response: Response) -> HealthSummary:
+            health = pyctuator_impl.get_health()
+            response.status_code = health.http_status()
+            return health
 
         @router.get("/metrics", include_in_schema=include_in_openapi_schema, tags=["pyctuator"])
         def get_metric_names() -> MetricNames:

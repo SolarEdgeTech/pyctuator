@@ -1,6 +1,7 @@
 from abc import ABC
 from dataclasses import dataclass
 from enum import Enum
+from http import HTTPStatus
 
 from typing import Mapping
 
@@ -26,6 +27,11 @@ class HealthStatus:
 class HealthSummary:
     status: Status
     details: Mapping[str, HealthStatus]
+
+    def http_status(self) -> int:
+        if self.status == Status.DOWN:
+            return HTTPStatus.SERVICE_UNAVAILABLE
+        return HTTPStatus.OK
 
 
 class HealthProvider(ABC):

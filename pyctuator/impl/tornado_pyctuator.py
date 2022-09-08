@@ -58,7 +58,9 @@ class HealthHandler(AbstractPyctuatorHandler):
     def get(self) -> None:
         assert self.pyctuator_router is not None
         assert self.dumps is not None
-        self.write(self.dumps(self.pyctuator_router.pyctuator_impl.get_health()))
+        health = self.pyctuator_router.pyctuator_impl.get_health()
+        self.set_status(health.http_status())
+        self.write(self.dumps(health))
 
 
 # GET /metrics

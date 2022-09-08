@@ -132,7 +132,7 @@ def test_health_endpoint_with_psutil(endpoints: Endpoints, monkeypatch: MonkeyPa
 
     monkeypatch.setattr(psutil, "disk_usage", mock_disk_usage)
     response = requests.get(endpoints.health, timeout=REQUEST_TIMEOUT)
-    assert response.status_code == HTTPStatus.OK
+    assert response.status_code == HTTPStatus.SERVICE_UNAVAILABLE
     assert response.json()["status"] == "DOWN"
     disk_space_health = response.json()["details"]["diskSpace"]
     assert disk_space_health["status"] == "DOWN"

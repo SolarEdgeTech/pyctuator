@@ -85,7 +85,8 @@ class FlaskPyctuator(PyctuatorRouter):
 
         @flask_blueprint.route("/health")
         def get_health() -> Any:
-            return jsonify(pyctuator_impl.get_health())
+            health = pyctuator_impl.get_health()
+            return jsonify(health), health.http_status()
 
         @flask_blueprint.route("/metrics")
         def get_metric_names() -> Any:
