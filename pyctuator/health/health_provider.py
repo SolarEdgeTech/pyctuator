@@ -29,6 +29,12 @@ class HealthSummary:
     details: Mapping[str, HealthStatus]
 
     def http_status(self) -> int:
+        """
+        :return: The HTTP according to the service's health. Done according to the documentation in
+                 https://docs.spring.io/spring-boot/docs/2.7.0/reference/htmlsingle/#actuator.endpoints.health.writing-custom-health-indicators
+                 The HTTP status code in the response reflects the overall health status. By default, OUT_OF_SERVICE
+                 and DOWN map to 503. Any unmapped health statuses, including UP, map to 200.
+        """
         if self.status == Status.DOWN:
             return HTTPStatus.SERVICE_UNAVAILABLE
         return HTTPStatus.OK
