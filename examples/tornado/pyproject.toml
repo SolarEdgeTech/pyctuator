@@ -7,7 +7,7 @@ authors = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.7"
+python = "^3.9"
 psutil = { version = "^5.6" }
 tornado = { version = "^6.0.4" }
 pyctuator = { version = "^1.0.0" }

@@ -16,7 +16,7 @@ The following video shows a FastAPI web app being monitored and controled using 
 The complete example can be found in [Advanced example](examples/Advanced/README.md).
 
 ## Requirements
-Python 3.7+
+Python 3.9+
 
 Pyctuator has zero hard dependencies.
 
@@ -352,7 +352,7 @@ The examples include
 * [Advanced Example](examples/Advanced/README.md) - demonstrates configuring and using all the advanced features of Pyctuator.
 
 ## Contributing
-To set up a development environment, make sure you have Python 3.7 or newer installed, and run `make bootstrap`.
+To set up a development environment, make sure you have Python 3.9 or newer installed, and run `make bootstrap`.
 
 Use `make check` to run static analysis tools.
 

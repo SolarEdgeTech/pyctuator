@@ -7,10 +7,10 @@ authors = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.7"
+python = "^3.9"
 psutil = { version = "^5.6" }
-fastapi = { version = "^0.68.0" }
-uvicorn = { version = "^0.9.0" }
+fastapi = { version = "^0.82.0" }
+uvicorn = { version = "^0.18.2" }
 pyctuator = { version = "^1.0.0" }
 
 [build-system]

@@ -24,7 +24,7 @@ classifiers = [
     "Framework :: FastAPI",
     "Framework :: aiohttp",
     "Intended Audience :: Developers",
-    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.9",
     "Topic :: Internet :: WWW/HTTP :: HTTP Servers",
     "Topic :: Internet :: WWW/HTTP :: WSGI :: Application",
     "Topic :: Software Development :: Libraries :: Python Modules",
