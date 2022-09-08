@@ -7,9 +7,9 @@ authors = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.7"
+python = "^3.9"
 psutil = { version = "^5.6" }
-aiohttp = { version = "^3.5.4" }
+aiohttp = { version = "^3.6.2" }
 pyctuator = { version = "^1.0.0" }
 
 [build-system]

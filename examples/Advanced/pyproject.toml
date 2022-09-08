@@ -7,7 +7,7 @@ authors = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.7"
+python = "^3.9"
 psutil = { version = "^5.6" }
 fastapi = { version = "^0.65.2" }
 uvicorn = { version = "^0.11.7" }
