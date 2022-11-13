@@ -7,7 +7,7 @@
 Monitor Python web apps using 
 [Spring Boot Admin](https://github.com/codecentric/spring-boot-admin). 
 
-Pyctuator supports **[Flask](https://palletsprojects.com/p/flask/)**, **[FastAPI](https://fastapi.tiangolo.com/)**, **[aiohttp](docs.aiohttp.org)** and **[Tornado](https://www.tornadoweb.org/)**. **Django** support is planned as well.
+Pyctuator supports **[Flask](https://palletsprojects.com/p/flask/)**, **[FastAPI](https://fastapi.tiangolo.com/)**, **[aiohttp](https://docs.aiohttp.org/)** and **[Tornado](https://www.tornadoweb.org/)**. **Django** support is planned as well.
 
 The following video shows a FastAPI web app being monitored and controled using Spring Boot Admin.
  
