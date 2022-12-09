@@ -41,9 +41,13 @@ class PyctuatorLogfile:
     def get_logfile(self, range_substring: str) -> Tuple[str, int, int]:
         logging.debug("Received logfile request with range header: %s", range_substring)
 
-        start_str, end_str = logfile_request_range_pattern.match(range_substring).groups()
-        start = int(start_str) if start_str.strip() else None
-        end = int(end_str) if end_str.strip() else None
+        start = None
+        end = None
+        range_substring_match = logfile_request_range_pattern.match(range_substring)
+        if range_substring_match:
+            start_str, end_str = range_substring_match.groups()
+            start = int(start_str) if start_str.strip() else None
+            end = int(end_str) if end_str.strip() else None
 
         str_res = self.log_messages.get_range(start, end)
         end = len(str_res) if (start is None) and end else end  # Handle 0-307200 initial range edge-case
