@@ -124,7 +124,7 @@ class BootAdminRegistrationHandler:
             encoded_authorization: str = b64encode(bytes(authorization_string, "utf-8")).decode("ascii")
             headers["Authorization"] = f"Basic {encoded_authorization}"
 
-    def start(self, initial_delay_sec: float = None) -> None:
+    def start(self, initial_delay_sec: Optional[float] = None) -> None:
         logging.info("Starting recurring registration of %s with %s",
                      self.pyctuator_base_url, self.registration_url)
         self.should_continue_registration_schedule = True

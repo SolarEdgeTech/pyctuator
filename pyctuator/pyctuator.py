@@ -185,7 +185,12 @@ class Pyctuator:
     def _is_framework_installed(self, framework_name: str) -> bool:
         return importlib.util.find_spec(framework_name) is not None
 
-    def _integrate_fastapi(self, app: Any, pyctuator_impl: PyctuatorImpl, customizer: Optional[Callable]) -> bool:
+    def _integrate_fastapi(
+            self,
+            app: Any,
+            pyctuator_impl: PyctuatorImpl,
+            customizer: Optional[Callable]
+    ) -> bool:
         """
         This method should only be called if we detected that FastAPI is installed.
         It will then check whether the given app is a FastAPI app, and if so - it will add the Pyctuator

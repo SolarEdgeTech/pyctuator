@@ -35,7 +35,7 @@ class FastApiPyctuator(PyctuatorRouter):
             app: FastAPI,
             pyctuator_impl: PyctuatorImpl,
             include_in_openapi_schema: bool = False,
-            customizer: Callable[[APIRouter], None] = None
+            customizer: Optional[Callable[[APIRouter], None]] = None
     ) -> None:
         super().__init__(app, pyctuator_impl)
         router = APIRouter()

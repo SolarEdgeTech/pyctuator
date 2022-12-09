@@ -1,3 +1,4 @@
+import abc
 from abc import ABC
 from dataclasses import dataclass
 from enum import Enum
@@ -41,11 +42,14 @@ class HealthSummary:
 
 
 class HealthProvider(ABC):
+    @abc.abstractmethod
     def is_supported(self) -> bool:
         pass
 
+    @abc.abstractmethod
     def get_name(self) -> str:
         pass
 
+    @abc.abstractmethod
     def get_health(self) -> HealthStatus:
         pass
