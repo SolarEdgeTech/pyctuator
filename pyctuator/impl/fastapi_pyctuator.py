@@ -1,3 +1,4 @@
+import json
 from collections import defaultdict
 from datetime import datetime
 from http import HTTPStatus
@@ -20,6 +21,8 @@ from pyctuator.impl.pyctuator_router import PyctuatorRouter, EndpointsData
 from pyctuator.logging.pyctuator_logging import LoggersData, LoggerLevels
 from pyctuator.metrics.metrics_provider import Metric, MetricNames
 from pyctuator.threads.thread_dump_provider import ThreadDump
+
+from dataclasses import asdict
 
 
 class FastApiLoggerItem(BaseModel):
@@ -74,7 +77,7 @@ class FastApiPyctuator(PyctuatorRouter):
             return pyctuator_impl.get_app_info()
 
         @router.get("/health", include_in_schema=include_in_openapi_schema, tags=["pyctuator"])
-        def get_health(response: Response) -> HealthSummary:
+        def get_health(response: Response) -> object:
             health = pyctuator_impl.get_health()
             response.status_code = health.http_status()
             return health
