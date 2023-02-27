@@ -43,8 +43,8 @@ class FastApiPyctuator(PyctuatorRouter):
             customizer(router)
 
         @router.get("/", include_in_schema=include_in_openapi_schema, tags=["pyctuator"])
-        def get_endpoints() -> EndpointsData:
-            return self.get_endpoints_data()
+        def get_endpoints() -> object:
+            return {"_links": self.get_endpoints_links()}
 
         @router.options("/env", include_in_schema=include_in_openapi_schema)
         @router.options("/info", include_in_schema=include_in_openapi_schema)

@@ -43,7 +43,10 @@ class PyctuatorRouter(ABC):
         self.pyctuator_impl = pyctuator_impl
 
     def get_endpoints_data(self) -> EndpointsData:
-        return EndpointsData(EndpointsLinks(
+        return EndpointsData(self.get_endpoints_links())
+
+    def get_endpoints_links(self):
+        return EndpointsLinks(
             LinkHref(self.pyctuator_impl.pyctuator_endpoint_url, False),
             LinkHref(self.pyctuator_impl.pyctuator_endpoint_url + "/env", False),
             LinkHref(self.pyctuator_impl.pyctuator_endpoint_url + "/info", False),
@@ -54,4 +57,4 @@ class PyctuatorRouter(ABC):
             LinkHref(self.pyctuator_impl.pyctuator_endpoint_url + "/threaddump", False),
             LinkHref(self.pyctuator_impl.pyctuator_endpoint_url + "/logfile", False),
             LinkHref(self.pyctuator_impl.pyctuator_endpoint_url + "/httptrace", False),
-        ))
+        )
