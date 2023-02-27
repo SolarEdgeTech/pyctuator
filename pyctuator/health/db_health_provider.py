@@ -33,9 +33,9 @@ class DbHealthProvider(HealthProvider):
 
     def get_health(self) -> DbHealthStatus:
         try:
-            conn = self.engine.raw_connection()
-            if self.engine.dialect.do_ping(conn):
-                return DbHealthStatus(status=Status.UP, details=DbHealthDetails(self.engine.name))
+            with self.engine.connect() as conn:
+                if self.engine.dialect.do_ping(conn.connection): # type: ignore[arg-type]
+                    return DbHealthStatus(status=Status.UP, details=DbHealthDetails(self.engine.name))
 
             return DbHealthStatus(
                 status=Status.UNKNOWN,
