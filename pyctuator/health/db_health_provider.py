@@ -29,7 +29,7 @@ class DbHealthProvider(HealthProvider):
         return importlib.util.find_spec("sqlalchemy") is not None
 
     def get_name(self) -> str:
-        return "db"
+        return self.engine.name
 
     def get_health(self) -> DbHealthStatus:
         try:
