@@ -1,4 +1,3 @@
-import json
 from collections import defaultdict
 from datetime import datetime
 from http import HTTPStatus
@@ -12,17 +11,14 @@ from starlette.requests import Request
 from starlette.responses import Response
 
 from pyctuator.environment.environment_provider import EnvironmentData
-from pyctuator.health.health_provider import HealthSummary
 from pyctuator.httptrace import TraceRecord, TraceRequest, TraceResponse
 from pyctuator.httptrace.http_tracer import Traces
 from pyctuator.impl import SBA_V2_CONTENT_TYPE
 from pyctuator.impl.pyctuator_impl import PyctuatorImpl
-from pyctuator.impl.pyctuator_router import PyctuatorRouter, EndpointsData
+from pyctuator.impl.pyctuator_router import PyctuatorRouter
 from pyctuator.logging.pyctuator_logging import LoggersData, LoggerLevels
 from pyctuator.metrics.metrics_provider import Metric, MetricNames
 from pyctuator.threads.thread_dump_provider import ThreadDump
-
-from dataclasses import asdict
 
 
 class FastApiLoggerItem(BaseModel):

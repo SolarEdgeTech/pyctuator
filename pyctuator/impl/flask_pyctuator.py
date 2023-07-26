@@ -6,7 +6,8 @@ from typing import Dict, Tuple, Any, Mapping, List
 
 from flask import Flask, Blueprint, request, jsonify, after_this_request
 from flask import Response, make_response
-from flask.json import JSONEncoder
+from flask.json.provider import DefaultJSONProvider
+# from flask.json import JSONEncoder
 from werkzeug.datastructures import Headers
 
 from pyctuator.httptrace import TraceRecord, TraceRequest, TraceResponse
@@ -15,29 +16,21 @@ from pyctuator.impl.pyctuator_impl import PyctuatorImpl
 from pyctuator.impl.pyctuator_router import PyctuatorRouter
 
 
-class CustomJSONEncoder(JSONEncoder):
+class IsoTimeJSONProvider(DefaultJSONProvider):
     """ Override Flask's JSON encoding of datetime to assure ISO format is used.
 
     By default, when Flask is rendering a response to JSON, it is formatting datetime, date and time according to
     RFC-822 which is different from the ISO format used by SBA.
 
-    This encoder overrides the default datetime encoding and is only used by the Pyctuator blueprint so it shouldn't
-    interfere with whatever encoding users are using.
-
-    See https://stackoverflow.com/questions/43663552/keep-a-datetime-date-in-yyyy-mm-dd-format-when-using-flasks-jsonify
+    As of 2.2.*, changing the datetime and date JSON encoding is done globally,
+    see https://stackoverflow.com/a/74618781/2692895 (which is an updated reply to
+    https://stackoverflow.com/questions/43663552/keep-a-datetime-date-in-yyyy-mm-dd-format-when-using-flasks-jsonify)
     """
 
-    # pylint: disable=method-hidden
     def default(self, o: Any) -> Any:
-        try:
-            if isinstance(o, (datetime, date)):
-                return o.isoformat()
-            iterable = iter(o)
-        except TypeError:
-            pass
-        else:
-            return list(iterable)
-        return JSONEncoder.default(self, o)
+        if isinstance(o, (date, datetime)):
+            return o.isoformat()
+        return super().default(o)
 
 
 class FlaskPyctuator(PyctuatorRouter):
@@ -53,7 +46,7 @@ class FlaskPyctuator(PyctuatorRouter):
 
         path_prefix: str = pyctuator_impl.pyctuator_endpoint_path_prefix
         flask_blueprint: Blueprint = Blueprint("flask_blueprint", "pyctuator", )
-        flask_blueprint.json_encoder = CustomJSONEncoder
+        app.json = IsoTimeJSONProvider(app)
 
         @app.before_request
         def intercept_requests_and_responses() -> None:
