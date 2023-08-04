@@ -17,7 +17,7 @@ jobs:
       REDIS_HOST: redis
 
     services:
-      # User a redis container for testing the redis health-provider
+      # Use a redis container for testing the redis health-provider
       redis:
         image: redis:5.0.3
 
