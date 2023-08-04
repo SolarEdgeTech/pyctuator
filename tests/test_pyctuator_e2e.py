@@ -317,7 +317,9 @@ def test_traces_endpoint(endpoints: Endpoints) -> None:
     auth_header = "Authorization" if "Authorization" in trace[
         "request"]["headers"] else "authorization"
     assert trace["request"]["headers"][auth_header][0] == "******"
+
     # Assert timestamp is formatted in ISO format
+    logging.info("Trace's timestamp is " + trace["timestamp"])
     datetime.fromisoformat(trace["timestamp"])
 
     # Assert that the "time taken" (i.e. the time the server spent processing the request) is less than 100ms
