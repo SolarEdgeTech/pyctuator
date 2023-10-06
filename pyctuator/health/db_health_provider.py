@@ -21,21 +21,25 @@ class DbHealthStatus(HealthStatus):
 
 class DbHealthProvider(HealthProvider):
 
-    def __init__(self, engine: Engine) -> None:
+    def __init__(self, engine: Engine, name: str = "db") -> None:
         super().__init__()
         self.engine = engine
+        self.name = name
 
     def is_supported(self) -> bool:
         return importlib.util.find_spec("sqlalchemy") is not None
 
     def get_name(self) -> str:
-        return "db"
+        return self.name
 
     def get_health(self) -> DbHealthStatus:
         try:
             with self.engine.connect() as conn:
                 if self.engine.dialect.do_ping(conn.connection): # type: ignore[arg-type]
-                    return DbHealthStatus(status=Status.UP, details=DbHealthDetails(self.engine.name))
+                    return DbHealthStatus(
+                        status=Status.UP,
+                        details=DbHealthDetails(self.engine.name)
+                    )
 
             return DbHealthStatus(
                 status=Status.UNKNOWN,

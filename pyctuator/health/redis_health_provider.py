@@ -22,15 +22,16 @@ class RedisHealthStatus(HealthStatus):
 
 class RedisHealthProvider(HealthProvider):
 
-    def __init__(self, redis: Redis) -> None:
+    def __init__(self, redis: Redis, name: str = "redis") -> None:
         super().__init__()
         self.redis = redis
+        self.name = name
 
     def is_supported(self) -> bool:
         return importlib.util.find_spec("redis") is not None
 
     def get_name(self) -> str:
-        return "redis"
+        return self.name
 
     def get_health(self) -> RedisHealthStatus:
         try:
