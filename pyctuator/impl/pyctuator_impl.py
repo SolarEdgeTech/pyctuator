@@ -119,7 +119,7 @@ class PyctuatorImpl:
         if service_is_down:
             return HealthSummary(Status.DOWN, health_statuses)
 
-        # IF there's at least one provider and none of the providers is DOWN and at least one is UP, the service is UP
+        # If there's at least one provider and none of the providers is DOWN and at least one is UP, the service is UP
         service_is_up = any(health_status.status == Status.UP for health_status in health_statuses.values())
         if service_is_up:
             return HealthSummary(Status.UP, health_statuses)
