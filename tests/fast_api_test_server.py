@@ -8,6 +8,7 @@ from starlette.requests import Request
 from starlette.responses import Response
 from uvicorn.config import Config
 
+from pyctuator.endpoints import Endpoints
 from pyctuator.pyctuator import Pyctuator
 from tests.conftest import PyctuatorServer, CustomServer
 
@@ -15,7 +16,7 @@ bind_port = 7000
 
 
 class FastApiPyctuatorServer(PyctuatorServer):
-    def __init__(self) -> None:
+    def __init__(self, disabled_endpoints: Endpoints = Endpoints.NONE) -> None:
         global bind_port
         self.port = bind_port
         bind_port += 1
@@ -35,6 +36,7 @@ class FastApiPyctuatorServer(PyctuatorServer):
             registration_interval_sec=1,
             metadata=self.metadata,
             additional_app_info=self.additional_app_info,
+            disabled_endpoints=disabled_endpoints,
         )
 
         @self.app.get("/logfile_test_repeater", tags=["pyctuator"])
@@ -43,7 +45,7 @@ class FastApiPyctuatorServer(PyctuatorServer):
             logging.error(repeated_string)
             return repeated_string
 
-        self.server = CustomServer(config=(Config(app=self.app, port=self.port, lifespan="off", log_level="info")))
+        self.server = CustomServer(config=Config(app=self.app, port=self.port, lifespan="off", log_level="info"))
         self.thread = threading.Thread(target=self.server.run)
 
         @self.app.get("/httptrace_test_url")

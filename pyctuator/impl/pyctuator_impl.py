@@ -4,6 +4,7 @@ from datetime import datetime
 from typing import List, Dict, Mapping, Optional, Callable
 from urllib.parse import urlparse
 
+from pyctuator.endpoints import Endpoints
 from pyctuator.environment.environment_provider import EnvironmentData, EnvironmentProvider
 from pyctuator.environment.scrubber import SecretScrubber
 from pyctuator.health.health_provider import HealthStatus, HealthSummary, Status, HealthProvider
@@ -57,10 +58,12 @@ class PyctuatorImpl:
             logfile_max_size: int,
             logfile_formatter: str,
             additional_app_info: Optional[dict],
+            disabled_endpoints: Endpoints
     ):
         self.app_info = app_info
         self.pyctuator_endpoint_url = pyctuator_endpoint_url
         self.additional_app_info = additional_app_info
+        self.disabled_endpoints = disabled_endpoints
 
         self.metrics_providers: List[MetricsProvider] = []
         self.health_providers: List[HealthProvider] = []

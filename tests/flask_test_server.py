@@ -6,6 +6,7 @@ from wsgiref.simple_server import make_server
 import requests
 from flask import Flask, request, Response
 
+from pyctuator.endpoints import Endpoints
 from pyctuator.pyctuator import Pyctuator
 from tests.conftest import PyctuatorServer
 
@@ -15,7 +16,7 @@ bind_port = 5000
 
 
 class FlaskPyctuatorServer(PyctuatorServer):
-    def __init__(self) -> None:
+    def __init__(self, disabled_endpoints: Endpoints = Endpoints.NONE) -> None:
         global bind_port
         self.port = bind_port
         bind_port += 1
@@ -36,6 +37,7 @@ class FlaskPyctuatorServer(PyctuatorServer):
             registration_interval_sec=1,
             metadata=self.metadata,
             additional_app_info=self.additional_app_info,
+            disabled_endpoints=disabled_endpoints,
         )
 
         @self.app.route("/logfile_test_repeater")

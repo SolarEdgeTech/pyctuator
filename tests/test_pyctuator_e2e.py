@@ -16,7 +16,7 @@ from requests import Response
 
 from pyctuator.impl import SBA_V2_CONTENT_TYPE
 from tests.aiohttp_test_server import AiohttpPyctuatorServer
-from tests.conftest import Endpoints, PyctuatorServer, RegistrationRequest, RegistrationTrackerFixture
+from tests.conftest import RegisteredEndpoints, PyctuatorServer, RegistrationRequest, RegistrationTrackerFixture
 from tests.fast_api_test_server import FastApiPyctuatorServer
 from tests.flask_test_server import FlaskPyctuatorServer
 # mypy: ignore_errors
@@ -30,7 +30,7 @@ REQUEST_TIMEOUT = 10
     ids=["FastAPI", "Flask", "AIOHTTP", "Tornado"]
 )
 def pyctuator_server(request) -> Generator:  # type: ignore
-    # Start a the web-server in which the pyctuator is integrated
+    # Start the web-server in which the pyctuator is integrated
     pyctuator_server: PyctuatorServer = request.param()
     pyctuator_server.start()
 
@@ -42,11 +42,14 @@ def pyctuator_server(request) -> Generator:  # type: ignore
 
 
 @pytest.mark.usefixtures("boot_admin_server", "pyctuator_server")
-def test_response_content_type(endpoints: Endpoints, registration_tracker: RegistrationTrackerFixture) -> None:
+def test_response_content_type(
+        registered_endpoints: RegisteredEndpoints,
+        registration_tracker: RegistrationTrackerFixture
+) -> None:
     # Issue requests to all actuator endpoints and verify the correct content-type is returned
-    actuator_endpoint_names = [field.name for field in fields(Endpoints) if field.name != "root"]
+    actuator_endpoint_names = [field.name for field in fields(RegisteredEndpoints) if field.name != "root"]
     for actuator_endpoint in actuator_endpoint_names:
-        actuator_endpoint_url = asdict(endpoints)[actuator_endpoint]
+        actuator_endpoint_url = asdict(registered_endpoints)[actuator_endpoint]
         logging.info("Testing content type of %s (%s)", actuator_endpoint, actuator_endpoint_url)
         response = requests.get(actuator_endpoint_url, timeout=REQUEST_TIMEOUT)
         assert response.status_code == HTTPStatus.OK
@@ -62,7 +65,7 @@ def test_response_content_type(endpoints: Endpoints, registration_tracker: Regis
         assert not content_type or content_type.find(SBA_V2_CONTENT_TYPE) == -1
 
     # Finally, verify the  content-type headers presented by the httptraces are correct
-    traces = requests.get(endpoints.httptrace, timeout=REQUEST_TIMEOUT).json()["traces"]
+    traces = requests.get(registered_endpoints.httptrace, timeout=REQUEST_TIMEOUT).json()["traces"]
     for trace in traces:
         request_uri = trace["request"]["uri"]
         response_headers = trace["response"]["headers"]
@@ -77,16 +80,16 @@ def test_response_content_type(endpoints: Endpoints, registration_tracker: Regis
 
 
 @pytest.mark.usefixtures("boot_admin_server", "pyctuator_server")
-def test_self_endpoint(endpoints: Endpoints) -> None:
-    response = requests.get(endpoints.pyctuator, timeout=REQUEST_TIMEOUT)
+def test_self_endpoint(registered_endpoints: RegisteredEndpoints) -> None:
+    response = requests.get(registered_endpoints.pyctuator, timeout=REQUEST_TIMEOUT)
     assert response.status_code == HTTPStatus.OK
     assert response.json()["_links"] is not None
 
 
 @pytest.mark.usefixtures("boot_admin_server", "pyctuator_server")
-def test_env_endpoint(endpoints: Endpoints) -> None:
+def test_env_endpoint(registered_endpoints: RegisteredEndpoints) -> None:
     actual_key, actual_value = list(os.environ.items())[3]
-    response = requests.get(endpoints.env, timeout=REQUEST_TIMEOUT)
+    response = requests.get(registered_endpoints.env, timeout=REQUEST_TIMEOUT)
     assert response.status_code == HTTPStatus.OK
     property_sources = response.json()["propertySources"]
     assert property_sources
@@ -94,26 +97,26 @@ def test_env_endpoint(endpoints: Endpoints) -> None:
     assert system_properties
     assert system_properties[0]["properties"][actual_key]["value"] == actual_value
 
-    response = requests.get(endpoints.info, timeout=REQUEST_TIMEOUT)
+    response = requests.get(registered_endpoints.info, timeout=REQUEST_TIMEOUT)
     assert response.status_code == HTTPStatus.OK
     assert response.json()["app"] is not None
 
 
 @pytest.mark.usefixtures("boot_admin_server", "pyctuator_server")
-def test_info_endpoint(endpoints: Endpoints, pyctuator_server: PyctuatorServer) -> None:
-    response = requests.get(endpoints.info, timeout=REQUEST_TIMEOUT)
+def test_info_endpoint(registered_endpoints: RegisteredEndpoints, pyctuator_server: PyctuatorServer) -> None:
+    response = requests.get(registered_endpoints.info, timeout=REQUEST_TIMEOUT)
     assert response.status_code == HTTPStatus.OK
     assert response.json()["podLinks"] == pyctuator_server.additional_app_info["podLinks"]
     assert response.json()["serviceLinks"] == pyctuator_server.additional_app_info["serviceLinks"]
 
 
 @pytest.mark.usefixtures("boot_admin_server", "pyctuator_server")
-def test_health_endpoint_with_psutil(endpoints: Endpoints, monkeypatch: MonkeyPatch) -> None:
+def test_health_endpoint_with_psutil(registered_endpoints: RegisteredEndpoints, monkeypatch: MonkeyPatch) -> None:
     # Skip this test if psutil isn't installed
     psutil = pytest.importorskip("psutil")
 
     # Verify that the diskSpace health check is returning some reasonable values
-    response = requests.get(endpoints.health, timeout=REQUEST_TIMEOUT)
+    response = requests.get(registered_endpoints.health, timeout=REQUEST_TIMEOUT)
     assert response.status_code == HTTPStatus.OK
     assert response.json()["status"] == "UP"
     disk_space_health = response.json()["details"]["diskSpace"]
@@ -131,7 +134,7 @@ def test_health_endpoint_with_psutil(endpoints: Endpoints, monkeypatch: MonkeyPa
         return MockDiskUsage(100000000, 9999999)
 
     monkeypatch.setattr(psutil, "disk_usage", mock_disk_usage)
-    response = requests.get(endpoints.health, timeout=REQUEST_TIMEOUT)
+    response = requests.get(registered_endpoints.health, timeout=REQUEST_TIMEOUT)
     assert response.status_code == HTTPStatus.SERVICE_UNAVAILABLE
     assert response.json()["status"] == "DOWN"
     disk_space_health = response.json()["details"]["diskSpace"]
@@ -141,37 +144,37 @@ def test_health_endpoint_with_psutil(endpoints: Endpoints, monkeypatch: MonkeyPa
 
 
 @pytest.mark.usefixtures("boot_admin_server", "pyctuator_server")
-def test_diskspace_no_psutil(endpoints: Endpoints) -> None:
+def test_diskspace_no_psutil(registered_endpoints: RegisteredEndpoints) -> None:
     # skip if psutil is installed
     if importlib.util.find_spec("psutil"):
         pytest.skip("psutil installed, skipping")
 
     # Verify that the diskSpace health check is returning some reasonable values
-    response = requests.get(endpoints.health, timeout=REQUEST_TIMEOUT)
+    response = requests.get(registered_endpoints.health, timeout=REQUEST_TIMEOUT)
     assert response.status_code == HTTPStatus.OK
     assert response.json()["status"] == "UP"
     assert "diskSpace" not in response.json()["details"]
 
 
 @pytest.mark.usefixtures("boot_admin_server", "pyctuator_server")
-def test_metrics_endpoint(endpoints: Endpoints) -> None:
+def test_metrics_endpoint(registered_endpoints: RegisteredEndpoints) -> None:
     # Skip this test if psutil isn't installed
     pytest.importorskip("psutil")
 
-    response = requests.get(endpoints.metrics, timeout=REQUEST_TIMEOUT)
+    response = requests.get(registered_endpoints.metrics, timeout=REQUEST_TIMEOUT)
     assert response.status_code == HTTPStatus.OK
     metric_names = response.json()["names"]
     assert "memory.rss" in metric_names
     assert "thread.count" in metric_names
 
-    response = requests.get(f"{endpoints.metrics}/memory.rss", timeout=REQUEST_TIMEOUT)
+    response = requests.get(f"{registered_endpoints.metrics}/memory.rss", timeout=REQUEST_TIMEOUT)
     assert response.status_code == HTTPStatus.OK
     metric_json = response.json()
     assert metric_json["name"] == "memory.rss"
     assert metric_json["measurements"][0]["statistic"] == "VALUE"
     assert metric_json["measurements"][0]["value"] > 10000
 
-    response = requests.get(f"{endpoints.metrics}/thread.count", timeout=REQUEST_TIMEOUT)
+    response = requests.get(f"{registered_endpoints.metrics}/thread.count", timeout=REQUEST_TIMEOUT)
     assert response.status_code == HTTPStatus.OK
     metric_json = response.json()
     assert metric_json["name"] == "thread.count"
@@ -210,8 +213,8 @@ def test_recurring_registration_and_deregistration(
 
 
 @pytest.mark.usefixtures("boot_admin_server", "pyctuator_server")
-def test_threads_endpoint(endpoints: Endpoints) -> None:
-    response = requests.get(endpoints.threads, timeout=REQUEST_TIMEOUT)
+def test_threads_endpoint(registered_endpoints: RegisteredEndpoints) -> None:
+    response = requests.get(registered_endpoints.threads, timeout=REQUEST_TIMEOUT)
     assert response.status_code == 200
 
     threads = response.json()["threads"]
@@ -227,8 +230,8 @@ def test_threads_endpoint(endpoints: Endpoints) -> None:
 
 
 @pytest.mark.usefixtures("boot_admin_server", "pyctuator_server")
-def test_loggers_endpoint(endpoints: Endpoints) -> None:
-    response = requests.get(endpoints.loggers, timeout=REQUEST_TIMEOUT)
+def test_loggers_endpoint(registered_endpoints: RegisteredEndpoints) -> None:
+    response = requests.get(registered_endpoints.loggers, timeout=REQUEST_TIMEOUT)
     assert response.status_code == HTTPStatus.OK
 
     # levels section
@@ -244,7 +247,7 @@ def test_loggers_endpoint(endpoints: Endpoints) -> None:
         logger_obj = logging.getLogger(logger)
         assert hasattr(logger_obj, "level")
         # Individual Get logger route
-        response = requests.get(f"{endpoints.loggers}/{logger}", timeout=REQUEST_TIMEOUT)
+        response = requests.get(f"{registered_endpoints.loggers}/{logger}", timeout=REQUEST_TIMEOUT)
         assert response.status_code == HTTPStatus.OK
         assert "configuredLevel" in json.loads(response.content)
         assert "effectiveLevel" in json.loads(response.content)
@@ -258,51 +261,51 @@ def test_loggers_endpoint(endpoints: Endpoints) -> None:
         post_data = json.dumps({"configuredLevel": str(random_log_level)})
 
         response = requests.post(
-            f"{endpoints.loggers}/{logger}",
+            f"{registered_endpoints.loggers}/{logger}",
             data=post_data,
             timeout=REQUEST_TIMEOUT
         )
         assert response.status_code == HTTPStatus.OK
         # Perform get logger level to Validate set logger level succeeded
-        response = requests.get(f"{endpoints.loggers}/{logger}", timeout=REQUEST_TIMEOUT)
+        response = requests.get(f"{registered_endpoints.loggers}/{logger}", timeout=REQUEST_TIMEOUT)
         assert json.loads(response.content)["configuredLevel"] == random_log_level
 
 
 @pytest.mark.usefixtures("boot_admin_server", "pyctuator_server")
-def test_logfile_endpoint(endpoints: Endpoints) -> None:
+def test_logfile_endpoint(registered_endpoints: RegisteredEndpoints) -> None:
     thirsty_str = "These pretzels are making me thirsty"
     response: Response = requests.get(
-        endpoints.root + "logfile_test_repeater",
+        registered_endpoints.root + "logfile_test_repeater",
         params={"repeated_string": thirsty_str},
         timeout=REQUEST_TIMEOUT,
     )
     assert response.status_code == HTTPStatus.OK
 
-    response = requests.get(endpoints.logfile, timeout=REQUEST_TIMEOUT)
+    response = requests.get(registered_endpoints.logfile, timeout=REQUEST_TIMEOUT)
     assert response.status_code == HTTPStatus.OK
     assert response.text.find(thirsty_str) >= 0
 
     # Immitate SBA's 1st request
-    response = requests.get(endpoints.logfile, headers={"Range": "bytes=-307200"}, timeout=REQUEST_TIMEOUT)
+    response = requests.get(registered_endpoints.logfile, headers={"Range": "bytes=-307200"}, timeout=REQUEST_TIMEOUT)
     assert response.status_code == HTTPStatus.PARTIAL_CONTENT
 
 
 @pytest.mark.usefixtures("boot_admin_server", "pyctuator_server")
-def test_traces_endpoint(endpoints: Endpoints) -> None:
-    response = requests.get(endpoints.httptrace, timeout=REQUEST_TIMEOUT)
+def test_traces_endpoint(registered_endpoints: RegisteredEndpoints) -> None:
+    response = requests.get(registered_endpoints.httptrace, timeout=REQUEST_TIMEOUT)
     assert response.status_code == 200
 
     # Create a request with header
     user_header = "my header test"
     authorization = "bearer 123"
     requests.get(
-        endpoints.root + "httptrace_test_url",
+        registered_endpoints.root + "httptrace_test_url",
         headers={"User-Data": user_header, "authorization": authorization},
         timeout=REQUEST_TIMEOUT,
     )
 
     # Get the captured httptraces
-    response = requests.get(endpoints.httptrace, timeout=REQUEST_TIMEOUT)
+    response = requests.get(registered_endpoints.httptrace, timeout=REQUEST_TIMEOUT)
     response_traces = response.json()["traces"]
     trace = next(x for x in response_traces if x["request"]["uri"].endswith("httptrace_test_url"))
 
@@ -319,20 +322,21 @@ def test_traces_endpoint(endpoints: Endpoints) -> None:
     assert trace["request"]["headers"][auth_header][0] == "******"
 
     # Assert timestamp is formatted in ISO format
-    logging.info("Trace's timestamp is " + trace["timestamp"])
-    datetime.fromisoformat(trace["timestamp"])
+    logging.info("Trace's timestamp is %s", trace["timestamp"])
+    timestamp_truncated = trace["timestamp"][0:23]
+    datetime.fromisoformat(timestamp_truncated)
 
     # Assert that the "time taken" (i.e. the time the server spent processing the request) is less than 100ms
     assert int(trace["timeTaken"]) < 100
 
     # Issue the same request asking the server to sleep for a sec, than assert request timing is at least 1s
     requests.get(
-        endpoints.root + "httptrace_test_url",
+        registered_endpoints.root + "httptrace_test_url",
         params={"sleep_sec": 1},
         headers={"User-Data": user_header},
         timeout=REQUEST_TIMEOUT
     )
-    response = requests.get(endpoints.httptrace, timeout=REQUEST_TIMEOUT)
+    response = requests.get(registered_endpoints.httptrace, timeout=REQUEST_TIMEOUT)
     response_traces = response.json()["traces"]
     trace = next(x for x in response_traces if "httptrace_test_url?sleep_sec" in x["request"]["uri"])
     assert int(trace["timeTaken"]) >= 1000

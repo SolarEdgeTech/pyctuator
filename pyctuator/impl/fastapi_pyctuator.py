@@ -10,6 +10,7 @@ from starlette.datastructures import Headers
 from starlette.requests import Request
 from starlette.responses import Response
 
+from pyctuator.endpoints import Endpoints
 from pyctuator.environment.environment_provider import EnvironmentData
 from pyctuator.httptrace import TraceRecord, TraceRequest, TraceResponse
 from pyctuator.httptrace.http_tracer import Traces
@@ -33,8 +34,9 @@ class FastApiPyctuator(PyctuatorRouter):
             self,
             app: FastAPI,
             pyctuator_impl: PyctuatorImpl,
-            include_in_openapi_schema: bool = False,
-            customizer: Optional[Callable[[APIRouter], None]] = None
+            include_in_openapi_schema: bool,
+            customizer: Optional[Callable[[APIRouter], None]],
+            disabled_endpoints: Endpoints,
     ) -> None:
         super().__init__(app, pyctuator_impl)
         router = APIRouter()
@@ -64,70 +66,78 @@ class FastApiPyctuator(PyctuatorRouter):
             documentation.
             """
 
-        @router.get("/env", include_in_schema=include_in_openapi_schema, tags=["pyctuator"])
-        def get_environment() -> EnvironmentData:
-            return pyctuator_impl.get_environment()
+        if Endpoints.ENV not in disabled_endpoints:
+            @router.get("/env", include_in_schema=include_in_openapi_schema, tags=["pyctuator"])
+            def get_environment() -> EnvironmentData:
+                return pyctuator_impl.get_environment()
 
-        @router.get("/info", include_in_schema=include_in_openapi_schema, tags=["pyctuator"])
-        def get_info() -> Dict:
-            return pyctuator_impl.get_app_info()
+        if Endpoints.INFO not in disabled_endpoints:
+            @router.get("/info", include_in_schema=include_in_openapi_schema, tags=["pyctuator"])
+            def get_info() -> Dict:
+                return pyctuator_impl.get_app_info()
 
-        @router.get("/health", include_in_schema=include_in_openapi_schema, tags=["pyctuator"])
-        def get_health(response: Response) -> object:
-            health = pyctuator_impl.get_health()
-            response.status_code = health.http_status()
-            return health
+        if Endpoints.HEALTH not in disabled_endpoints:
+            @router.get("/health", include_in_schema=include_in_openapi_schema, tags=["pyctuator"])
+            def get_health(response: Response) -> object:
+                health = pyctuator_impl.get_health()
+                response.status_code = health.http_status()
+                return health
 
-        @router.get("/metrics", include_in_schema=include_in_openapi_schema, tags=["pyctuator"])
-        def get_metric_names() -> MetricNames:
-            return pyctuator_impl.get_metric_names()
+        if Endpoints.METRICS not in disabled_endpoints:
+            @router.get("/metrics", include_in_schema=include_in_openapi_schema, tags=["pyctuator"])
+            def get_metric_names() -> MetricNames:
+                return pyctuator_impl.get_metric_names()
 
-        @router.get("/metrics/{metric_name}", include_in_schema=include_in_openapi_schema, tags=["pyctuator"])
-        def get_metric_measurement(metric_name: str) -> Metric:
-            return pyctuator_impl.get_metric_measurement(metric_name)
+            @router.get("/metrics/{metric_name}", include_in_schema=include_in_openapi_schema, tags=["pyctuator"])
+            def get_metric_measurement(metric_name: str) -> Metric:
+                return pyctuator_impl.get_metric_measurement(metric_name)
 
         # Retrieving All Loggers
-        @router.get("/loggers", include_in_schema=include_in_openapi_schema, tags=["pyctuator"])
-        def get_loggers() -> LoggersData:
-            return pyctuator_impl.logging.get_loggers()
+        if Endpoints.LOGGERS not in disabled_endpoints:
+            @router.get("/loggers", include_in_schema=include_in_openapi_schema, tags=["pyctuator"])
+            def get_loggers() -> LoggersData:
+                return pyctuator_impl.logging.get_loggers()
 
-        @router.post("/loggers/{logger_name}", include_in_schema=include_in_openapi_schema, tags=["pyctuator"])
-        def set_logger_level(item: FastApiLoggerItem, logger_name: str) -> Dict:
-            pyctuator_impl.logging.set_logger_level(logger_name, item.configuredLevel)
-            return {}
+            @router.post("/loggers/{logger_name}", include_in_schema=include_in_openapi_schema, tags=["pyctuator"])
+            def set_logger_level(item: FastApiLoggerItem, logger_name: str) -> Dict:
+                pyctuator_impl.logging.set_logger_level(logger_name, item.configuredLevel)
+                return {}
 
-        @router.get("/loggers/{logger_name}", include_in_schema=include_in_openapi_schema, tags=["pyctuator"])
-        def get_logger(logger_name: str) -> LoggerLevels:
-            return pyctuator_impl.logging.get_logger(logger_name)
+            @router.get("/loggers/{logger_name}", include_in_schema=include_in_openapi_schema, tags=["pyctuator"])
+            def get_logger(logger_name: str) -> LoggerLevels:
+                return pyctuator_impl.logging.get_logger(logger_name)
 
-        @router.get("/dump", include_in_schema=include_in_openapi_schema, tags=["pyctuator"])
-        @router.get("/threaddump", include_in_schema=include_in_openapi_schema, tags=["pyctuator"])
-        def get_thread_dump() -> ThreadDump:
-            return pyctuator_impl.get_thread_dump()
+        if Endpoints.THREAD_DUMP not in disabled_endpoints:
+            @router.get("/dump", include_in_schema=include_in_openapi_schema, tags=["pyctuator"])
+            @router.get("/threaddump", include_in_schema=include_in_openapi_schema, tags=["pyctuator"])
+            def get_thread_dump() -> ThreadDump:
+                return pyctuator_impl.get_thread_dump()
 
-        @router.get("/logfile", include_in_schema=include_in_openapi_schema, tags=["pyctuator"])
-        def get_logfile(range_header: str = Header(default=None,
-                                                   alias="range")) -> Response:  # pylint: disable=redefined-builtin
-            if not range_header:
-                return Response(content=pyctuator_impl.logfile.log_messages.get_range())
+        if Endpoints.LOGFILE not in disabled_endpoints:
+            @router.get("/logfile", include_in_schema=include_in_openapi_schema, tags=["pyctuator"])
+            def get_logfile(range_header: str = Header(default=None,
+                                                       alias="range")) -> Response:  # pylint: disable=redefined-builtin
+                if not range_header:
+                    return Response(content=pyctuator_impl.logfile.log_messages.get_range())
 
-            str_res, start, end = pyctuator_impl.logfile.get_logfile(range_header)
+                str_res, start, end = pyctuator_impl.logfile.get_logfile(range_header)
 
-            my_res = Response(
-                status_code=HTTPStatus.PARTIAL_CONTENT.value,
-                content=str_res,
-                headers={
-                    "Content-Type": "text/html; charset=UTF-8",
-                    "Accept-Ranges": "bytes",
-                    "Content-Range": f"bytes {start}-{end}/{end}",
-                })
+                my_res = Response(
+                    status_code=HTTPStatus.PARTIAL_CONTENT.value,
+                    content=str_res,
+                    headers={
+                        "Content-Type": "text/html; charset=UTF-8",
+                        "Accept-Ranges": "bytes",
+                        "Content-Range": f"bytes {start}-{end}/{end}",
+                    })
 
-            return my_res
+                return my_res
 
-        @router.get("/trace", include_in_schema=include_in_openapi_schema, tags=["pyctuator"])
-        @router.get("/httptrace", include_in_schema=include_in_openapi_schema, tags=["pyctuator"])
-        def get_httptrace() -> Traces:
-            return pyctuator_impl.http_tracer.get_httptrace()
+        if Endpoints.HTTP_TRACE not in disabled_endpoints:
+            @router.get("/trace", include_in_schema=include_in_openapi_schema, tags=["pyctuator"])
+            @router.get("/httptrace", include_in_schema=include_in_openapi_schema, tags=["pyctuator"])
+            def get_httptrace() -> Traces:
+                return pyctuator_impl.http_tracer.get_httptrace()
 
         @app.middleware("http")
         async def intercept_requests_and_responses(
