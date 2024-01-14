@@ -7,6 +7,7 @@ from tornado import ioloop
 from tornado.httpserver import HTTPServer
 from tornado.web import Application, RequestHandler
 
+from pyctuator.endpoints import Endpoints
 from pyctuator.pyctuator import Pyctuator
 from tests.conftest import PyctuatorServer
 
@@ -14,7 +15,7 @@ bind_port = 9000
 
 
 class TornadoPyctuatorServer(PyctuatorServer):
-    def __init__(self) -> None:
+    def __init__(self, disabled_endpoints: Endpoints = Endpoints.NONE) -> None:
         global bind_port
         self.port = bind_port
         bind_port += 1
@@ -61,6 +62,7 @@ class TornadoPyctuatorServer(PyctuatorServer):
             registration_interval_sec=1,
             metadata=self.metadata,
             additional_app_info=self.additional_app_info,
+            disabled_endpoints=disabled_endpoints,
         )
 
         self.io_loop: Optional[ioloop.IOLoop] = None

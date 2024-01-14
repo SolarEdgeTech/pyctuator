@@ -8,6 +8,7 @@ from typing import Any, Optional, Callable, Mapping, List
 from tornado.httputil import HTTPHeaders
 from tornado.web import Application, RequestHandler
 
+from pyctuator.endpoints import Endpoints
 from pyctuator.httptrace import TraceRecord, TraceRequest, TraceResponse
 from pyctuator.impl import SBA_V2_CONTENT_TYPE
 from pyctuator.impl.pyctuator_impl import PyctuatorImpl
@@ -141,7 +142,7 @@ class HttpTraceHandler(AbstractPyctuatorHandler):
 
 # pylint: disable=too-many-locals,unused-argument
 class TornadoHttpPyctuator(PyctuatorRouter):
-    def __init__(self, app: Application, pyctuator_impl: PyctuatorImpl) -> None:
+    def __init__(self, app: Application, pyctuator_impl: PyctuatorImpl, disabled_endpoints: Endpoints) -> None:
         super().__init__(app, pyctuator_impl)
 
         custom_dumps = partial(
@@ -155,24 +156,37 @@ class TornadoHttpPyctuator(PyctuatorRouter):
         self.delegate_log_function = app.settings.get("log_function")
         app.settings.setdefault("log_function", self._intercept_request_and_response)
 
-        app.add_handlers(
-            ".*$",
-            [
-                (r"/pyctuator", PyctuatorHandler),
-                (r"/pyctuator/env", EnvHandler),
-                (r"/pyctuator/info", InfoHandler),
-                (r"/pyctuator/health", HealthHandler),
-                (r"/pyctuator/metrics", MetricsHandler),
-                (r"/pyctuator/metrics/(?P<metric_name>.*$)", MetricsNameHandler),
-                (r"/pyctuator/loggers", LoggersHandler),
-                (r"/pyctuator/loggers/(?P<logger_name>.*$)", LoggersNameHandler),
-                (r"/pyctuator/dump", ThreadDumpHandler),
-                (r"/pyctuator/threaddump", ThreadDumpHandler),
-                (r"/pyctuator/logfile", LogFileHandler),
-                (r"/pyctuator/trace", HttpTraceHandler),
-                (r"/pyctuator/httptrace", HttpTraceHandler),
-            ]
-        )
+        handlers: list = [(r"/pyctuator", PyctuatorHandler)]
+
+        if Endpoints.ENV not in disabled_endpoints:
+            handlers.append((r"/pyctuator/env", EnvHandler))
+
+        if Endpoints.INFO not in disabled_endpoints:
+            handlers.append((r"/pyctuator/info", InfoHandler))
+
+        if Endpoints.HEALTH not in disabled_endpoints:
+            handlers.append((r"/pyctuator/health", HealthHandler))
+
+        if Endpoints.METRICS not in disabled_endpoints:
+            handlers.append((r"/pyctuator/metrics", MetricsHandler))
+            handlers.append((r"/pyctuator/metrics/(?P<metric_name>.*$)", MetricsNameHandler))
+
+        if Endpoints.LOGGERS not in disabled_endpoints:
+            handlers.append((r"/pyctuator/loggers", LoggersHandler))
+            handlers.append((r"/pyctuator/loggers/(?P<logger_name>.*$)", LoggersNameHandler))
+
+        if Endpoints.THREAD_DUMP not in disabled_endpoints:
+            handlers.append((r"/pyctuator/dump", ThreadDumpHandler))
+            handlers.append((r"/pyctuator/threaddump", ThreadDumpHandler))
+
+        if Endpoints.LOGFILE not in disabled_endpoints:
+            handlers.append((r"/pyctuator/logfile", LogFileHandler))
+
+        if Endpoints.HTTP_TRACE not in disabled_endpoints:
+            handlers.append((r"/pyctuator/trace", HttpTraceHandler))
+            handlers.append((r"/pyctuator/httptrace", HttpTraceHandler))
+
+        app.add_handlers(".*$", handlers)
 
     def _intercept_request_and_response(self, handler: RequestHandler) -> None:
         # Record the request and response

@@ -17,6 +17,8 @@ from starlette import status
 from uvicorn.config import Config
 from uvicorn.main import Server
 
+from pyctuator.endpoints import Endpoints
+
 REQUEST_TIMEOUT = 10
 
 
@@ -30,17 +32,17 @@ class RegistrationRequest(BaseModel):
 
 @dataclass
 # pylint: disable=too-many-instance-attributes
-class Endpoints:
+class RegisteredEndpoints:
     root: str
     pyctuator: str
-    env: str
-    info: str
-    health: str
-    metrics: str
-    loggers: str
-    threads: str
-    logfile: str
-    httptrace: str
+    env: Optional[str]
+    info: Optional[str]
+    health: Optional[str]
+    metrics: Optional[str]
+    loggers: Optional[str]
+    threads: Optional[str]
+    logfile: Optional[str]
+    httptrace: Optional[str]
 
 
 @dataclass
@@ -50,6 +52,18 @@ class RegistrationTrackerFixture:
     start_time: Optional[str]
     deregistration_time: Optional[datetime]
     test_start_time: datetime
+
+
+endpoint_href_path = {
+    Endpoints.ENV: "env",
+    Endpoints.INFO: "info",
+    Endpoints.HEALTH: "health",
+    Endpoints.METRICS: "metrics",
+    Endpoints.LOGGERS: "loggers",
+    Endpoints.THREAD_DUMP: "threaddump",
+    Endpoints.LOGFILE: "logfile",
+    Endpoints.HTTP_TRACE: "httptrace",
+}
 
 
 class CustomServer(Server):
@@ -133,7 +147,7 @@ def boot_admin_server(registration_tracker: RegistrationTrackerFixture) -> Gener
 
 @pytest.mark.usefixtures("boot_admin_server")
 @pytest.fixture
-def endpoints(registration_tracker: RegistrationTrackerFixture) -> Endpoints:
+def registered_endpoints(registration_tracker: RegistrationTrackerFixture) -> RegisteredEndpoints:
     # time.sleep(600)
     # Wait for pyctuator to register with the boot-admin at least once
     while registration_tracker.registration is None:
@@ -145,30 +159,35 @@ def endpoints(registration_tracker: RegistrationTrackerFixture) -> Endpoints:
     assert response.status_code == 200
 
     links = response.json()["_links"]
-    return Endpoints(
+
+    def link_href(endpoint: Endpoints) -> Optional[str]:
+        link = endpoint_href_path.get(endpoint)
+        return str(links[link]["href"]) if link in links else None
+
+    return RegisteredEndpoints(
         root=registration_tracker.registration.serviceUrl,
         pyctuator=links["self"]["href"],
-        env=links["env"]["href"],
-        info=links["info"]["href"],
-        health=links["health"]["href"],
-        metrics=links["metrics"]["href"],
-        loggers=links["loggers"]["href"],
-        threads=links["threaddump"]["href"],
-        logfile=links["logfile"]["href"],
-        httptrace=links["httptrace"]["href"],
+        env=link_href(Endpoints.ENV),
+        info=link_href(Endpoints.INFO),
+        health=link_href(Endpoints.HEALTH),
+        metrics=link_href(Endpoints.METRICS),
+        loggers=link_href(Endpoints.LOGGERS),
+        threads=link_href(Endpoints.THREAD_DUMP),
+        logfile=link_href(Endpoints.LOGFILE),
+        httptrace=link_href(Endpoints.HTTP_TRACE),
     )
 
 
 class PyctuatorServer(ABC):
     metadata: Optional[dict] = {f"k{i}": f"v{i}" for i in range(random.randrange(10))}
-    additional_app_info = dict(
-        serviceLinks=dict(
-            metrics="http://xyz/service/metrics",
-        ),
-        podLinks=dict(
-            metrics=["http://xyz/pod/metrics/memory", "http://xyz/pod/metrics/cpu"],
-        )
-    )
+    additional_app_info = {
+        "serviceLinks": {
+            "metrics": "http://xyz/service/metrics",
+        },
+        "podLinks": {
+            "metrics": ["http://xyz/pod/metrics/memory", "http://xyz/pod/metrics/cpu"],
+        },
+    }
 
     @abstractmethod
     def start(self) -> None:

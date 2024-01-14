@@ -1,5 +1,6 @@
 import pytest
 
+from pyctuator.endpoints import Endpoints
 from pyctuator.health.health_provider import HealthStatus, Status, HealthDetails, HealthProvider
 from pyctuator.impl.pyctuator_impl import PyctuatorImpl, AppInfo, AppDetails
 from pyctuator.pyctuator import default_logfile_format
@@ -34,6 +35,7 @@ def pyctuator_impl() -> PyctuatorImpl:
         10,
         default_logfile_format,
         None,
+        Endpoints.NONE,
     )
 
 

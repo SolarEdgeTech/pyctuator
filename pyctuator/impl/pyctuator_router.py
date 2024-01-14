@@ -1,7 +1,8 @@
 from abc import ABC
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Optional, Mapping
 
+from pyctuator.endpoints import Endpoints
 from pyctuator.impl.pyctuator_impl import PyctuatorImpl
 
 
@@ -11,25 +12,9 @@ class LinkHref:
     templated: bool
 
 
-# mypy: ignore_errors
-# pylint: disable=too-many-instance-attributes
-@dataclass
-class EndpointsLinks:
-    self: LinkHref
-    env: LinkHref
-    info: LinkHref
-    health: LinkHref
-    metrics: LinkHref
-    loggers: LinkHref
-    dump: LinkHref
-    threaddump: LinkHref
-    logfile: LinkHref
-    httptrace: LinkHref
-
-
 @dataclass
 class EndpointsData:
-    _links: EndpointsLinks
+    _links: Mapping[str, LinkHref]
 
 
 class PyctuatorRouter(ABC):
@@ -45,16 +30,22 @@ class PyctuatorRouter(ABC):
     def get_endpoints_data(self) -> EndpointsData:
         return EndpointsData(self.get_endpoints_links())
 
-    def get_endpoints_links(self):
-        return EndpointsLinks(
-            LinkHref(self.pyctuator_impl.pyctuator_endpoint_url, False),
-            LinkHref(self.pyctuator_impl.pyctuator_endpoint_url + "/env", False),
-            LinkHref(self.pyctuator_impl.pyctuator_endpoint_url + "/info", False),
-            LinkHref(self.pyctuator_impl.pyctuator_endpoint_url + "/health", False),
-            LinkHref(self.pyctuator_impl.pyctuator_endpoint_url + "/metrics", False),
-            LinkHref(self.pyctuator_impl.pyctuator_endpoint_url + "/loggers", False),
-            LinkHref(self.pyctuator_impl.pyctuator_endpoint_url + "/dump", False),
-            LinkHref(self.pyctuator_impl.pyctuator_endpoint_url + "/threaddump", False),
-            LinkHref(self.pyctuator_impl.pyctuator_endpoint_url + "/logfile", False),
-            LinkHref(self.pyctuator_impl.pyctuator_endpoint_url + "/httptrace", False),
-        )
+    def get_endpoints_links(self) -> Mapping[str, LinkHref]:
+        def link_href(endpoint: Endpoints, path: str) -> Optional[LinkHref]:
+            return None if endpoint in self.pyctuator_impl.disabled_endpoints \
+                else LinkHref(self.pyctuator_impl.pyctuator_endpoint_url + path, False)
+
+        endpoints = {
+            "self": LinkHref(self.pyctuator_impl.pyctuator_endpoint_url, False),
+            "env": link_href(Endpoints.ENV, "/env"),
+            "info": link_href(Endpoints.INFO, "/info"),
+            "health": link_href(Endpoints.HEALTH, "/health"),
+            "metrics": link_href(Endpoints.METRICS, "/metrics"),
+            "loggers": link_href(Endpoints.LOGGERS, "/loggers"),
+            "dump": link_href(Endpoints.THREAD_DUMP, "/dump"),
+            "threaddump": link_href(Endpoints.THREAD_DUMP, "/threaddump"),
+            "logfile": link_href(Endpoints.LOGFILE, "/logfile"),
+            "httptrace": link_href(Endpoints.HTTP_TRACE, "/httptrace"),
+        }
+
+        return {endpoint: link_href for (endpoint, link_href) in endpoints.items() if link_href is not None}

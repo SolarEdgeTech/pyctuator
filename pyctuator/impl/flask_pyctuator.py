@@ -10,6 +10,7 @@ from flask.json.provider import DefaultJSONProvider
 # from flask.json import JSONEncoder
 from werkzeug.datastructures import Headers
 
+from pyctuator.endpoints import Endpoints
 from pyctuator.httptrace import TraceRecord, TraceRequest, TraceResponse
 from pyctuator.impl import SBA_V2_CONTENT_TYPE
 from pyctuator.impl.pyctuator_impl import PyctuatorImpl
@@ -39,8 +40,8 @@ class FlaskPyctuator(PyctuatorRouter):
     def __init__(
             self,
             app: Flask,
-            pyctuator_impl: PyctuatorImpl
-
+            pyctuator_impl: PyctuatorImpl,
+            disabled_endpoints: Endpoints,
     ) -> None:
         super().__init__(app, pyctuator_impl)
 
@@ -68,67 +69,75 @@ class FlaskPyctuator(PyctuatorRouter):
         def get_endpoints() -> Any:
             return jsonify(self.get_endpoints_data())
 
-        @flask_blueprint.route("/env")
-        def get_environment() -> Any:
-            return jsonify(pyctuator_impl.get_environment())
+        if Endpoints.ENV not in disabled_endpoints:
+            @flask_blueprint.route("/env")
+            def get_environment() -> Any:
+                return jsonify(pyctuator_impl.get_environment())
 
-        @flask_blueprint.route("/info")
-        def get_info() -> Any:
-            return jsonify(pyctuator_impl.get_app_info())
+        if Endpoints.INFO not in disabled_endpoints:
+            @flask_blueprint.route("/info")
+            def get_info() -> Any:
+                return jsonify(pyctuator_impl.get_app_info())
 
-        @flask_blueprint.route("/health")
-        def get_health() -> Any:
-            health = pyctuator_impl.get_health()
-            return jsonify(health), health.http_status()
+        if Endpoints.HEALTH not in disabled_endpoints:
+            @flask_blueprint.route("/health")
+            def get_health() -> Any:
+                health = pyctuator_impl.get_health()
+                return jsonify(health), health.http_status()
 
-        @flask_blueprint.route("/metrics")
-        def get_metric_names() -> Any:
-            return jsonify(pyctuator_impl.get_metric_names())
+        if Endpoints.METRICS not in disabled_endpoints:
+            @flask_blueprint.route("/metrics")
+            def get_metric_names() -> Any:
+                return jsonify(pyctuator_impl.get_metric_names())
 
-        @flask_blueprint.route("/metrics/<metric_name>")
-        def get_metric_measurement(metric_name: str) -> Any:
-            return jsonify(pyctuator_impl.get_metric_measurement(metric_name))
+            @flask_blueprint.route("/metrics/<metric_name>")
+            def get_metric_measurement(metric_name: str) -> Any:
+                return jsonify(pyctuator_impl.get_metric_measurement(metric_name))
 
         # Retrieving All Loggers
-        @flask_blueprint.route("/loggers")
-        def get_loggers() -> Any:
-            return jsonify(pyctuator_impl.logging.get_loggers())
+        if Endpoints.LOGGERS not in disabled_endpoints:
+            @flask_blueprint.route("/loggers")
+            def get_loggers() -> Any:
+                return jsonify(pyctuator_impl.logging.get_loggers())
 
-        @flask_blueprint.route("/loggers/<logger_name>", methods=['POST'])
-        def set_logger_level(logger_name: str) -> Dict:
-            request_dict = json.loads(request.data)
-            pyctuator_impl.logging.set_logger_level(logger_name, request_dict.get("configuredLevel", None))
-            return {}
+            @flask_blueprint.route("/loggers/<logger_name>", methods=['POST'])
+            def set_logger_level(logger_name: str) -> Dict:
+                request_dict = json.loads(request.data)
+                pyctuator_impl.logging.set_logger_level(logger_name, request_dict.get("configuredLevel", None))
+                return {}
 
-        @flask_blueprint.route("/loggers/<logger_name>")
-        def get_logger(logger_name: str) -> Any:
-            return jsonify(pyctuator_impl.logging.get_logger(logger_name))
+            @flask_blueprint.route("/loggers/<logger_name>")
+            def get_logger(logger_name: str) -> Any:
+                return jsonify(pyctuator_impl.logging.get_logger(logger_name))
 
-        @flask_blueprint.route("/threaddump")
-        @flask_blueprint.route("/dump")
-        def get_thread_dump() -> Any:
-            return jsonify(pyctuator_impl.get_thread_dump())
+        if Endpoints.THREAD_DUMP not in disabled_endpoints:
+            @flask_blueprint.route("/threaddump")
+            @flask_blueprint.route("/dump")
+            def get_thread_dump() -> Any:
+                return jsonify(pyctuator_impl.get_thread_dump())
 
-        @flask_blueprint.route("/logfile")
-        def get_logfile() -> Tuple[Response, int]:
-            range_header = request.environ.get('HTTP_RANGE')
-            if not range_header:
-                response: Response = make_response(pyctuator_impl.logfile.log_messages.get_range())
-                return response, HTTPStatus.OK
+        if Endpoints.LOGFILE not in disabled_endpoints:
+            @flask_blueprint.route("/logfile")
+            def get_logfile() -> Tuple[Response, int]:
+                range_header = request.environ.get('HTTP_RANGE')
+                if not range_header:
+                    response: Response = make_response(pyctuator_impl.logfile.log_messages.get_range())
+                    return response, HTTPStatus.OK
 
-            str_res, start, end = pyctuator_impl.logfile.get_logfile(range_header)
+                str_res, start, end = pyctuator_impl.logfile.get_logfile(range_header)
 
-            resp: Response = make_response(str_res)
-            resp.headers["Content-Type"] = "text/html; charset=UTF-8"
-            resp.headers["Accept-Ranges"] = "bytes"
-            resp.headers["Content-Range"] = f"bytes {start}-{end}/{end}"
+                resp: Response = make_response(str_res)
+                resp.headers["Content-Type"] = "text/html; charset=UTF-8"
+                resp.headers["Accept-Ranges"] = "bytes"
+                resp.headers["Content-Range"] = f"bytes {start}-{end}/{end}"
 
-            return resp, HTTPStatus.PARTIAL_CONTENT
+                return resp, HTTPStatus.PARTIAL_CONTENT
 
-        @flask_blueprint.route("/trace")
-        @flask_blueprint.route("/httptrace")
-        def get_httptrace() -> Any:
-            return jsonify(pyctuator_impl.http_tracer.get_httptrace())
+        if Endpoints.HTTP_TRACE not in disabled_endpoints:
+            @flask_blueprint.route("/trace")
+            @flask_blueprint.route("/httptrace")
+            def get_httptrace() -> Any:
+                return jsonify(pyctuator_impl.http_tracer.get_httptrace())
 
         app.register_blueprint(flask_blueprint, url_prefix=path_prefix)
 

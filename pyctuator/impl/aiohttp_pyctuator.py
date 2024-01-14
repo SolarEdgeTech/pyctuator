@@ -9,6 +9,7 @@ from typing import Any, Callable, List, Mapping
 from aiohttp import web
 from multidict import CIMultiDictProxy
 
+from pyctuator.endpoints import Endpoints
 from pyctuator.httptrace import TraceRecord, TraceRequest, TraceResponse
 from pyctuator.impl import SBA_V2_CONTENT_TYPE
 from pyctuator.impl.pyctuator_impl import PyctuatorImpl
@@ -17,7 +18,7 @@ from pyctuator.impl.pyctuator_router import PyctuatorRouter
 
 # pylint: disable=too-many-locals,unused-argument
 class AioHttpPyctuator(PyctuatorRouter):
-    def __init__(self, app: web.Application, pyctuator_impl: PyctuatorImpl) -> None:
+    def __init__(self, app: web.Application, pyctuator_impl: PyctuatorImpl, disabled_endpoints: Endpoints) -> None:
         super().__init__(app, pyctuator_impl)
 
         custom_dumps = partial(
@@ -106,34 +107,50 @@ class AioHttpPyctuator(PyctuatorRouter):
             self.pyctuator_impl.http_tracer.add_record(record=new_record)
             return response
 
-        app.add_routes(
-            [
-                web.get("/pyctuator", get_endpoints),
-                web.options("/pyctuator/env", empty_handler),
-                web.options("/pyctuator/info", empty_handler),
-                web.options("/pyctuator/health", empty_handler),
-                web.options("/pyctuator/metrics", empty_handler),
-                web.options("/pyctuator/loggers", empty_handler),
-                web.options("/pyctuator/dump", empty_handler),
-                web.options("/pyctuator/threaddump", empty_handler),
-                web.options("/pyctuator/logfile", empty_handler),
-                web.options("/pyctuator/trace", empty_handler),
-                web.options("/pyctuator/httptrace", empty_handler),
-                web.get("/pyctuator/env", get_environment),
-                web.get("/pyctuator/info", get_info),
-                web.get("/pyctuator/health", get_health),
-                web.get("/pyctuator/metrics", get_metric_names),
-                web.get("/pyctuator/metrics/{metric_name}", get_metric_measurement),
-                web.get("/pyctuator/loggers", get_loggers),
-                web.get("/pyctuator/loggers/{logger_name}", get_logger),
-                web.post("/pyctuator/loggers/{logger_name}", set_logger_level),
-                web.get("/pyctuator/dump", get_thread_dump),
-                web.get("/pyctuator/threaddump", get_thread_dump),
-                web.get("/pyctuator/logfile", get_logfile),
-                web.get("/pyctuator/trace", get_httptrace),
-                web.get("/pyctuator/httptrace", get_httptrace),
-            ]
-        )
+        routes = [
+            web.get("/pyctuator", get_endpoints),
+        ]
+
+        if Endpoints.ENV not in disabled_endpoints:
+            routes.append(web.options("/pyctuator/env", empty_handler))
+            routes.append(web.get("/pyctuator/env", get_environment))
+
+        if Endpoints.INFO not in disabled_endpoints:
+            routes.append(web.options("/pyctuator/info", empty_handler))
+            routes.append(web.get("/pyctuator/info", get_info))
+
+        if Endpoints.HEALTH not in disabled_endpoints:
+            routes.append(web.options("/pyctuator/health", empty_handler))
+            routes.append(web.get("/pyctuator/health", get_health))
+
+        if Endpoints.METRICS not in disabled_endpoints:
+            routes.append(web.options("/pyctuator/metrics", empty_handler))
+            routes.append(web.get("/pyctuator/metrics", get_metric_names))
+            routes.append(web.get("/pyctuator/metrics/{metric_name}", get_metric_measurement))
+
+        if Endpoints.LOGGERS not in disabled_endpoints:
+            routes.append(web.options("/pyctuator/loggers", empty_handler))
+            routes.append(web.get("/pyctuator/loggers", get_loggers))
+            routes.append(web.get("/pyctuator/loggers/{logger_name}", get_logger))
+            routes.append(web.post("/pyctuator/loggers/{logger_name}", set_logger_level))
+
+        if Endpoints.THREAD_DUMP not in disabled_endpoints:
+            routes.append(web.options("/pyctuator/dump", empty_handler))
+            routes.append(web.options("/pyctuator/threaddump", empty_handler))
+            routes.append(web.get("/pyctuator/dump", get_thread_dump))
+            routes.append(web.get("/pyctuator/threaddump", get_thread_dump))
+
+        if Endpoints.LOGFILE not in disabled_endpoints:
+            routes.append(web.options("/pyctuator/logfile", empty_handler))
+            routes.append(web.get("/pyctuator/logfile", get_logfile))
+
+        if Endpoints.HTTP_TRACE not in disabled_endpoints:
+            routes.append(web.options("/pyctuator/trace", empty_handler))
+            routes.append(web.options("/pyctuator/httptrace", empty_handler))
+            routes.append(web.get("/pyctuator/trace", get_httptrace))
+            routes.append(web.get("/pyctuator/httptrace", get_httptrace))
+
+        app.add_routes(routes)
         app.middlewares.append(intercept_requests_and_responses)
 
     def _custom_json_serializer(self, value: Any) -> Any:
