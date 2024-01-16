@@ -36,14 +36,10 @@ pyctuator = Pyctuator(
     app_description=app.description,
 )
 
-# Keep the console clear - configure uvicorn (FastAPI's WSGI web app) not to log the detail of every incoming request
-uvicorn_logger = logging.getLogger("uvicorn")
-uvicorn_logger.setLevel(logging.WARNING)
-
 server = Server(config=(Config(
     app=app,
     loop="asyncio",
     host="0.0.0.0",
-    logger=uvicorn_logger,
+    log_level=logging.WARNING,
 )))
 server.run()
