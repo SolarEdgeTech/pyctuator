@@ -255,6 +255,16 @@ pyctuator = Pyctuator(...)  # arguments removed for brevity
 pyctuator.register_health_provider(RedisHealthProvider(r))
 ```
 
+Or if your service is using asynchronous Redis, to monitor the connection initialize a `AioRedisHealthProvider`:
+
+```python
+from redis import asyncio as aioredis
+
+r = aioredis.Redis()
+pyctuator = Pyctuator(...)  # arguments removed for brevity
+pyctuator.register_health_provider(AioRedisHealthProvider(r))
+```
+
 ### Custom Environment
 Out of the box, Pyctuator exposes Python's environment variables to Spring Boot Admin.
 
