@@ -1,4 +1,5 @@
 import asyncio
+from typing import Any, Coroutine, Mapping
 
 from pyctuator.health.health_provider import Status
 from pyctuator.health.redis_health_provider import RedisHealthStatus, RedisHealthDetails, RedisHealthProvider
@@ -7,7 +8,7 @@ from pyctuator.health.redis_health_provider import RedisHealthStatus, RedisHealt
 class AioRedisHealthProvider(RedisHealthProvider):
     def get_health(self) -> RedisHealthStatus:
         try:
-            info = asyncio.run(self.redis.info())
+            info: Mapping[str, Any] = self.redis.info()
 
             return RedisHealthStatus(
                 status=Status.UP,
