@@ -2,8 +2,10 @@
 
 import importlib.util
 import os
+from typing import Any
 
 import pytest
+from redis import Redis
 
 @pytest.fixture
 def require_redis() -> None:
@@ -28,7 +30,7 @@ def test_aioredis_health(redis_host: str) -> None:
     from pyctuator.health.health_provider import Status
     from pyctuator.health.aioredis_health_provider import AioRedisHealthProvider, RedisHealthStatus, RedisHealthDetails
 
-    redis_instance = AioRedis(host=redis_host)
+    redis_instance: Redis[bytes] = AioRedis(host=redis_host)
 
     health = AioRedisHealthProvider(redis_instance).get_health()
     assert health == RedisHealthStatus(Status.UP, RedisHealthDetails("5.0.3", "standalone"))

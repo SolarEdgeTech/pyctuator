@@ -10,7 +10,8 @@ help:
 	@echo "- coverage               Check test coverage"
 
 bootstrap:
-	poetry --version || curl -sSL https://raw.githubusercontent.com/sdispater/poetry/master/get-poetry.py | python
+	poetry --version || curl -sSL https://install.python-poetry.org | python3 -
+	ln -s ${HOME}/.local/bin/poetry /usr/local/bin
 	poetry install
 
 check: pylint mypy
