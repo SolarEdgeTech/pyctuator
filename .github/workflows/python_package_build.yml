@@ -10,7 +10,7 @@ jobs:
   run_image:
     runs-on: [ubuntu-latest]
     container:
-      image: matanrubin/python-poetry:3.9
+      image: python:3.10
 
     env:
       TEST_REDIS_SERVER: True
@@ -31,7 +31,7 @@ jobs:
       - run: make coverage
 
       # Run pylint+mypy after installing psutil so they don't complain on missing dependencies
-      - run: poetry install --extras psutil
+      - run: poetry install  --extras flask --extras fastapi --extras aiohttp --extras tornado --extras db --extras redis --extras psutil
       - run: make check
 
       # Run tests with coverage again - this adds tests that require psutil
