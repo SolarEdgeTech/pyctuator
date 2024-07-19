@@ -30,7 +30,7 @@ def test_redis_health(redis_host: str) -> None:
     from pyctuator.health.redis_health_provider import RedisHealthProvider, RedisHealthStatus, RedisHealthDetails
 
     health = RedisHealthProvider(redis.Redis(host=redis_host)).get_health()
-    assert health == RedisHealthStatus(Status.UP, RedisHealthDetails("5.0.3", "standalone"))
+    assert health == RedisHealthStatus(Status.UP, RedisHealthDetails("7.2.5", "standalone"))
 
 
 @pytest.mark.usefixtures("require_redis", "require_redis_server")
@@ -41,4 +41,4 @@ def test_redis_bad_password(redis_host: str) -> None:
 
     health = RedisHealthProvider(redis.Redis(host=redis_host, password="blabla")).get_health()
     assert health.status == Status.DOWN
-    assert "Client sent AUTH, but no password is set" in str(health.details.failure)
+    assert "called without any password configured for the default user" in str(health.details.failure)

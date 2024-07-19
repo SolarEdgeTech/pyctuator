@@ -7,10 +7,10 @@ services:
     environment:
       - MYSQL_ROOT_PASSWORD=root
   redis:
-    image: redis:alpine
+    image: redis:7.2.5-alpine
     ports:
       - 6379:6379
   sba:
     image: michayaak/spring-boot-admin:2.2.2
     ports:
-      - 8080:8080
+      - 8080:8082
