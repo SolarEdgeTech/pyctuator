@@ -21,31 +21,27 @@ class AioHttpPyctuator(PyctuatorRouter):
     def __init__(self, app: web.Application, pyctuator_impl: PyctuatorImpl, disabled_endpoints: Endpoints) -> None:
         super().__init__(app, pyctuator_impl)
 
-        custom_dumps = partial(
-            json.dumps, default=self._custom_json_serializer
-        )
-
         async def empty_handler(request: web.Request) -> web.Response:
             return web.Response(text='')
 
         async def get_endpoints(request: web.Request) -> web.Response:
-            return web.json_response(self.get_endpoints_data(), dumps=custom_dumps)
+            return web.json_response(self.get_endpoints_data)
 
         async def get_environment(request: web.Request) -> web.Response:
-            return web.json_response(pyctuator_impl.get_environment(), dumps=custom_dumps)
+            return web.json_response(pyctuator_impl.get_environment)
 
         async def get_info(request: web.Request) -> web.Response:
-            return web.json_response(pyctuator_impl.get_app_info(), dumps=custom_dumps)
+            return web.json_response(pyctuator_impl.get_app_info)
 
         async def get_health(request: web.Request) -> web.Response:
             health = pyctuator_impl.get_health()
-            return web.json_response(health, status=health.http_status(), dumps=custom_dumps)
+            return web.json_response(health, status=health.http_status)
 
         async def get_metric_names(request: web.Request) -> web.Response:
-            return web.json_response(pyctuator_impl.get_metric_names(), dumps=custom_dumps)
+            return web.json_response(pyctuator_impl.get_metric_names)
 
         async def get_loggers(request: web.Request) -> web.Response:
-            return web.json_response(pyctuator_impl.logging.get_loggers(), dumps=custom_dumps)
+            return web.json_response(pyctuator_impl.logging.get_loggers)
 
         async def set_logger_level(request: web.Request) -> web.Response:
             request_dict = await request.json()
@@ -57,19 +53,17 @@ class AioHttpPyctuator(PyctuatorRouter):
 
         async def get_logger(request: web.Request) -> web.Response:
             logger_name = request.match_info["logger_name"]
-            return web.json_response(pyctuator_impl.logging.get_logger(logger_name), dumps=custom_dumps)
+            return web.json_response(pyctuator_impl.logging.get_logger(logger_name))
 
         async def get_thread_dump(request: web.Request) -> web.Response:
-            return web.json_response(pyctuator_impl.get_thread_dump(), dumps=custom_dumps)
+            return web.json_response(pyctuator_impl.get_thread_dump)
 
         async def get_httptrace(request: web.Request) -> web.Response:
             raw_data = pyctuator_impl.http_tracer.get_httptrace()
-            return web.json_response(raw_data, dumps=custom_dumps)
+            return web.json_response(raw_data)
 
         async def get_metric_measurement(request: web.Request) -> web.Response:
-            return web.json_response(
-                pyctuator_impl.get_metric_measurement(request.match_info["metric_name"]),
-                dumps=custom_dumps)
+            return web.json_response( pyctuator_impl.get_metric_measurement(request.match_info["metric_name"]))
 
         async def get_logfile(request: web.Request) -> web.Response:
             range_header = request.headers.get("range")
@@ -152,14 +146,6 @@ class AioHttpPyctuator(PyctuatorRouter):
 
         app.add_routes(routes)
         app.middlewares.append(intercept_requests_and_responses)
-
-    def _custom_json_serializer(self, value: Any) -> Any:
-        if dataclasses.is_dataclass(value):
-            return dataclasses.asdict(value)
-
-        if isinstance(value, datetime):
-            return str(value)
-        return None
 
     def _create_headers_dictionary(self, headers: CIMultiDictProxy[str]) -> Mapping[str, List[str]]:
         headers_dict: Mapping[str, List[str]] = defaultdict(list)
