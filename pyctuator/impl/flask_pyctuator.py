@@ -6,7 +6,7 @@ from typing import Dict, Tuple, Any, Mapping, List
 
 from flask import Flask, Blueprint, request, jsonify, after_this_request
 from flask import Response, make_response
-from flask.json.provider import DefaultJSONProvider
+from flask.json import JSONProvider as DefaultJSONProvider
 # from flask.json import JSONEncoder
 from werkzeug.datastructures import Headers
 
