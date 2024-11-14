@@ -7,7 +7,7 @@
 Monitor Python web apps using 
 [Spring Boot Admin](https://github.com/codecentric/spring-boot-admin). 
 
-Pyctuator supports **[Flask](https://palletsprojects.com/p/flask/)**, **[FastAPI](https://fastapi.tiangolo.com/)**, **[aiohttp](https://docs.aiohttp.org/)** and **[Tornado](https://www.tornadoweb.org/)**. **Django** support is planned as well.
+Pyctuator supports **[Flask](https://palletsprojects.com/p/flask/)**, **[FastAPI](https://fastapi.tiangolo.com/)**, **[aiohttp](https://docs.aiohttp.org/)** and **[Tornado](https://www.tornadoweb.org/)**. **Django** support is unstable.
 
 The following video shows a FastAPI web app being monitored and controled using Spring Boot Admin.
  
@@ -133,6 +133,29 @@ Pyctuator(
 )
 
 Server(config=(Config(app=app, loop="asyncio"))).run()
+```
+
+### Django
+Update your Django wsgi.py as is.
+
+```python
+import os
+
+from django.core.wsgi import get_wsgi_application
+
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'actuator.settings')
+
+application = get_wsgi_application()
+
+# add this part
+Pyctuator(
+    application,
+    "Django Pyctuator",
+    app_url="http://host.docker.internal:8000",
+    pyctuator_endpoint_url="http://host.docker.internal:8000/pyctuator",
+    registration_url="http://localhost:8080/register",
+)
+
 ```
 
 The application will automatically register with Spring Boot Admin upon start up.

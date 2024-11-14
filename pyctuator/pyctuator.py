@@ -61,6 +61,8 @@ class Pyctuator:
         * aiohttp - `app` is an instance of `aiohttp.web.Application`
 
         * Tornado - `app` is an instance of `tornado.web.Application`
+        
+        * Django - `app` is an instance of `django.core.handlers.base.BaseHandler`
 
         :param app: an instance of a supported web-framework with which the pyctuator endpoints will be registered
         :param app_name: the application's name that will be presented in the "Info" section in boot-admin
@@ -126,7 +128,8 @@ class Pyctuator:
             "flask": self._integrate_flask,
             "fastapi": self._integrate_fastapi,
             "aiohttp": self._integrate_aiohttp,
-            "tornado": self._integrate_tornado
+            "tornado": self._integrate_tornado,
+            "django": self._integrate_django
         }
         for framework_name, framework_integration_function in framework_integrations.items():
             if self._is_framework_installed(framework_name):
@@ -267,3 +270,24 @@ class Pyctuator:
             TornadoHttpPyctuator(app, pyctuator_impl, disabled_endpoints)
             return True
         return False
+
+    # pylint: disable=unused-argument
+    def _integrate_django(
+            self,
+            app: Any,
+            pyctuator_impl: PyctuatorImpl,
+            customizer: Optional[Callable],
+            disabled_endpoints: Endpoints,
+    ) -> bool:
+        """
+        This method should only be called if we detected that django is installed.
+        It will then check whether the given app is a django app, and if so - it will add the Pyctuator
+        endpoints to it.
+        """
+        from django.core.handlers.base import BaseHandler
+        if isinstance(app, BaseHandler):
+            from pyctuator.impl.django_pyctuator import DjangoPyctuator
+            DjangoPyctuator(app, pyctuator_impl, disabled_endpoints)
+            return True
+        return False
+

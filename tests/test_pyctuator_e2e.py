@@ -17,6 +17,7 @@ from requests import Response
 from pyctuator.impl import SBA_V2_CONTENT_TYPE
 from tests.aiohttp_test_server import AiohttpPyctuatorServer
 from tests.conftest import RegisteredEndpoints, PyctuatorServer, RegistrationRequest, RegistrationTrackerFixture
+from tests.django_test_server import DjangoPyctuatorServer
 from tests.fast_api_test_server import FastApiPyctuatorServer
 from tests.flask_test_server import FlaskPyctuatorServer
 # mypy: ignore_errors
@@ -26,8 +27,8 @@ REQUEST_TIMEOUT = 10
 
 
 @pytest.fixture(
-    params=[FastApiPyctuatorServer, FlaskPyctuatorServer, AiohttpPyctuatorServer, TornadoPyctuatorServer],
-    ids=["FastAPI", "Flask", "AIOHTTP", "Tornado"]
+    params=[FastApiPyctuatorServer, FlaskPyctuatorServer, AiohttpPyctuatorServer, TornadoPyctuatorServer, DjangoPyctuatorServer],
+    ids=["FastAPI", "Flask", "AIOHTTP", "Tornado", "Django"]
 )
 def pyctuator_server(request) -> Generator:  # type: ignore
     # Start the web-server in which the pyctuator is integrated
@@ -70,14 +71,12 @@ def test_response_content_type(
         request_uri = trace["request"]["uri"]
         response_headers = trace["response"]["headers"]
         content_type_header: List[str] = response_headers.get("content-type", response_headers.get("Content-Type", []))
-
         logging.info("Testing httptraces content-type header for request %s, got %s", request_uri, content_type_header)
 
         if request_uri.find("/pyctuator") > 0:
             assert any(SBA_V2_CONTENT_TYPE in ct for ct in content_type_header)
         else:
             assert all(SBA_V2_CONTENT_TYPE not in ct for ct in content_type_header)
-
 
 @pytest.mark.usefixtures("boot_admin_server", "pyctuator_server")
 def test_self_endpoint(registered_endpoints: RegisteredEndpoints) -> None:
